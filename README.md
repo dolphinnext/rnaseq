@@ -9,12 +9,21 @@ Steps:
   6. Optionally you can create Integrative Genomics Viewer (IGV)  and Genome Browser Files (TDF and Bigwig, respectively)
 
 Program Versions:
-  - FastQC v0.11.7
-  - Picard-tools v1.131
-  - Bedtools v2.25.0
-  - Samtools v1.2
-  - FASTX Toolkit v0.0.13
-  - WigToBigWig v4
+  - FastQC v0.11.8
+  - Star v2.6.1
+  - Hisat2 v2.1.0
+  - Picard v2.18.27
+  - Rseqc v2.6.2
+  - Samtools v1.3
+  - Subread v1.6.4
+  - Multiqc v1.7
+  - Tophat v2.1.1
+  - RSEM v1.3.1
+  - Bowtie2 v2.3.5
+  - Bowtie v1.2.2
+  - Trimmomatic v0.39
+  - Igvtools v2.5.3
+  - Bedtools v2.27.1
+  - Fastx_toolkit v0.0.14
+  - Ucsc-wigToBigWig v366
   - Pdfbox-App v2.0.0
-  - IGV v2.3.32
-  - Trimmomatic v0.32
