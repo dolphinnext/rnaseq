@@ -1,0 +1,47 @@
+sudo: required
+language: python
+jdk: openjdk8
+services: docker
+python: '3.6'
+cache: pip
+matrix:
+  fast_finish: true
+
+before_install:
+  # PRs to master are only ok if coming from dev branch
+  # '[ $TRAVIS_PULL_REQUEST = "false" ] || [ $TRAVIS_BRANCH != "master" ] || ([ $TRAVIS_PULL_REQUEST_SLUG = $TRAVIS_REPO_SLUG ] && [ $TRAVIS_PULL_REQUEST_BRANCH = "dev" ])'
+  # Pull the docker image first so the test doesn't wait for this
+  - docker pull onuryukselen/rna-seq:dev
+  # Fake the tag locally so that the pipeline runs properly
+  # docker tag onuryukselen/rna-seq:dev onuryukselen/rna-seq:1.0
+
+install:
+  # Install Nextflow
+  - mkdir /tmp/nextflow && cd /tmp/nextflow
+  - wget -qO- get.nextflow.io | bash
+  - sudo ln -s /tmp/nextflow/nextflow /usr/local/bin/nextflow
+  # Install nf-core/tools
+  - pip install --upgrade pip
+  - pip install nf-core
+  # Reset
+  - mkdir ${TRAVIS_BUILD_DIR}/tests && cd ${TRAVIS_BUILD_DIR}/tests
+  # Download sample files
+  - mkdir inputs && cd inputs && wget https://galaxyweb.umassmed.edu/pub/dnext_data/test/reads/control_rep1.1.fastq.gz https://galaxyweb.umassmed.edu/pub/dnext_data/test/reads/exper_rep1.1.fastq.gz  && cd ..
+  # Install markdownlint-cli
+  - sudo apt-get install npm && npm install -g markdownlint-cli
+  
+
+
+env:
+  - NXF_VER='19.04.1' # Specify a minimum NF version that should be tested and work
+  - NXF_VER='' # Plus: get the latest NF version and check that it works
+
+script:
+  # Lint the pipeline code
+  # nf-core lint ${TRAVIS_BUILD_DIR}
+  # Lint the documentation
+  # markdownlint ${TRAVIS_BUILD_DIR} -c ${TRAVIS_BUILD_DIR}/.github/markdownlint.yml
+  - export NXF_ANSI_LOG=false
+  # Run, build reference genome with STAR
+  - nextflow run ${TRAVIS_BUILD_DIR} -profile test,docker 
+
