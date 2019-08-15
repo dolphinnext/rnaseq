@@ -1,7 +1,12 @@
 $HOSTNAME = ""
 params.outdir = 'results'  
 
-
+// enable required indexes to build them
+params.use_Bowtie2_Index = (params.run_Tophat == "yes") ? "yes" : ""
+params.use_Bowtie_Index = "no"
+params.use_Hisat2_Index = (params.run_HISAT2 == "yes") ? "yes" : ""
+params.use_STAR_Index = (params.run_STAR == "yes") ? "yes" : ""
+params.use_RSEM_Index = (params.run_RSEM == "yes") ? "yes" : ""
 if (!params.run_FeatureCounts_after_STAR){params.run_FeatureCounts_after_STAR = ""} 
 if (!params.run_FeatureCounts_after_Hisat2){params.run_FeatureCounts_after_Hisat2 = ""} 
 if (!params.run_FeatureCounts_after_Tophat2){params.run_FeatureCounts_after_Tophat2 = ""} 
@@ -350,45 +355,6 @@ fi
 
 
 
-}
-
-params.run_FastQC =  "no"  //* @dropdown @options:"yes","no"
-
-
-
-process Adapter_Trimmer_Quality_Module_FastQC {
-
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.(html|zip)$/) "fastqc/$filename"
-}
-
-input:
- val mate from g_204_mate_g213_3
- set val(name), file(reads) from g_205_reads_g213_3
-
-output:
- file '*.{html,zip}'  into g213_3_FastQCout_g_177
-
-errorStrategy 'retry'
-maxRetries 3
-
-when:
-(params.run_FastQC && (params.run_FastQC == "yes"))
-
-script:
-nameAll = reads.toString()
-if (nameAll.contains('.gz')) {
-    file =  nameAll - '.gz' - '.gz'
-    runGzip = "ls *.gz | xargs -i echo gzip -df {} | sh"
-} else {
-    file =  nameAll 
-    runGzip = ''
-}
-"""
-${runGzip}
-fastqc ${file} 
-"""
 }
 
 //* @style @array:{run_name,run_parameters} @multicolumn:{run_name,run_parameters}
@@ -1317,10 +1283,6 @@ g209_11_genomeIndexPath_g215_19= g209_11_genomeIndexPath_g215_19.ifEmpty(file('r
 params.rsem_ref_using_star_index =  ""  //* @input
 params.rsem_ref_using_bowtie2_index =  ""  //* @input
 params.rsem_ref_using_bowtie_index =  ""  //* @input
-RSEM_reference_type = params.RSEM_module_RSEM.RSEM_reference_type
-RSEM_parameters = params.RSEM_module_RSEM.RSEM_parameters
-no_bam_output = params.RSEM_module_RSEM.no_bam_output
-output_genome_bam = params.RSEM_module_RSEM.output_genome_bam
 //* @style @condition:{no_bam_output="false", output_genome_bam}, {no_bam_output="true"} @multicolumn:{no_bam_output, output_genome_bam}
 
 //* autofill
@@ -1360,6 +1322,12 @@ when:
 (params.run_RSEM && (params.run_RSEM == "yes")) || !params.run_RSEM
 
 script:
+RSEM_reference_type = params.RSEM_module_RSEM.RSEM_reference_type
+RSEM_parameters = params.RSEM_module_RSEM.RSEM_parameters
+no_bam_output = params.RSEM_module_RSEM.no_bam_output
+output_genome_bam = params.RSEM_module_RSEM.output_genome_bam
+
+
 nameAll = reads.toString()
 nameArray = nameAll.split(' ')
 def file2;
@@ -1385,25 +1353,30 @@ if (no_bam_output.toString() != "false"){
 
 
 rsemRef = ""
+refType = ""
 if (RSEM_reference_type == "star"){
     rsemRef = params.rsem_ref_using_star_index
+    refType = "--star"
 } else if (RSEM_reference_type == "bowtie2"){
     rsemRef = params.rsem_ref_using_bowtie2_index
+    refType = "--bowtie2"
 } else if (RSEM_reference_type == "bowtie"){
     rsemRef = params.rsem_ref_using_bowtie_index
+    refType = ""
 }
 """
 $runGzip
 mkdir -p pipe.rsem.${name}
 
 if [ "${mate}" == "pair" ]; then
-    echo "rsem-calculate-expression ${RSEM_parameters} ${genome_BamText} ${noBamText} --paired-end ${file1} ${file2} ${rsemRef} pipe.rsem.${name}/rsem.out.${name}"
-    rsem-calculate-expression ${RSEM_parameters} ${genome_BamText} ${noBamText} --paired-end ${file1} ${file2} ${rsemRef} pipe.rsem.${name}/rsem.out.${name}
+    echo "rsem-calculate-expression ${refType} ${RSEM_parameters} ${genome_BamText} ${noBamText} --paired-end ${file1} ${file2} ${rsemRef} pipe.rsem.${name}/rsem.out.${name}"
+    rsem-calculate-expression ${refType} ${RSEM_parameters} ${genome_BamText} ${noBamText} --paired-end ${file1} ${file2} ${rsemRef} pipe.rsem.${name}/rsem.out.${name}
 else
-    echo "rsem-calculate-expression ${RSEM_parameters} ${genome_BamText} ${noBamText} --calc-ci ${file1} ${rsemRef} pipe.rsem.${name}/rsem.out.${name}"
-    rsem-calculate-expression ${RSEM_parameters} ${genome_BamText} ${noBamText} --calc-ci ${file1} ${rsemRef} pipe.rsem.${name}/rsem.out.${name}
+    echo "rsem-calculate-expression ${refType} ${RSEM_parameters} ${genome_BamText} ${noBamText} --calc-ci ${file1} ${rsemRef} pipe.rsem.${name}/rsem.out.${name}"
+    rsem-calculate-expression ${refType} ${RSEM_parameters} ${genome_BamText} ${noBamText} --calc-ci ${file1} ${rsemRef} pipe.rsem.${name}/rsem.out.${name}
 fi
 """
+
 }
 
 //* autofill
@@ -4747,7 +4720,7 @@ input:
 
 output:
  file "*.tsv"  into g217_18_outputFile_g217_11
- file "*.{out,tab}"  into g217_18_logOut
+ file "*.{out,tab}"  into g217_18_logOut_g_177
  val "star_alignment_sum"  into g217_18_name_g217_11
 
 shell:
@@ -4809,6 +4782,45 @@ sub alteredAligned
 }
 '''
 
+}
+
+params.run_FastQC =  "no"  //* @dropdown @options:"yes","no"
+
+
+
+process Adapter_Trimmer_Quality_Module_FastQC {
+
+publishDir params.outdir, overwrite: true, mode: 'copy',
+	saveAs: {filename ->
+	if (filename =~ /.*.(html|zip)$/) "fastqc/$filename"
+}
+
+input:
+ val mate from g_204_mate_g213_3
+ set val(name), file(reads) from g_205_reads_g213_3
+
+output:
+ file '*.{html,zip}'  into g213_3_FastQCout_g_177
+
+errorStrategy 'retry'
+maxRetries 3
+
+when:
+(params.run_FastQC && (params.run_FastQC == "yes"))
+
+script:
+nameAll = reads.toString()
+if (nameAll.contains('.gz')) {
+    file =  nameAll - '.gz' - '.gz'
+    runGzip = "ls *.gz | xargs -i echo gzip -df {} | sh"
+} else {
+    file =  nameAll 
+    runGzip = ''
+}
+"""
+${runGzip}
+fastqc ${file} 
+"""
 }
 
 
@@ -4906,8 +4918,8 @@ sub alteredAligned
         }
 	}
 	$tsv{$name} = [$name, $inputCountSum];
-	push($tsv{$name}, $multimappedSum);
-	push($tsv{$name}, $alignedSum);
+	push(@{$tsv{$name}}, $multimappedSum);
+	push(@{$tsv{$name}}, $alignedSum);
 }
 '''
 
@@ -5246,6 +5258,7 @@ publishDir params.outdir, overwrite: true, mode: 'copy',
 input:
  file "tophat/*" from g218_11_summary_g_177.flatten().toList()
  file "rsem/*" from g215_19_rsemOut_g_177.flatten().toList()
+ file "star/*" from g217_18_logOut_g_177.flatten().toList()
  file "fastqc/*" from g213_3_FastQCout_g_177.flatten().toList()
  file "sequential_mapping/*" from g214_32_bowfiles_g_177.flatten().toList()
  file "rseqc_tophat/*" from g222_123_outputFileOut_g_177.flatten().toList()

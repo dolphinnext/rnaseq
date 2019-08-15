@@ -1,3 +1,5 @@
+[![Travis-ci tests:](https://travis-ci.org/onuryukselen/rnaseq.svg?branch=master)](https://travis-ci.org/onuryukselen/rnaseq.svg?branch=master)
+
 RNA-seq pipeline includes Quality Control, rRNA filtering, Genome Alignment using HISAT2, STAR and Tophat2, and estimating gene and isoform expression levels by RSEM and featureCounts.  
   
 Steps:
