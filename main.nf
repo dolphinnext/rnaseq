@@ -215,10 +215,10 @@ for (i = 0; i < newDirNameAr.size(); i++) {
     indexType = ""
     if (newDirNameAr[i] == 'RSEM_ref_Bowtie'){
         indexType = "--bowtie "
-        checkFile = "${basenameGenome}.idx.fa" 
+        checkFile = "${basenameGenome}.rev.2.ebwt" 
     } else if (newDirNameAr[i] == 'RSEM_ref_Bowtie2'){
         indexType = "--bowtie2 "
-        checkFile = "${basenameGenome}.idx.fa" 
+        checkFile = "${basenameGenome}.rev.2.bt2" 
     } else if (newDirNameAr[i] == 'RSEM_ref_STAR'){
         indexType = "--star "
         checkFile = "genomeParameters.txt" 
@@ -478,7 +478,7 @@ input:
 
 output:
  set val(name), file("reads/*")  into g213_18_reads_g213_19
- file "*.fastx.log"  into g213_18_log_file_g213_11
+ file "*.fastx.log" optional true  into g213_18_log_file_g213_11
 
 when:
 (params.run_Adapter_Removal && (params.run_Adapter_Removal == "yes")) || !params.run_Adapter_Removal
@@ -835,7 +835,7 @@ input:
 
 output:
  set val(name), file("reads/*")  into g213_20_reads_g214_32
- file "*.fastx_quality.log"  into g213_20_log_file_g213_16
+ file "*.fastx_quality.log" optional true  into g213_20_log_file_g213_16
 
 when:
 (params.run_Quality_Filtering && (params.run_Quality_Filtering == "yes")) || !params.run_Quality_Filtering    
@@ -1089,13 +1089,13 @@ input:
 
 output:
  set val(name), file("final_reads/*")  into g214_32_reads_g_127, g214_32_reads_g215_19
- set val(name), file("bowfiles/*")  into g214_32_bowfiles_g214_26, g214_32_bowfiles_g_177
- file "*/*_sorted.bam"  into g214_32_bam_file_g214_23
- file "*/*_sorted.bam.bai"  into g214_32_bam_index_g214_23
+ set val(name), file("bowfiles/*") optional true  into g214_32_bowfiles_g214_26, g214_32_bowfiles_g_177
+ file "*/*_sorted.bam" optional true  into g214_32_bam_file_g214_23
+ file "*/*_sorted.bam.bai" optional true  into g214_32_bam_index_g214_23
  val filtersList  into g214_32_filter_g214_26
- file "*/*_sorted.dedup.bam"  into g214_32_bam_file_g214_27
- file "*/*_sorted.dedup.bam.bai"  into g214_32_bam_index_g214_27
- file "*/*_duplicates_stats.log"  into g214_32_log_file_g214_30
+ file "*/*_sorted.dedup.bam" optional true  into g214_32_bam_file_g214_27
+ file "*/*_sorted.dedup.bam.bai" optional true  into g214_32_bam_index_g214_27
+ file "*/*_duplicates_stats.log" optional true  into g214_32_log_file_g214_30
 
 when:
 params.run_Sequential_Mapping == "yes"
@@ -1315,8 +1315,8 @@ input:
 
 output:
  file "pipe.rsem.*"  into g215_19_rsemOut_g215_17, g215_19_rsemOut_g215_15, g215_19_rsemOut_g_177
- set val(name), file("pipe.rsem.*/*.genome.bam")  into g215_19_bam_file_g219_121, g215_19_bam_file_g219_122, g215_19_bam_file_g219_123, g215_19_bam_file_g219_124, g215_19_bam_file_g219_126
- set val(name), file("pipe.rsem.*/*.bam")  into g215_19_mapped_reads
+ set val(name), file("pipe.rsem.*/*.genome.bam") optional true  into g215_19_bam_file_g219_121, g215_19_bam_file_g219_122, g215_19_bam_file_g219_123, g215_19_bam_file_g219_124, g215_19_bam_file_g219_126
+ set val(name), file("pipe.rsem.*/*.bam") optional true  into g215_19_mapped_reads
 
 when:
 (params.run_RSEM && (params.run_RSEM == "yes")) || !params.run_RSEM
@@ -1936,12 +1936,17 @@ params.genome =  ""  //* @input
 
 process BAM_Analysis_Tophat2_IGV_BAM2TDF_converter {
 
+publishDir params.outdir, overwrite: true, mode: 'copy',
+	saveAs: {filename ->
+	if (filename =~ /.*.tdf$/) "igvtools_tophat2/$filename"
+}
+
 input:
  val mate from g_204_mate_g222_123
  set val(name), file(bam) from g218_13_sorted_bam_g222_123
 
 output:
- file "*.tdf"  into g222_123_outputFileOut_g_177
+ file "*.tdf"  into g222_123_outputFileOut
 
 when:
 (params.run_IGV_TDF_Conversion && (params.run_IGV_TDF_Conversion == "yes")) || !params.run_IGV_TDF_Conversion
@@ -1973,7 +1978,7 @@ input:
  set val(name), file(bam) from g218_13_sorted_bam_g222_122
 
 output:
- file "result/*.out"  into g222_122_outputFileOut_g222_95
+ file "result/*.out"  into g222_122_outputFileOut_g222_95, g222_122_outputFileOut_g_177
 
 when:
 (params.run_RSeQC && (params.run_RSeQC == "yes")) || !params.run_RSeQC
@@ -5261,7 +5266,7 @@ input:
  file "star/*" from g217_18_logOut_g_177.flatten().toList()
  file "fastqc/*" from g213_3_FastQCout_g_177.flatten().toList()
  file "sequential_mapping/*" from g214_32_bowfiles_g_177.flatten().toList()
- file "rseqc_tophat/*" from g222_123_outputFileOut_g_177.flatten().toList()
+ file "rseqc_tophat/*" from g222_122_outputFileOut_g_177.flatten().toList()
  file "rseqc_rsem/*" from g219_122_outputFileOut_g_177.flatten().toList()
  file "rseqc_star/*" from g221_122_outputFileOut_g_177.flatten().toList()
  file "rseqc_hisat/*" from g220_122_outputFileOut_g_177.flatten().toList()
