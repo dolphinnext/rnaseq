@@ -511,7 +511,7 @@ input:
 
 output:
  set val(name), file("reads/*")  into g213_18_reads_g213_19
- file "*.fastx.log" optional true  into g213_18_log_file_g213_11
+ file "*.{fastx,trimmomatic}.log"  into g213_18_log_file_g213_11
 
 when:
 (params.run_Adapter_Removal && (params.run_Adapter_Removal == "yes")) || !params.run_Adapter_Removal
@@ -551,6 +551,7 @@ if (nameAll.contains('.gz')) {
  use File::Basename;
  use Getopt::Long;
  use Pod::Usage; 
+ use List::MoreUtils qw( minmax );
  
 system("mkdir reads adapter unpaired");
 
@@ -570,6 +571,7 @@ system("!{runGzip}");
 my $quality="33";
 my $format="";
 my ($format, $len)=getFormat("!{file1}");
+my ($format, $len)=getFormat2("!{file1}");
 print "fastq format: $format\\n";
 if ($format eq "solexa"){   
     $quality="64";
@@ -579,14 +581,14 @@ print "tool: !{Tool_for_Adapter_Removal}\\n";
 
 if ("!{mate}" eq "pair") {
     if ("!{Tool_for_Adapter_Removal}" eq "trimmomatic") {
-        system("trimmomatic PE -threads 1 -phred64 -trimlog !{name}.log !{file1} !{file2} reads/!{name}.1.fastq unpaired/!{name}.1.fastq.unpaired reads/!{name}.2.fastq unpaired/!{name}.1.fastq.unpaired ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length}");
+        system("trimmomatic PE -threads 1 -phred${quality}  !{file1} !{file2} reads/!{name}.1.fastq unpaired/!{name}.1.fastq.unpaired reads/!{name}.2.fastq unpaired/!{name}.1.fastq.unpaired ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length} > !{name}.trimmomatic.log");
     } elsif ("!{Tool_for_Adapter_Removal}" eq "fastx_clipper") {
         print "Fastx_clipper is not suitable for paired reads.";
     }
 } else {
     if ("!{Tool_for_Adapter_Removal}" eq "trimmomatic") {
-        print "trimmomatic SE -threads 1 -phred64 -trimlog !{name}.log !{file1} reads/!{name}.fastq ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length}";
-        system("trimmomatic SE -threads 1 -phred64 -trimlog !{name}.log !{file1} reads/!{name}.fastq ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length}");
+        print "trimmomatic SE -threads 1 -phred${quality}  !{file1} reads/!{name}.fastq ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length} > !{name}.trimmomatic.log";
+        system("trimmomatic SE -threads 1 -phred${quality}  !{file1} reads/!{name}.fastq ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length} > !{name}.trimmomatic.log");
     } elsif ("!{Tool_for_Adapter_Removal}" eq "fastx_clipper") {
         print "fastx_clipper  -Q $quality -a !{Adapter_Sequence} -l !{min_length} !{discard_non_clipped_text} -v -i !{file1} -o reads/!{name}.fastq > !{name}.fastx.log";
         system("fastx_clipper  -Q $quality -a !{Adapter_Sequence} -l !{min_length} !{discard_non_clipped_text} -v -i !{file1} -o reads/!{name}.fastq > !{name}.fastx.log");
@@ -653,6 +655,80 @@ sub getFormat
     # return file format
     return( $format,$len );
 }
+
+
+# automatic format detection
+sub getFormat2{
+my ($inputfile)=@_;
+my $limit = 1000;
+   # set function variables
+   open (IN, $inputfile);
+
+if (! defined $limit) { $limit = 100}; # check first 100 records
+ 
+my $cnt=0;
+my ($min, $max); # global min and max values
+print STDERR "\n## Analysing ".$limit." records from $inputfile ... \n";
+## parse
+while (my $id = <IN>) {
+	$id =~ m/^@/ || die "expected @ not found in line 1!\n";
+	my $seq = <IN>;
+	my $sep = <IN>;
+	$sep =~ m/^\+/ || die "expected + not found in line 3!\n";
+	my $qual = <IN>;
+	chomp($qual);
+	$cnt++;
+	$cnt>=$limit && last;
+ 
+	# char to ascii
+	my @chars = split("", $qual);
+	my @nums = sort { $a <=> $b } (map { unpack("C*", $_ )} @chars);
+ 
+	if ($cnt==1) {
+		($min, $max) = minmax @nums;
+	} else {
+		my ($lmin, $lmax) = minmax @nums; # local values for this read
+		$lmin<$min ? $min=$lmin : $min=$min;
+		$lmax>$max ? $max=$lmax : $max=$max;
+	}
+}
+ 
+undef IN;
+ 
+## diagnose
+my %diag=(
+			'Sanger'		=> '.',
+			'Solexa'		=> '.',
+			'Illumina 1.3+'	=> '.',
+			'Illumina 1.5+'	=> '.',
+			'Illumina 1.8+'	=> '.',
+			);
+ 
+my %comment=(
+			'Sanger'		=> 'Phred+33,  Q[33; 73],  (0, 40)',
+			'Solexa'		=> 'Solexa+64, Q[59; 104], (-5, 40)',
+			'Illumina 1.3+'	=> 'Phred+64,  Q[64; 104], (0, 40)',
+			'Illumina 1.5+'	=> 'Phred+64,  Q[66; 104], (3, 40), with 0=N/A, 1=N/A, 2=Read Segment Quality Control Indicator',
+			'Illumina 1.8+'	=> 'Phred+33,  Q[33; 74],  (0, 41)',
+			);
+ 
+if ($min<33 || $max>104) { die "Quality values corrupt. found [$min; $max] where [33; 104] was expected\n"; }
+if ($min>=33 && $max<=73)  {$diag{'Sanger'}='x';}
+if ($min>=59 && $max<=104) {$diag{'Solexa'}='x';}
+if ($min>=64 && $max<=104) {$diag{'Illumina 1.3+'}='x';}
+if ($min>=66 && $max<=104) {$diag{'Illumina 1.5+'}='x';}
+if ($min>=33 && $max<=74)  {$diag{'Illumina 1.8+'}='x';}
+ 
+## report
+print STDERR "# sampled raw quality values are in the range of [".$min."; ".$max."]\n";
+print STDERR "# format(s) marked below with 'x' agree with this range\n";
+ 
+foreach my $format (sort keys %diag) {
+	print STDERR sprintf("  %-13s : %2s  [%-30s] \n", $format, $diag{$format}, $comment{$format});
+}
+}
+
+
 '''
 
 }
