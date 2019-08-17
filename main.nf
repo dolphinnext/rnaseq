@@ -22,7 +22,7 @@ Channel.value(params.run_FeatureCounts_after_STAR).set{g_179_run_featureCounts_g
 Channel.value(params.run_FeatureCounts_after_Hisat2).set{g_188_run_featureCounts_g220_125}
 Channel.value(params.run_FeatureCounts_after_Tophat2).set{g_189_run_featureCounts_g222_125}
 Channel.value(params.run_FeatureCounts_after_RSEM).set{g_203_run_featureCounts_g219_125}
-Channel.value(params.mate).into{g_204_mate_g_127;g_204_mate_g213_3;g_204_mate_g213_11;g_204_mate_g213_16;g_204_mate_g213_18;g_204_mate_g213_19;g_204_mate_g213_20;g_204_mate_g214_26;g_204_mate_g214_30;g_204_mate_g214_32;g_204_mate_g215_19;g_204_mate_g216_11;g_204_mate_g217_16;g_204_mate_g218_3;g_204_mate_g218_11;g_204_mate_g219_82;g_204_mate_g219_95;g_204_mate_g219_123;g_204_mate_g219_126;g_204_mate_g220_82;g_204_mate_g220_95;g_204_mate_g220_123;g_204_mate_g220_126;g_204_mate_g221_82;g_204_mate_g221_95;g_204_mate_g221_123;g_204_mate_g221_126;g_204_mate_g222_82;g_204_mate_g222_95;g_204_mate_g222_123;g_204_mate_g222_126}
+Channel.value(params.mate).into{g_204_mate_g_127;g_204_mate_g213_3;g_204_mate_g213_11;g_204_mate_g213_16;g_204_mate_g213_18;g_204_mate_g213_19;g_204_mate_g213_20;g_204_mate_g213_21;g_204_mate_g214_26;g_204_mate_g214_30;g_204_mate_g214_32;g_204_mate_g215_19;g_204_mate_g216_11;g_204_mate_g217_16;g_204_mate_g218_3;g_204_mate_g218_11;g_204_mate_g219_82;g_204_mate_g219_95;g_204_mate_g219_123;g_204_mate_g219_126;g_204_mate_g220_82;g_204_mate_g220_95;g_204_mate_g220_123;g_204_mate_g220_126;g_204_mate_g221_82;g_204_mate_g221_95;g_204_mate_g221_123;g_204_mate_g221_126;g_204_mate_g222_82;g_204_mate_g222_95;g_204_mate_g222_123;g_204_mate_g222_126}
 Channel
 	.fromFilePairs( params.reads , size: (params.mate != "pair") ? 1 : 2 )
 	.ifEmpty { error "Cannot find any reads matching: ${params.reads}" }
@@ -551,7 +551,6 @@ if (nameAll.contains('.gz')) {
  use File::Basename;
  use Getopt::Long;
  use Pod::Usage; 
- use List::MoreUtils qw( minmax );
  
 system("mkdir reads adapter unpaired");
 
@@ -571,7 +570,6 @@ system("!{runGzip}");
 my $quality="33";
 my $format="";
 my ($format, $len)=getFormat("!{file1}");
-my ($format, $len)=getFormat2("!{file1}");
 print "fastq format: $format\\n";
 if ($format eq "solexa"){   
     $quality="64";
@@ -581,14 +579,14 @@ print "tool: !{Tool_for_Adapter_Removal}\\n";
 
 if ("!{mate}" eq "pair") {
     if ("!{Tool_for_Adapter_Removal}" eq "trimmomatic") {
-        system("trimmomatic PE -threads 1 -phred${quality}  !{file1} !{file2} reads/!{name}.1.fastq unpaired/!{name}.1.fastq.unpaired reads/!{name}.2.fastq unpaired/!{name}.1.fastq.unpaired ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length} > !{name}.trimmomatic.log");
+        system("trimmomatic PE -threads 1 -phred${quality} !{file1} !{file2} reads/!{name}.1.fastq unpaired/!{name}.1.fastq.unpaired reads/!{name}.2.fastq unpaired/!{name}.1.fastq.unpaired ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length} 2> !{name}.trimmomatic.log");
     } elsif ("!{Tool_for_Adapter_Removal}" eq "fastx_clipper") {
         print "Fastx_clipper is not suitable for paired reads.";
     }
 } else {
     if ("!{Tool_for_Adapter_Removal}" eq "trimmomatic") {
-        print "trimmomatic SE -threads 1 -phred${quality}  !{file1} reads/!{name}.fastq ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length} > !{name}.trimmomatic.log";
-        system("trimmomatic SE -threads 1 -phred${quality}  !{file1} reads/!{name}.fastq ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length} > !{name}.trimmomatic.log");
+        print "trimmomatic SE -threads 1  -phred${quality} !{file1} reads/!{name}.fastq ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length} 2> !{name}.trimmomatic.log";
+        system("trimmomatic SE -threads 1  -phred${quality} !{file1} reads/!{name}.fastq ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length} 2> !{name}.trimmomatic.log");
     } elsif ("!{Tool_for_Adapter_Removal}" eq "fastx_clipper") {
         print "fastx_clipper  -Q $quality -a !{Adapter_Sequence} -l !{min_length} !{discard_non_clipped_text} -v -i !{file1} -o reads/!{name}.fastq > !{name}.fastx.log";
         system("fastx_clipper  -Q $quality -a !{Adapter_Sequence} -l !{min_length} !{discard_non_clipped_text} -v -i !{file1} -o reads/!{name}.fastq > !{name}.fastx.log");
@@ -657,76 +655,7 @@ sub getFormat
 }
 
 
-# automatic format detection
-sub getFormat2{
-my ($inputfile)=@_;
-my $limit = 1000;
-   # set function variables
-   open (IN, $inputfile);
 
-if (! defined $limit) { $limit = 100}; # check first 100 records
- 
-my $cnt=0;
-my ($min, $max); # global min and max values
-print STDERR "\n## Analysing ".$limit." records from $inputfile ... \n";
-## parse
-while (my $id = <IN>) {
-	$id =~ m/^@/ || die "expected @ not found in line 1!\n";
-	my $seq = <IN>;
-	my $sep = <IN>;
-	$sep =~ m/^\+/ || die "expected + not found in line 3!\n";
-	my $qual = <IN>;
-	chomp($qual);
-	$cnt++;
-	$cnt>=$limit && last;
- 
-	# char to ascii
-	my @chars = split("", $qual);
-	my @nums = sort { $a <=> $b } (map { unpack("C*", $_ )} @chars);
- 
-	if ($cnt==1) {
-		($min, $max) = minmax @nums;
-	} else {
-		my ($lmin, $lmax) = minmax @nums; # local values for this read
-		$lmin<$min ? $min=$lmin : $min=$min;
-		$lmax>$max ? $max=$lmax : $max=$max;
-	}
-}
- 
-undef IN;
- 
-## diagnose
-my %diag=(
-			'Sanger'		=> '.',
-			'Solexa'		=> '.',
-			'Illumina 1.3+'	=> '.',
-			'Illumina 1.5+'	=> '.',
-			'Illumina 1.8+'	=> '.',
-			);
- 
-my %comment=(
-			'Sanger'		=> 'Phred+33,  Q[33; 73],  (0, 40)',
-			'Solexa'		=> 'Solexa+64, Q[59; 104], (-5, 40)',
-			'Illumina 1.3+'	=> 'Phred+64,  Q[64; 104], (0, 40)',
-			'Illumina 1.5+'	=> 'Phred+64,  Q[66; 104], (3, 40), with 0=N/A, 1=N/A, 2=Read Segment Quality Control Indicator',
-			'Illumina 1.8+'	=> 'Phred+33,  Q[33; 74],  (0, 41)',
-			);
- 
-if ($min<33 || $max>104) { die "Quality values corrupt. found [$min; $max] where [33; 104] was expected\n"; }
-if ($min>=33 && $max<=73)  {$diag{'Sanger'}='x';}
-if ($min>=59 && $max<=104) {$diag{'Solexa'}='x';}
-if ($min>=64 && $max<=104) {$diag{'Illumina 1.3+'}='x';}
-if ($min>=66 && $max<=104) {$diag{'Illumina 1.5+'}='x';}
-if ($min>=33 && $max<=74)  {$diag{'Illumina 1.8+'}='x';}
- 
-## report
-print STDERR "# sampled raw quality values are in the range of [".$min."; ".$max."]\n";
-print STDERR "# format(s) marked below with 'x' agree with this range\n";
- 
-foreach my $format (sort keys %diag) {
-	print STDERR sprintf("  %-13s : %2s  [%-30s] \n", $format, $diag{$format}, $comment{$format});
-}
-}
 
 
 '''
@@ -750,6 +679,7 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 //* autofill
 if (!((params.run_Trimmer && (params.run_Trimmer == "yes")) || !params.run_Trimmer)){
 g213_18_reads_g213_19.into{g213_19_reads_g213_20}
+g213_19_log_file_g213_21 = Channel.empty()
 } else {
 
 
@@ -761,6 +691,7 @@ input:
 
 output:
  set val(name), file("reads/*")  into g213_19_reads_g213_20
+ file "*.log" optional true  into g213_19_log_file_g213_21
 
 when:
 (params.run_Trimmer && (params.run_Trimmer == "yes")) || !params.run_Trimmer
@@ -837,7 +768,7 @@ sub trimFiles
       $param .= " -l ".($len-$nts[1]) if (exists($nts[0]) && $nts[1] > 0 );
       print "parameters for $file: $param \\n ";
       $outfile="reads/$file";  
-      $com="fastx_trimmer $quality -v $param -o $outfile -i $file " if ((exists($nts[0]) && $nts[0] > 0) || (exists($nts[0]) && $nts[1] > 0 ));
+      $com="fastx_trimmer $quality -v $param -o $outfile -i $file > !{name}.fastx_trimmer.log" if ((exists($nts[0]) && $nts[0] > 0) || (exists($nts[0]) && $nts[1] > 0 ));
       print "$com\\n";
       if ($com eq ""){
           print "trimmer skipped for $file \\n";
@@ -916,6 +847,90 @@ sub getFormat
 }
 }
 
+
+
+process Adapter_Trimmer_Quality_Module_Trimmer_Removal_Summary {
+
+input:
+ file logfile from g213_19_log_file_g213_21.collect()
+ val mate from g_204_mate_g213_21
+
+output:
+ file "trimmer_summary.tsv"  into g213_21_outputFileTSV_g_198
+
+shell:
+'''
+#!/usr/bin/env perl
+use List::Util qw[min max];
+use strict;
+use File::Basename;
+use Getopt::Long;
+use Pod::Usage;
+use Data::Dumper;
+
+my @header;
+my %all_files;
+my %tsv;
+my %tsvDetail;
+my %headerHash;
+my %headerText;
+my %headerTextDetail;
+
+my $i = 0;
+chomp( my $contents = `ls *.log` );
+
+my @files = split( /[\\n]+/, $contents );
+foreach my $file (@files) {
+    $i++;
+    my $mapOrder = "1";
+    if ($file =~ /(.*)\\.fastx_trimmer\\.log/){
+        $file =~ /(.*)\\.fastx_trimmer\\.log/;
+        my $mapper   = "fastx_trimmer";
+        my $name = $1;    ##sample name
+        push( @header, $mapper );
+        my $in;
+        my $out;
+        chomp( $in =`cat $file | grep 'Input:' | awk '{sum+=\\$2} END {print sum}'` );
+        chomp( $out =`cat $file | grep 'Output:' | awk '{sum+=\\$2} END {print sum}'` );
+
+        $tsv{$name}{$mapper} = [ $in, $out ];
+        $headerHash{$mapOrder} = $mapper;
+        $headerText{$mapOrder} = [ "Total Reads", "Reads After Trimmer" ];
+    }
+}
+
+my @mapOrderArray = ( keys %headerHash );
+my @sortedOrderArray = sort { $a <=> $b } @mapOrderArray;
+
+my $summary          = "trimmer_summary.tsv";
+writeFile( $summary,          \\%headerText,       \\%tsv );
+
+sub writeFile {
+    my $summary    = $_[0];
+    my %headerText = %{ $_[1] };
+    my %tsv        = %{ $_[2] };
+    open( OUT, ">$summary" );
+    print OUT "Sample\\t";
+    my @headArr = ();
+    for my $mapOrder (@sortedOrderArray) {
+        push( @headArr, @{ $headerText{$mapOrder} } );
+    }
+    my $headArrAll = join( "\\t", @headArr );
+    print OUT "$headArrAll\\n";
+
+    foreach my $name ( keys %tsv ) {
+        my @rowArr = ();
+        for my $mapOrder (@sortedOrderArray) {
+            push( @rowArr, @{ $tsv{$name}{ $headerHash{$mapOrder} } } );
+        }
+        my $rowArrAll = join( "\\t", @rowArr );
+        print OUT "$name\\t$rowArrAll\\n";
+    }
+    close(OUT);
+}
+
+'''
+}
 
 params.run_Quality_Filtering =   "no"   //* @dropdown @options:"yes","no" @show_settings:"Quality_Filtering"
 //* @style @multicolumn:{window_size,required_quality}, {leading,trailing,minlen}, {minQuality,minPercent} @condition:{tool="trimmomatic", minlen, trailing, leading, required_quality_for_window_trimming, window_size}, {tool="fastx", minQuality, minPercent}
@@ -1004,9 +1019,9 @@ print "fastq quality: $quality\\n";
      
 if ("!{tool}" eq "trimmomatic") {
     if ("!{mate}" eq "pair") {
-        system("trimmomatic PE -threads 1 -phred${quality} -trimlog !{name}.log !{file1} !{file2} reads/!{name}.1.fastq unpaired/!{name}.1.fastq.unpaired reads/!{name}.2.fastq unpaired/!{name}.1.fastq.unpaired $param");
+        system("trimmomatic PE -phred${quality} !{file1} !{file2} reads/!{name}.1.fastq unpaired/!{name}.1.fastq.unpaired reads/!{name}.2.fastq unpaired/!{name}.1.fastq.unpaired $param 2> !{name}.trimmomatic_quality.log");
     } else {
-        system("trimmomatic SE -threads 1 -phred${quality} -trimlog !{name}.log !{file1} reads/!{name}.fastq $param");
+        system("trimmomatic SE -phred${quality} !{file1} reads/!{name}.fastq $param 2> !{name}.trimmomatic_quality.log");
     }
 } elsif ("!{tool}" eq "fastx") {
     if ("!{mate}" eq "pair") {
@@ -4074,29 +4089,43 @@ my %tsv;
 my %headerHash;
 my %headerText;
 
-
 my $i = 0;
-chomp( my $contents = `ls *.fastx_quality.log` );
+chomp( my $contents = `ls *.log` );
 my @files = split( /[\\n]+/, $contents );
 foreach my $file (@files) {
     $i++;
-    my $mapper   = "fastx";
+    my $mapper   = "";
     my $mapOrder = "1";
-    $file =~ /(.*).fastx_quality\\.log/;
-    my $name = $1;    ##sample name
-    push( @header, "fastx" );
-
-    my $in;
-    my $out;
-
-
-    chomp( $in =`cat $file | grep 'Input:' | awk '{sum+=\\$2} END {print sum}'` );
-    chomp( $out =`cat $file | grep 'Output:' | awk '{sum+=\\$2} END {print sum}'` );
-   
-
-    $tsv{$name}{$mapper} = [ $in, $out ];
-    $headerHash{$mapOrder} = $mapper;
-    $headerText{$mapOrder} = [ "Total Reads", "Reads After Quality Filtering" ];
+    if ($file =~ /(.*)\\.fastx_quality\\.log/){
+        $mapper   = "fastx";
+        $file =~ /(.*)\\.fastx_quality\\.log/;
+        my $name = $1;    ##sample name
+        push( @header, $mapper );
+        my $in;
+        my $out;
+        chomp( $in =`cat $file | grep 'Input:' | awk '{sum+=\\$2} END {print sum}'` );
+        chomp( $out =`cat $file | grep 'Output:' | awk '{sum+=\\$2} END {print sum}'` );
+        $tsv{$name}{$mapper} = [ $in, $out ];
+        $headerHash{$mapOrder} = $mapper;
+        $headerText{$mapOrder} = [ "Total Reads", "Reads After Quality Filtering" ];
+    } elsif ($file =~ /(.*)\\.trimmomatic_quality\\.log/){
+        $mapper   = "trimmomatic";
+        $file =~ /(.*)\\.trimmomatic_quality\\.log/;
+        my $name = $1;    ##sample name
+        push( @header, $mapper );
+        my $in;
+        my $out;
+        if ( "!{mate}" eq "pair"){
+            chomp( $in =`cat $file | grep 'Input Read Pairs:' | awk '{sum+=\\$4} END {print sum}'` );
+            chomp( $out =`cat $file | grep 'Input Read Pairs:' | awk '{sum+=\\$7} END {print sum}'` );
+        } else {
+            chomp( $in =`cat $file | grep 'Input Reads:' | awk '{sum+=\\$3} END {print sum}'` );
+            chomp( $out =`cat $file | grep 'Input Reads:' | awk '{sum+=\\$5} END {print sum}'` );
+        }
+        $tsv{$name}{$mapper} = [ $in, $out ];
+        $headerHash{$mapOrder} = $mapper;
+        $headerText{$mapOrder} = [ "Total Reads", "Reads After Quality Filtering" ];
+    }
     
 }
 
@@ -4148,7 +4177,7 @@ input:
 
 output:
  file "adapter_removal_summary.tsv"  into g213_11_outputFileTSV_g_198
- file "adapter_removal_detailed_summary.tsv"  into g213_11_outputFile
+ file "adapter_removal_detailed_summary.tsv" optional true  into g213_11_outputFile
 
 shell:
 '''
@@ -4169,43 +4198,62 @@ my %headerText;
 my %headerTextDetail;
 
 my $i = 0;
-chomp( my $contents = `ls *.fastx.log` );
+chomp( my $contents = `ls *.log` );
+
 my @files = split( /[\\n]+/, $contents );
 foreach my $file (@files) {
     $i++;
-    my $mapper   = "fastx";
     my $mapOrder = "1";
-    $file =~ /(.*).fastx\\.log/;
-    my $name = $1;    ##sample name
-    push( @header, "fastx" );
+    if ($file =~ /(.*)\\.fastx\\.log/){
+        $file =~ /(.*)\\.fastx\\.log/;
+        my $mapper   = "fastx";
+        my $name = $1;    ##sample name
+        push( @header, $mapper );
 
-    my $in;
-    my $out;
-    my $tooshort;
-    my $adapteronly;
-    my $noncliped;
-    my $Nreads;
+        my $in;
+        my $out;
+        my $tooshort;
+        my $adapteronly;
+        my $noncliped;
+        my $Nreads;
 
-    chomp( $in =`cat $file | grep 'Input:' | awk '{sum+=\\$2} END {print sum}'` );
-    chomp( $out =`cat $file | grep 'Output:' | awk '{sum+=\\$2} END {print sum}'` );
-    chomp( $tooshort =`cat $file | grep 'too-short reads' | awk '{sum+=\\$2} END {print sum}'`);
-    chomp( $adapteronly =`cat $file | grep 'adapter-only reads' | awk '{sum+=\\$2} END {print sum}'`);
-    chomp( $noncliped =`cat $file | grep 'non-clipped reads.' | awk '{sum+=\\$2} END {print sum}'`);
-    chomp( $Nreads =`cat $file | grep 'N reads.' | awk '{sum+=\\$2} END {print sum}'` );
+        chomp( $in =`cat $file | grep 'Input:' | awk '{sum+=\\$2} END {print sum}'` );
+        chomp( $out =`cat $file | grep 'Output:' | awk '{sum+=\\$2} END {print sum}'` );
+        chomp( $tooshort =`cat $file | grep 'too-short reads' | awk '{sum+=\\$2} END {print sum}'`);
+        chomp( $adapteronly =`cat $file | grep 'adapter-only reads' | awk '{sum+=\\$2} END {print sum}'`);
+        chomp( $noncliped =`cat $file | grep 'non-clipped reads.' | awk '{sum+=\\$2} END {print sum}'`);
+        chomp( $Nreads =`cat $file | grep 'N reads.' | awk '{sum+=\\$2} END {print sum}'` );
 
-    $tsv{$name}{$mapper} = [ $in, $out ];
-    $headerHash{$mapOrder} = $mapper;
-    $headerText{$mapOrder} = [ "Total Reads", "Reads After Adapter Removal" ];
-    $tsvDetail{$name}{$mapper} =
-      [ $in, $tooshort, $adapteronly, $noncliped, $Nreads, $out ];
-    $headerTextDetail{$mapOrder} = [
-        "Total Reads",
-        "Too-short reads",
-        "Adapter-only reads",
-        "Non-clipped reads",
-        "N reads",
-        "Reads After Adapter Removal"
-    ];
+        $tsv{$name}{$mapper} = [ $in, $out ];
+        $headerHash{$mapOrder} = $mapper;
+        $headerText{$mapOrder} = [ "Total Reads", "Reads After Adapter Removal" ];
+        $tsvDetail{$name}{$mapper} = [ $in, $tooshort, $adapteronly, $noncliped, $Nreads, $out ];
+        $headerTextDetail{$mapOrder} = ["Total Reads","Too-short reads","Adapter-only reads","Non-clipped reads","N reads","Reads After Adapter Removal"];
+    } elsif ($file =~ /(.*)\\.trimmomatic\\.log/){
+        $file =~ /(.*)\\.trimmomatic\\.log/;
+        my $mapper   = "trimmomatic";
+        my $name = $1;    ##sample name
+        push( @header, $mapper );
+        
+        my $in;
+        my $out;
+
+        if ( "!{mate}" eq "pair"){
+            chomp( $in =`cat $file | grep 'Input Read Pairs:' | awk '{sum+=\\$4} END {print sum}'` );
+            chomp( $out =`cat $file | grep 'Input Read Pairs:' | awk '{sum+=\\$7} END {print sum}'` );
+        } else {
+            chomp( $in =`cat $file | grep 'Input Reads:' | awk '{sum+=\\$3} END {print sum}'` );
+            chomp( $out =`cat $file | grep 'Input Reads:' | awk '{sum+=\\$5} END {print sum}'` );
+        }
+        
+
+
+        $tsv{$name}{$mapper} = [ $in, $out ];
+        $headerHash{$mapOrder} = $mapper;
+        $headerText{$mapOrder} = [ "Total Reads", "Reads After Adapter Removal" ];
+        
+    }
+    
 }
 
 my @mapOrderArray = ( keys %headerHash );
@@ -4214,7 +4262,9 @@ my @sortedOrderArray = sort { $a <=> $b } @mapOrderArray;
 my $summary          = "adapter_removal_summary.tsv";
 my $detailed_summary = "adapter_removal_detailed_summary.tsv";
 writeFile( $summary,          \\%headerText,       \\%tsv );
-writeFile( $detailed_summary, \\%headerTextDetail, \\%tsvDetail );
+if (%headerTextDetail){
+    writeFile( $detailed_summary, \\%headerTextDetail, \\%tsvDetail );  
+}
 
 sub writeFile {
     my $summary    = $_[0];
@@ -5080,6 +5130,7 @@ g216_10_outputFileTSV_g_198= g216_10_outputFileTSV_g_198.ifEmpty(file('hisatSum'
 g215_17_outputFileTSV_g_198= g215_17_outputFileTSV_g_198.ifEmpty(file('rsemSum', type: 'any')) 
 g218_9_outputFileTSV_g_198= g218_9_outputFileTSV_g_198.ifEmpty(file('tophatSum', type: 'any')) 
 g213_11_outputFileTSV_g_198= g213_11_outputFileTSV_g_198.ifEmpty(file('adapterSum', type: 'any')) 
+g213_21_outputFileTSV_g_198= g213_21_outputFileTSV_g_198.ifEmpty(file('trimmerSum', type: 'any')) 
 g213_16_outputFileTSV_g_198= g213_16_outputFileTSV_g_198.ifEmpty(file('qualitySum', type: 'any')) 
 
 //* autofill
@@ -5107,6 +5158,7 @@ input:
  file rsemSum from g215_17_outputFileTSV_g_198
  file tophatSum from g218_9_outputFileTSV_g_198
  file adapterSum from g213_11_outputFileTSV_g_198
+ file trimmerSum from g213_21_outputFileTSV_g_198
  file qualitySum from g213_16_outputFileTSV_g_198
 
 output:
