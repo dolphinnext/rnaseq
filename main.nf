@@ -105,11 +105,11 @@ filename = genome.substring(genome.lastIndexOf('/')+1,genome.length())
 newDirName = "BowtieIndex"
 resultDir = basedir.substring(0, basedir.lastIndexOf('/')) +"/"+ newDirName 
 """
-if [ ! -e "${resultDir}/${basename}.1.bt2" ] ; then
-    echo "Bowtie2 index not found"
+if [ ! -e "${resultDir}/${basename}.rev.2.ebwt" ] ; then
+    echo "${resultDir}/${basename}.rev.2.ebwt Bowtie index not found"
     mkdir -p $resultDir  && cd $resultDir
     ln -s ../main/${filename} ${filename}
-    bowtie2-build ${bowtie_build_parameters} ${filename} ${basename}
+    bowtie-build ${bowtie_build_parameters} ${filename} ${basename}
     
 fi
 """
@@ -345,8 +345,8 @@ filename = genome.substring(genome.lastIndexOf('/')+1,genome.length())
 newDirName = "Bowtie2Index"
 resultDir = basedir.substring(0, basedir.lastIndexOf('/')) +"/"+ newDirName 
 """
-if [ ! -e "${resultDir}/${basename}.1.bt2" ] ; then
-    echo "Bowtie2 index not found"
+if [ ! -e "${resultDir}/${basename}.rev.1.bt2" ] ; then
+    echo "${resultDir}/${basename}.rev.1.bt2 Bowtie2 index not found"
     mkdir -p $resultDir  && cd $resultDir
     ln -s ../main/${filename} ${filename}
     bowtie2-build ${bowtie2_build_parameters} ${filename} ${basename}
