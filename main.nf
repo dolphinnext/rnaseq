@@ -280,8 +280,8 @@ ss = "--ss ${basenameGTF}.hisat2_splice_sites.txt"
 exon = "--exon ${basenameGTF}.hisat2_exons.txt"
 
 """
-if [ ! -e "${resultDir}/${basenameGenome}.1.ht2" ] ; then
-    echo "Hisat2 index not found"
+if [ ! -e "${resultDir}/${basenameGenome}.8.ht2" ] ; then
+    echo "${resultDir}/${basenameGenome}.8.ht2 Hisat2 index not found"
     mkdir -p $resultDir 
     $extract_splice_sites
     $extract_exons
