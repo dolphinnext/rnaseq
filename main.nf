@@ -104,13 +104,15 @@ basename = genome.substring(genome.lastIndexOf('/')+1,genome.lastIndexOf('.'))
 filename = genome.substring(genome.lastIndexOf('/')+1,genome.length())
 newDirName = "BowtieIndex"
 resultDir = basedir.substring(0, basedir.lastIndexOf('/')) +"/"+ newDirName 
+tmpResultDir = basedir.substring(0, basedir.lastIndexOf('/')) +"/_tmp_"+ newDirName 
+
 """
 if [ ! -e "${resultDir}/${basename}.rev.2.ebwt" ] ; then
     echo "${resultDir}/${basename}.rev.2.ebwt Bowtie index not found"
-    mkdir -p $resultDir  && cd $resultDir
+    rm -rf $tmpResultDir && mkdir -p $tmpResultDir && cd $tmpResultDir
     ln -s ../main/${filename} ${filename}
     bowtie-build ${bowtie_build_parameters} ${filename} ${basename}
-    
+    cd .. && mv $tmpResultDir $resultDir
 fi
 """
 
@@ -211,6 +213,7 @@ if (transcript_to_gene_map?.trim()){
 
 for (i = 0; i < newDirNameAr.size(); i++) {
     resultDir = gtf_dir.substring(0, gtf_dir.lastIndexOf('/')) +"/"+ newDirNameAr[i]
+    tmpResultDir = gtf_dir.substring(0, gtf_dir.lastIndexOf('/')) +"/_tmp_"+ newDirNameAr[i]
     resultDirAr.push(resultDir)
     cmd = ""
     indexType = ""
@@ -224,7 +227,7 @@ for (i = 0; i < newDirNameAr.size(); i++) {
         indexType = "--star "
         checkFile = "genomeParameters.txt" 
     }
-    cmd = "if [ ! -e \"${resultDir}/${checkFile}\" ] ; then mkdir -p ${resultDir} && cd ${resultDir} && rsem-prepare-reference ${RSEM_build_parameters} --gtf ${gtf} ${transcript_to_gene_mapText} ${indexType} ${genome} ${basenameGenome}; fi"
+    cmd = "if [ ! -e \"${resultDir}/${checkFile}\" ] ; then rm -rf $tmpResultDir && mkdir -p $tmpResultDir && cd $tmpResultDir && rsem-prepare-reference ${RSEM_build_parameters} --gtf ${gtf} ${transcript_to_gene_mapText} ${indexType} ${genome} ${basenameGenome} && cd .. && mv $tmpResultDir $resultDir; fi"
     cmdAr.push(cmd)
 }
 
@@ -273,20 +276,21 @@ basenameGTF = gtf.substring(gtf.lastIndexOf('/')+1,gtf.lastIndexOf('.'))
 filename = genome.substring(genome.lastIndexOf('/')+1,genome.length())
 newDirName = "Hisat2Index"
 resultDir = gtf_dir.substring(0, gtf_dir.lastIndexOf('/')) +"/"+ newDirName 
+tmpResultDir = gtf_dir.substring(0, gtf_dir.lastIndexOf('/')) +"/_tmp_"+ newDirName 
 
-extract_splice_sites = "hisat2_extract_splice_sites.py ${gtf} > ${resultDir}/${basenameGTF}.hisat2_splice_sites.txt"
-extract_exons = "hisat2_extract_exons.py ${gtf}> ${resultDir}/${basenameGTF}.hisat2_exons.txt"
+extract_splice_sites = "hisat2_extract_splice_sites.py ${gtf} > ${tmpResultDir}/${basenameGTF}.hisat2_splice_sites.txt"
+extract_exons = "hisat2_extract_exons.py ${gtf}> ${tmpResultDir}/${basenameGTF}.hisat2_exons.txt"
 ss = "--ss ${basenameGTF}.hisat2_splice_sites.txt"
 exon = "--exon ${basenameGTF}.hisat2_exons.txt"
 
 """
 if [ ! -e "${resultDir}/${basenameGenome}.8.ht2" ] ; then
     echo "${resultDir}/${basenameGenome}.8.ht2 Hisat2 index not found"
-    mkdir -p $resultDir 
+    rm -rf $tmpResultDir && mkdir -p $tmpResultDir && cd $tmpResultDir 
     $extract_splice_sites
     $extract_exons
-    cd $resultDir
     hisat2-build ${hisat2_build_parameters} $ss $exon ${genome} ${basenameGenome}
+    cd .. && mv $tmpResultDir $resultDir 
 fi
 """
 
@@ -344,13 +348,15 @@ basename = genome.substring(genome.lastIndexOf('/')+1,genome.lastIndexOf('.'))
 filename = genome.substring(genome.lastIndexOf('/')+1,genome.length())
 newDirName = "Bowtie2Index"
 resultDir = basedir.substring(0, basedir.lastIndexOf('/')) +"/"+ newDirName 
+tmpResultDir = basedir.substring(0, basedir.lastIndexOf('/')) +"/_tmp_"+ newDirName 
+
 """
 if [ ! -e "${resultDir}/${basename}.rev.1.bt2" ] ; then
     echo "${resultDir}/${basename}.rev.1.bt2 Bowtie2 index not found"
-    mkdir -p $resultDir  && cd $resultDir
+    rm -rf $tmpResultDir && mkdir -p $tmpResultDir && cd $tmpResultDir
     ln -s ../main/${filename} ${filename}
     bowtie2-build ${bowtie2_build_parameters} ${filename} ${basename}
-    
+    cd .. && mv $tmpResultDir $resultDir 
 fi
 """
 
@@ -409,11 +415,13 @@ genome_dir  = genome.substring(0, genome.lastIndexOf('/'))
 filename = genome.substring(genome.lastIndexOf('/')+1,genome.length())
 newDirName = "STARIndex" 
 resultDir = indexbasedir +"/"+ newDirName 
+tmpResultDir = indexbasedir +"/_tmp_"+ newDirName
 """
 if [ ! -e "${resultDir}/SA" ] ; then
     echo "STAR index not found"
-    mkdir -p $resultDir  && cd $resultDir
-    STAR --runMode genomeGenerate ${star_build_parameters} --genomeDir $resultDir --genomeFastaFiles ${genome} --sjdbGTFfile ${gtf}
+    rm -rf $tmpResultDir && mkdir -p $tmpResultDir && cd $tmpResultDir
+    STAR --runMode genomeGenerate ${star_build_parameters} --genomeDir $tmpResultDir --genomeFastaFiles ${genome} --sjdbGTFfile ${gtf}
+    cd .. && mv $tmpResultDir $resultDir && cd ${resultDir}
     ln -s ../../main/${filename} ${filename}
     ln -s ../../main/${filename}.fai ${filename}.fai
 fi
@@ -959,7 +967,7 @@ input:
 
 output:
  set val(name), file("reads/*")  into g213_20_reads_g214_32
- file "*.fastx_quality.log" optional true  into g213_20_log_file_g213_16
+ file "*.{fastx,trimmomatic}_quality.log" optional true  into g213_20_log_file_g213_16
 
 when:
 (params.run_Quality_Filtering && (params.run_Quality_Filtering == "yes")) || !params.run_Quality_Filtering    
