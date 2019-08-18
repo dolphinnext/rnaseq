@@ -139,7 +139,7 @@ By default, the pipeline uses [STAR](https://github.com/alexdobin/STAR) to align
 
 If you prefer, you can use [HISAT2](https://ccb.jhu.edu/software/hisat2/index.shtml) or TOPHAT2 as the alignment tool instead. Both tools developed by the same group, and HISAT2 has a much smaller memory footprint.
 
-You can choose multiple aligner to compare their results by enabling/disabling following parameters 
+You can choose multiple aligner to compare their results by enabling/disabling following parameters:
 To enable HISAT2  : `--run_HISAT2 yes`
 To disable HISAT2 : `--run_HISAT2 no`
 To enable STAR    : `--run_STAR yes`
@@ -150,7 +150,7 @@ To disable Tophat2: `--run_Tophat no`
 ## Transcripts Quantification
 By default, RSEM is used to align RNA-Seq reads to a reference transcripts and estimates gene and isoform expression levels. But you can enable featureCounts after running HISAT2 and/or STAR and/or Tophat2 as well.
 
-You can choose multiple tools to compare their results by enabling/disabling following parameters 
+You can choose multiple tools to compare their results by enabling/disabling following parameters:
 To enable RSEM  : `--run_RSEM yes`
 To disable RSEM : `--run_RSEM no`
 To enable featureCounts after running HISAT   : `--run_HISAT2 yes --run_FeatureCounts_after_Hisat2 yes`
