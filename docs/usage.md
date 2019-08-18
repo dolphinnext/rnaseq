@@ -52,7 +52,7 @@ If `-profile` is not specified at all the pipeline will be run locally and expec
   ```bash
   mkdir inputs && cd inputs && wget https://galaxyweb.umassmed.edu/pub/dnext_data/test/reads/control_rep1.1.fastq.gz https://galaxyweb.umassmed.edu/pub/dnext_data/test/reads/exper_rep1.1.fastq.gz  && cd ..
   ## Start testing pipeline:
-  nextflow run dolphinnext/rnaseq -profile docker, test 
+  nextflow run dolphinnext/rnaseq -profile docker,test 
   ```
 
 ### `--reads`
