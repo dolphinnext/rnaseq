@@ -6,7 +6,7 @@
   * [Automatic](#automatic)
   * [Docker](#docker)
   * [Singularity](#singularity)
-* [Run the pipeline](#run-the-pipeline)
+* [Run the pipeline](usage.md)
 <!-- TOC END -->
 
 ## Install NextFlow
@@ -48,3 +48,4 @@ The process is very similar: running the pipeline with the option `-profile sing
 ```
 nextflow run dolphinnext/rnaseq -profile singularity --DOWNDIR /path/to/save/genome-data --reads '*_R{1,2}.fastq.gz' --genome_build mouse_mm10_refseq
 ```
+
