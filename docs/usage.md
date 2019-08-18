@@ -13,7 +13,7 @@ NXF_OPTS='-Xms1g -Xmx4g'
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run nf-core/rnaseq -profile docker --DOWNDIR /path/to/save/genome-data --reads '*_R{1,2}.fastq.gz' --genome_build mouse_mm10_refseq
+nextflow run dolphinnext/rnaseq -profile docker --DOWNDIR /path/to/save/genome-data --reads '*_R{1,2}.fastq.gz' --genome_build mouse_mm10_refseq
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -30,7 +30,7 @@ results         # Finished results
 When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version. In order to download latest version of the pipeline you need to run following command:
 
 ```bash
-nextflow pull nf-core/rnaseq
+nextflow pull dolpinnext/rnaseq
 ```
 
 ## Main arguments
@@ -48,7 +48,12 @@ If `-profile` is not specified at all the pipeline will be run locally and expec
   * Pulls software from DockerHub
 * `test`
   * A profile with a complete configuration for automated testing
-  * You need to download sample fastq files and define those reads as a input parameter:
+  * You need to download sample fastq files into `inputs` folder with the following command:
+  ```bash
+  mkdir inputs && cd inputs && wget https://galaxyweb.umassmed.edu/pub/dnext_data/test/reads/control_rep1.1.fastq.gz https://galaxyweb.umassmed.edu/pub/dnext_data/test/reads/exper_rep1.1.fastq.gz  && cd ..
+  ## Start testing pipeline:
+  nextflow run dolphinnext/rnaseq -profile docker, test 
+  ```
 
 ### `--reads`
 Use this to specify the location of your input FastQ files. For example:
