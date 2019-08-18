@@ -13,7 +13,7 @@ NXF_OPTS='-Xms1g -Xmx4g'
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run dolphinnext/rnaseq -profile docker --DOWNDIR /path/to/save/genome-data --reads '*_R{1,2}.fastq.gz' --genome_build mouse_mm10_refseq
+nextflow run dolphinnext/rnaseq -profile docker --DOWNDIR /path/to/save/genome-data --reads '*_R{1,2}.fastq.gz' --mate 'pair' --genome_build mouse_mm10_refseq
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -49,17 +49,19 @@ If `-profile` is not specified at all the pipeline will be run locally and expec
 * `test`
   * A profile with a complete configuration for automated testing
   ```bash
-  ## Download sample fastq files into `inputs` folder with the following command:
-  mkdir inputs && cd inputs && wget https://galaxyweb.umassmed.edu/pub/dnext_data/test/reads/control_rep1.1.fastq.gz https://galaxyweb.umassmed.edu/pub/dnext_data/test/reads/exper_rep1.1.fastq.gz  && cd ..
+  ## First, download sample fastq files into `inputs` folder with the following command:
+  mkdir -p inputs && cd inputs && wget https://galaxyweb.umassmed.edu/pub/dnext_data/test/reads/control_rep1.1.fastq.gz https://galaxyweb.umassmed.edu/pub/dnext_data/test/reads/exper_rep1.1.fastq.gz  && cd ..
   ## Start testing pipeline:
   nextflow run dolphinnext/rnaseq -profile docker,test 
+  ## In the test profile, --reads parameter assinged as: 'inputs/*.fastq.gz'
   ```
 
 ### `--reads`
 Use this to specify the location of your input FastQ files. For example:
 
 ```bash
---reads 'path/to/data/sample_*_{1,2}.fastq'
+--reads 'path/to/data/sample_*_{1,2}.fastq' --mate 'pair'
+--reads 'path/to/data/sample_*.fastq' --mate 'single'
 ```
 
 Please note the following requirements:
@@ -68,69 +70,17 @@ Please note the following requirements:
 2. The path must have at least one `*` wildcard character
 3. When using the pipeline with paired end data, the path must use `{1,2}` notation to specify read pairs.
 
-If left unspecified, a default pattern is used: `data/*{1,2}.fastq.gz`
 
-### `--singleEnd`
-By default, the pipeline expects paired-end data. If you have single-end data, you need to specify `--singleEnd` on the command line when you launch the pipeline. A normal glob pattern, enclosed in quotation marks, can then be used for `--reads`. For example:
+### `--mate`
+Two options (single or pair) available for `--mate` parameter. If you have single-end data, you need to specify as 'single' and for paired-end data, you need to specify as 'pair'. For example:
 
 ```bash
---singleEnd --reads '*.fastq'
+--reads 'path/to/data/sample_*_{1,2}.fastq' --mate 'pair'
+--reads 'path/to/data/sample_*.fastq' --mate 'single'
 ```
 
 It is not possible to run a mixture of single-end and paired-end files in one run.
 
-### Library strandedness
-Three command line flags / config parameters set the library strandedness for a run:
-
-* `--forward_stranded`
-* `--reverse_stranded`
-* `--unstranded`
-
-If not set, the pipeline will be run as unstranded. Specifying `--pico` makes the pipeline run in `forward_stranded` mode.
-
-You can set a default in a cutom Nextflow configuration file such as one saved in `~/.nextflow/config` (see the [nextflow docs](https://www.nextflow.io/docs/latest/config.html) for more). For example:
-
-```nextflow
-params {
-    reverse_stranded = true
-}
-```
-
-If you have a default strandedness set in your personal config file you can use `--unstranded` to overwrite it for a given run.
-
-These flags affect the commands used for several steps in the pipeline - namely HISAT2, featureCounts, RSeQC (`RPKM_saturation.py`) and StringTie:
-
-* `--forward_stranded`
-  * HISAT2: `--rna-strandness F` / `--rna-strandness FR`
-  * featureCounts: `-s 1`
-  * RSeQC: `-d ++,--` / `-d 1++,1--,2+-,2-+`
-  * StringTie: `--fr`
-* `--reverse_stranded`
-  * HISAT2: `--rna-strandness R` / `--rna-strandness RF`
-  * featureCounts: `-s 2`
-  * RSeQC: `-d +-,-+` / `-d 1+-,1-+,2++,2--`
-  * StringTie: `--rf`
-
-## FeatureCounts Extra Gene Names
-
-### Default Attribute Type
-
-By default, the pipeline uses `gene_name` as the default gene identifier group. In case you need to adjust this, specify using the option `--fcGroupFeatures` to use a different category present in your provided GTF file. Please also take care to use a suitable attribute to categorize the `biotype` of the selected features in your GTF then, using the option `--fcGroupFeaturesType` (default: `gene_biotype`).
-
-### Extra Gene Names
-By default, the pipeline uses `gene_names` as additional gene identifiers apart from ENSEMBL identifiers in the pipeline.
-This behaviour can be modified by specifying `--fcExtraAttributes` when running the pipeline, which is passed on to featureCounts as an `--extraAttributes` parameter.
-See the user guide of the [Subread package here](http://bioinf.wehi.edu.au/subread-package/SubreadUsersGuide.pdf).
-Note that you can also specify more than one desired value, separated by a comma:
-``--fcExtraAttributes gene_id,...``
-
-
-## Alignment tool
-By default, the pipeline uses [STAR](https://github.com/alexdobin/STAR) to align the raw FastQ reads to the reference genome. STAR is fast and common, but requires a lot of memory to run, typically around 38GB for the Human GRCh37 reference genome.
-
-If you prefer, you can use [HISAT2](https://ccb.jhu.edu/software/hisat2/index.shtml) as the alignment tool instead. Developed by the same group behind the popular Tophat aligner, HISAT2 has a much smaller memory footprint.
-
-To use HISAT2, use the parameter `--aligner hisat2` or set `params.aligner = 'hisat2'` in your config file.
 
 ## Reference genomes
 
@@ -185,16 +135,15 @@ Note that only one of `--star_index` / `--hisat2_index` are needed depending on 
 
 The minimum requirements are a Fasta and GTF file. If these are provided and no others, then all other reference files will be automatically generated by the pipeline.
 
-### `--saveReference`
-Supply this parameter to save any generated reference genome files to your results folder.
-These can then be used for future pipeline runs, reducing processing times.
+## Alignment tool
+By default, the pipeline uses [STAR](https://github.com/alexdobin/STAR) to align the raw FastQ reads to the reference genome. STAR is fast and common, but requires a lot of memory to run, typically around 38GB for the Human GRCh37 reference genome.
 
-### `--saveTrimmed`
-By default, trimmed FastQ files will not be saved to the results directory. Specify this
-flag (or set to true in your config file) to copy these files when complete.
+If you prefer, you can use [HISAT2](https://ccb.jhu.edu/software/hisat2/index.shtml) as the alignment tool instead. Developed by the same group behind the popular Tophat aligner, HISAT2 has a much smaller memory footprint.
 
-### `--saveAlignedIntermediates`
-As above, by default intermediate BAM files from the alignment will not be saved. The final BAM files created after the Picard MarkDuplicates step are always saved. Set to true to also copy out BAM files from STAR / HISAT2 and sorting steps.
+To use HISAT2, use the parameter `--aligner hisat2` or set `params.aligner = 'hisat2'` in your config file.
+
+
+
 
 ## Adapter Trimming
 If specific additional trimming is required (for example, from additional tags),
@@ -213,18 +162,6 @@ Instructs Trim Galore to remove bp from the 3' end of read 1 _AFTER_ adapter/qua
 ### `--three_prime_clip_r2 [int]`
 Instructs Trim Galore to re move bp from the 3' end of read 2 _AFTER_ adapter/quality trimming has been performed.
 
-
-## Library Prep Presets
-Some command line options are available to automatically set parameters for common RNA-seq library preparation kits.
-
-> Note that these presets override other command line arguments. So if you specify `--pico --clip_r1 0`, the `--clip_r1` bit will be ignored.
-
-If you have a kit that you'd like a preset added for, please let us know!
-
-### `--pico`
-Sets trimming and standedness settings for the _SMARTer Stranded Total RNA-Seq Kit - Pico Input_ kit.
-
-Equivalent to: `--forward_stranded` `--clip_r1 3` `--three_prime_clip_r2 3`
 
 
 ## Skipping QC steps
@@ -251,30 +188,12 @@ If you are likely to be running `nf-core` pipelines regularly it may be a good i
 
 If you have any questions or issues please send us a message on [`Slack`](https://nf-core-invite.herokuapp.com/).
 
-## AWS Batch specific parameters
-Running the pipeline on AWS Batch requires a couple of specific parameters to be set according to your AWS Batch configuration. Please use the `-awsbatch` profile and then specify all of the following parameters.
-### `--awsqueue`
-The JobQueue that you intend to use on AWS Batch.
-### `--awsregion`
-The AWS region to run your job in. Default is set to `eu-west-1` but can be adjusted to your needs.
-
-Please make sure to also set the `-w/--work-dir` and `--outdir` parameters to a S3 storage bucket of your choice - you'll get an error message notifying you if you didn't.
-
 
 ## Other command line parameters
 
 ### `--outdir`
 The output directory where the results will be saved.
 
-### `--email`
-Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.
-
-### `-name`
-Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
-
-This is used in the MultiQC report (if not default) and in the summary HTML / e-mail (always).
-
-**NB:** Single hyphen (core Nextflow option)
 
 ### `-resume`
 Specify this when restarting a pipeline. Nextflow will used cached results from any pipeline steps where the inputs are the same, continuing from where it got to previously.
