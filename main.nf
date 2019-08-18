@@ -6,8 +6,8 @@ params.use_Bowtie2_Index = (params.run_Sequential_Mapping == "yes" || params.run
 params.use_Bowtie_Index  = (params.run_Sequential_Mapping == "yes") ? "yes" : ""
 params.use_STAR_Index    = (params.run_Sequential_Mapping == "yes" || params.run_STAR == "yes") ? "yes" : ""
 params.use_Hisat2_Index  = (params.run_HISAT2 == "yes") ? "yes" : ""
-
 params.use_RSEM_Index = (params.run_RSEM == "yes") ? "yes" : ""
+params.nucleicAcidType = "rna"
 if (!params.run_FeatureCounts_after_STAR){params.run_FeatureCounts_after_STAR = ""} 
 if (!params.run_FeatureCounts_after_Hisat2){params.run_FeatureCounts_after_Hisat2 = ""} 
 if (!params.run_FeatureCounts_after_Tophat2){params.run_FeatureCounts_after_Tophat2 = ""} 
@@ -1642,8 +1642,9 @@ nameAll = bam.toString()
 if (nameAll.contains('_sorted.bam')) {
     runSamtools = ''
 } else {
-    runSamtools = "samtools sort " +bam+ " "+ name +"_sorted && samtools index "+ name+"_sorted.bam "
+    runSamtools = "samtools sort -o ${name}_sorted.bam $bam && samtools index "+ name+"_sorted.bam "
 }
+
 """
 $runSamtools
 bedtools genomecov -split -bg -ibam ${name}_sorted.bam -g ${params.genome_sizes} > ${name}.bg 
@@ -1679,7 +1680,7 @@ nameAll = bam.toString()
 if (nameAll.contains('_sorted.bam')) {
     runSamtools = ''
 } else {
-    runSamtools = "samtools sort " +bam+ " "+ name +"_sorted && samtools index "+ name+"_sorted.bam "
+    runSamtools = "samtools sort -o ${name}_sorted.bam $bam && samtools index "+ name+"_sorted.bam "
 }
 """
 $runSamtools
@@ -2070,8 +2071,9 @@ nameAll = bam.toString()
 if (nameAll.contains('_sorted.bam')) {
     runSamtools = ''
 } else {
-    runSamtools = "samtools sort " +bam+ " "+ name +"_sorted && samtools index "+ name+"_sorted.bam "
+    runSamtools = "samtools sort -o ${name}_sorted.bam $bam && samtools index "+ name+"_sorted.bam "
 }
+
 """
 $runSamtools
 bedtools genomecov -split -bg -ibam ${name}_sorted.bam -g ${params.genome_sizes} > ${name}.bg 
@@ -2107,7 +2109,7 @@ nameAll = bam.toString()
 if (nameAll.contains('_sorted.bam')) {
     runSamtools = ''
 } else {
-    runSamtools = "samtools sort " +bam+ " "+ name +"_sorted && samtools index "+ name+"_sorted.bam "
+    runSamtools = "samtools sort -o ${name}_sorted.bam $bam && samtools index "+ name+"_sorted.bam "
 }
 """
 $runSamtools
@@ -2731,8 +2733,9 @@ nameAll = bam.toString()
 if (nameAll.contains('_sorted.bam')) {
     runSamtools = ''
 } else {
-    runSamtools = "samtools sort " +bam+ " "+ name +"_sorted && samtools index "+ name+"_sorted.bam "
+    runSamtools = "samtools sort -o ${name}_sorted.bam $bam && samtools index "+ name+"_sorted.bam "
 }
+
 """
 $runSamtools
 bedtools genomecov -split -bg -ibam ${name}_sorted.bam -g ${params.genome_sizes} > ${name}.bg 
@@ -2768,7 +2771,7 @@ nameAll = bam.toString()
 if (nameAll.contains('_sorted.bam')) {
     runSamtools = ''
 } else {
-    runSamtools = "samtools sort " +bam+ " "+ name +"_sorted && samtools index "+ name+"_sorted.bam "
+    runSamtools = "samtools sort -o ${name}_sorted.bam $bam && samtools index "+ name+"_sorted.bam "
 }
 """
 $runSamtools
@@ -3417,8 +3420,9 @@ nameAll = bam.toString()
 if (nameAll.contains('_sorted.bam')) {
     runSamtools = ''
 } else {
-    runSamtools = "samtools sort " +bam+ " "+ name +"_sorted && samtools index "+ name+"_sorted.bam "
+    runSamtools = "samtools sort -o ${name}_sorted.bam $bam && samtools index "+ name+"_sorted.bam "
 }
+
 """
 $runSamtools
 bedtools genomecov -split -bg -ibam ${name}_sorted.bam -g ${params.genome_sizes} > ${name}.bg 
@@ -3454,7 +3458,7 @@ nameAll = bam.toString()
 if (nameAll.contains('_sorted.bam')) {
     runSamtools = ''
 } else {
-    runSamtools = "samtools sort " +bam+ " "+ name +"_sorted && samtools index "+ name+"_sorted.bam "
+    runSamtools = "samtools sort -o ${name}_sorted.bam $bam && samtools index "+ name+"_sorted.bam "
 }
 """
 $runSamtools
