@@ -48,8 +48,8 @@ If `-profile` is not specified at all the pipeline will be run locally and expec
   * Pulls software from DockerHub
 * `test`
   * A profile with a complete configuration for automated testing
-  * You need to download sample fastq files into `inputs` folder with the following command:
   ```bash
+  ## Download sample fastq files into `inputs` folder with the following command:
   mkdir inputs && cd inputs && wget https://galaxyweb.umassmed.edu/pub/dnext_data/test/reads/control_rep1.1.fastq.gz https://galaxyweb.umassmed.edu/pub/dnext_data/test/reads/exper_rep1.1.fastq.gz  && cd ..
   ## Start testing pipeline:
   nextflow run dolphinnext/rnaseq -profile docker,test 
