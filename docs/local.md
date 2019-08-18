@@ -43,7 +43,7 @@ nextflow run dolphinnext/rnaseq -profile docker --DOWNDIR /path/to/save/genome-d
 
 ### Singularity
 If you're not able to use Docker then [Singularity](http://singularity.lbl.gov/) is a great alternative.
-The process is very similar: running the pipeline with the option `-profile singularity` tells Nextflow to enable singularity for this run. An image containing all of the software requirements will be automatically fetched and used from singularity hub.
+The process is very similar: running the pipeline with the option `-profile singularity` tells Nextflow to enable singularity for this run. An docker image will be automatically converted into singularity image and used in the pipeline.
 
 ```
 nextflow run dolphinnext/rnaseq -profile singularity --DOWNDIR /path/to/save/genome-data --reads '*_R{1,2}.fastq.gz' --genome_build mouse_mm10_refseq
