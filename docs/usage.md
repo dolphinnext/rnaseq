@@ -40,20 +40,15 @@ Use this parameter to choose a configuration profile. Profiles can give configur
 
 If `-profile` is not specified at all the pipeline will be run locally and expects all software to be installed and available on the `PATH`.
 
-* `awsbatch`
-  * A generic configuration profile to be used with AWS Batch.
-* `conda`
-  * A generic configuration profile to be used with [conda](https://conda.io/docs/)
-  * Pulls most software from [Bioconda](https://bioconda.github.io/)
 * `docker`
   * A generic configuration profile to be used with [Docker](http://docker.com/)
-  * Pulls software from dockerhub: [`nfcore/rnaseq`](http://hub.docker.com/r/nfcore/rnaseq/)
+  * Pulls software from Dockerhub: [`nfcore/rnaseq`](http://hub.docker.com/r/nfcore/rnaseq/)
 * `singularity`
   * A generic configuration profile to be used with [Singularity](http://singularity.lbl.gov/)
   * Pulls software from DockerHub
 * `test`
   * A profile with a complete configuration for automated testing
-  * Includes links to test data so needs no other parameters
+  * You need to download sample fastq files and define those reads as a input parameter:
 
 ### `--reads`
 Use this to specify the location of your input FastQ files. For example:
