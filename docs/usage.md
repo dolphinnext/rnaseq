@@ -170,23 +170,23 @@ If specific Adapter Removal is required, you can enable trimmomatic and enter th
 ```bash
 To enable adapter_removal  : `--run_Adapter_Removal yes`
 
-#### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.Adapter_Sequence [string]`
-You can enter a single sequence or multiple sequences in different lines. Reverse sequences will not be removed.
+--Adapter_Trimmer_Quality_Module_Adapter_Removal.Adapter_Sequence [string]
+#### You can enter a single sequence or multiple sequences in different lines. Reverse sequences will not be removed.
 
-#### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.min_length [int]`
-Specifies the minimum length of reads to be kept
+--Adapter_Trimmer_Quality_Module_Adapter_Removal.min_length [int]
+#### Specifies the minimum length of reads to be kept
 
-#### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.seed_mismatches [int]`
-Specifies the maximum mismatch count which will still allow a full match to be performed
+--Adapter_Trimmer_Quality_Module_Adapter_Removal.seed_mismatches [int]
+#### Specifies the maximum mismatch count which will still allow a full match to be performed
 
-#### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.palindrome_clip_threshold [int @default:30]`
-Specifies how accurate the match between the two -adapter ligated- reads must be for PE palindrome read alignment
+--Adapter_Trimmer_Quality_Module_Adapter_Removal.palindrome_clip_threshold [int @default:30]
+#### Specifies how accurate the match between the two -adapter ligated- reads must be for PE palindrome read alignment
 
-#### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.simple_clip_threshold [int @default:5]`
-Specifies how accurate the match between any adapter etc. sequence must be against a read.
+--Adapter_Trimmer_Quality_Module_Adapter_Removal.simple_clip_threshold [int @default:5]
+#### Specifies how accurate the match between any adapter etc. sequence must be against a read.
 
-#### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.discard_non_clipped [@dropdown @options:"yes","no" @default:"yes"]`
-Discard_non_clipped sequences (keep only sequences which contained the adapter)
+--Adapter_Trimmer_Quality_Module_Adapter_Removal.discard_non_clipped [@dropdown @options:"yes","no" @default:"yes"]
+#### Discard_non_clipped sequences (keep only sequences which contained the adapter)
 ```
 
 ## Trimmer
