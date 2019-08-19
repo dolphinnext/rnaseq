@@ -209,6 +209,7 @@ For Paired End Reads  :
 ## Quality Filtering
 Optianally, you can trim your reads based on their quality. Trimmomatic works on both paired-end and single ended data. Alternatively fastx option (fastx_toolkit) could be used for single reads. 
 
+```bash
 To use Trimmomatic  : 
 #### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.tool "trimmomatic"`
 #### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.window_size [int @default:10]`
@@ -221,14 +222,16 @@ Cut bases off the start of a read, if below a threshold quality
 Cut bases off the end of a read, if below a threshold quality
 #### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.minlen [int @default:36]`
 Specifies the minimum length of reads to be kept
+```
 
+```bash
 To use fastx_toolkit  : 
 #### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.tool "fastx"`
 #### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.minQuality [int @default:20]`
 Minimum quality score to keep reads
 #### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.minPercent [int @default:100]`
 Minimum percent of bases that must have entered minQuality
-
+```
 
 
 ## Other command line parameters
