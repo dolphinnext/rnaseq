@@ -169,7 +169,7 @@ If specific Adapter Removal is required, you can enable trimmomatic and enter th
 
 ```bash
 To enable adapter_removal  : `--run_Adapter_Removal yes`
-```
+
 #### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.Adapter_Sequence [string]`
 You can enter a single sequence or multiple sequences in different lines. Reverse sequences will not be removed.
 
@@ -187,7 +187,7 @@ Specifies how accurate the match between any adapter etc. sequence must be again
 
 #### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.discard_non_clipped [@dropdown @options:"yes","no" @default:"yes"]`
 Discard_non_clipped sequences (keep only sequences which contained the adapter)
-
+```
 
 ## Trimmer
 Optianally, you can trim your reads by defining trimming lenghts as shown at below: 
