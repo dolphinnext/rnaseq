@@ -2,11 +2,12 @@ $HOSTNAME = ""
 params.outdir = 'results'  
 
 // enable required indexes to build them
-params.use_Bowtie2_Index = (params.run_Tophat == "yes") ? "yes" : ""
-params.use_Bowtie_Index = "no"
-params.use_Hisat2_Index = (params.run_HISAT2 == "yes") ? "yes" : ""
-params.use_STAR_Index = (params.run_STAR == "yes") ? "yes" : ""
+params.use_Bowtie2_Index = (params.run_Sequential_Mapping == "yes" || params.run_Tophat == "yes") ? "yes" : ""
+params.use_Bowtie_Index  = (params.run_Sequential_Mapping == "yes") ? "yes" : ""
+params.use_STAR_Index    = (params.run_Sequential_Mapping == "yes" || params.run_STAR == "yes") ? "yes" : ""
+params.use_Hisat2_Index  = (params.run_HISAT2 == "yes") ? "yes" : ""
 params.use_RSEM_Index = (params.run_RSEM == "yes") ? "yes" : ""
+params.nucleicAcidType = "rna"
 if (!params.run_FeatureCounts_after_STAR){params.run_FeatureCounts_after_STAR = ""} 
 if (!params.run_FeatureCounts_after_Hisat2){params.run_FeatureCounts_after_Hisat2 = ""} 
 if (!params.run_FeatureCounts_after_Tophat2){params.run_FeatureCounts_after_Tophat2 = ""} 
@@ -21,7 +22,7 @@ Channel.value(params.run_FeatureCounts_after_STAR).set{g_179_run_featureCounts_g
 Channel.value(params.run_FeatureCounts_after_Hisat2).set{g_188_run_featureCounts_g220_125}
 Channel.value(params.run_FeatureCounts_after_Tophat2).set{g_189_run_featureCounts_g222_125}
 Channel.value(params.run_FeatureCounts_after_RSEM).set{g_203_run_featureCounts_g219_125}
-Channel.value(params.mate).into{g_204_mate_g_127;g_204_mate_g213_3;g_204_mate_g213_11;g_204_mate_g213_16;g_204_mate_g213_18;g_204_mate_g213_19;g_204_mate_g213_20;g_204_mate_g214_26;g_204_mate_g214_30;g_204_mate_g214_32;g_204_mate_g215_19;g_204_mate_g216_11;g_204_mate_g217_16;g_204_mate_g218_3;g_204_mate_g218_11;g_204_mate_g219_82;g_204_mate_g219_95;g_204_mate_g219_123;g_204_mate_g219_126;g_204_mate_g220_82;g_204_mate_g220_95;g_204_mate_g220_123;g_204_mate_g220_126;g_204_mate_g221_82;g_204_mate_g221_95;g_204_mate_g221_123;g_204_mate_g221_126;g_204_mate_g222_82;g_204_mate_g222_95;g_204_mate_g222_123;g_204_mate_g222_126}
+Channel.value(params.mate).into{g_204_mate_g_127;g_204_mate_g213_3;g_204_mate_g213_11;g_204_mate_g213_16;g_204_mate_g213_18;g_204_mate_g213_19;g_204_mate_g213_20;g_204_mate_g213_21;g_204_mate_g214_26;g_204_mate_g214_30;g_204_mate_g214_32;g_204_mate_g215_19;g_204_mate_g216_11;g_204_mate_g217_16;g_204_mate_g218_3;g_204_mate_g218_11;g_204_mate_g219_82;g_204_mate_g219_95;g_204_mate_g219_123;g_204_mate_g219_126;g_204_mate_g220_82;g_204_mate_g220_95;g_204_mate_g220_123;g_204_mate_g220_126;g_204_mate_g221_82;g_204_mate_g221_95;g_204_mate_g221_123;g_204_mate_g221_126;g_204_mate_g222_82;g_204_mate_g222_95;g_204_mate_g222_123;g_204_mate_g222_126}
 Channel
 	.fromFilePairs( params.reads , size: (params.mate != "pair") ? 1 : 2 )
 	.ifEmpty { error "Cannot find any reads matching: ${params.reads}" }
@@ -45,7 +46,7 @@ input:
 output:
  val "${params.genome}"  into g209_15_genomePath_g209_0, g209_15_genomePath_g209_6, g209_15_genomePath_g209_8, g209_15_genomePath_g209_10, g209_15_genomePath_g209_5, g209_15_genomePath_g209_13
  val "${params.gtf}"  into g209_15_gtfPath_g209_0, g209_15_gtfPath_g209_6, g209_15_gtfPath_g209_8, g209_15_gtfPath_g209_10, g209_15_gtfPath_g209_4, g209_15_gtfPath_g209_13
- val "${params.commondb}"  into g209_15_commondb_path_g214_32
+ val "${params.commondb}"  into g209_15_commondb_path_g209_18
 
 when:
 params.run_checkAndBuild == "yes"
@@ -90,7 +91,7 @@ input:
  val gtf from g209_15_gtfPath_g209_13
 
 output:
- val resultDir  into g209_13_genomeIndexPath
+ val resultDir  into g209_13_genomeIndexPath_g209_18
 
 when:
 (params.use_Bowtie_Index == "yes") && (params.run_checkAndBuild == "yes")
@@ -103,13 +104,15 @@ basename = genome.substring(genome.lastIndexOf('/')+1,genome.lastIndexOf('.'))
 filename = genome.substring(genome.lastIndexOf('/')+1,genome.length())
 newDirName = "BowtieIndex"
 resultDir = basedir.substring(0, basedir.lastIndexOf('/')) +"/"+ newDirName 
+tmpResultDir = basedir.substring(0, basedir.lastIndexOf('/')) +"/_tmp_"+ newDirName 
+
 """
-if [ ! -e "${resultDir}/${basename}.1.bt2" ] ; then
-    echo "Bowtie2 index not found"
-    mkdir -p $resultDir  && cd $resultDir
+if [ ! -e "${resultDir}/${basename}.rev.2.ebwt" ] ; then
+    echo "${resultDir}/${basename}.rev.2.ebwt Bowtie index not found"
+    rm -rf $tmpResultDir $resultDir && mkdir -p $tmpResultDir && cd $tmpResultDir
     ln -s ../main/${filename} ${filename}
-    bowtie2-build ${bowtie_build_parameters} ${filename} ${basename}
-    
+    bowtie-build ${bowtie_build_parameters} ${filename} ${basename}
+    cd .. && mv $tmpResultDir $resultDir
 fi
 """
 
@@ -210,6 +213,7 @@ if (transcript_to_gene_map?.trim()){
 
 for (i = 0; i < newDirNameAr.size(); i++) {
     resultDir = gtf_dir.substring(0, gtf_dir.lastIndexOf('/')) +"/"+ newDirNameAr[i]
+    tmpResultDir = gtf_dir.substring(0, gtf_dir.lastIndexOf('/')) +"/_tmp_"+ newDirNameAr[i]
     resultDirAr.push(resultDir)
     cmd = ""
     indexType = ""
@@ -223,7 +227,7 @@ for (i = 0; i < newDirNameAr.size(); i++) {
         indexType = "--star "
         checkFile = "genomeParameters.txt" 
     }
-    cmd = "if [ ! -e \"${resultDir}/${checkFile}\" ] ; then mkdir -p ${resultDir} && cd ${resultDir} && rsem-prepare-reference ${RSEM_build_parameters} --gtf ${gtf} ${transcript_to_gene_mapText} ${indexType} ${genome} ${basenameGenome}; fi"
+    cmd = "if [ ! -e \"${resultDir}/${checkFile}\" ] ; then rm -rf $tmpResultDir $resultDir && mkdir -p $tmpResultDir && cd $tmpResultDir && rsem-prepare-reference ${RSEM_build_parameters} --gtf ${gtf} ${transcript_to_gene_mapText} ${indexType} ${genome} ${basenameGenome} && cd .. && mv $tmpResultDir $resultDir; fi"
     cmdAr.push(cmd)
 }
 
@@ -272,20 +276,21 @@ basenameGTF = gtf.substring(gtf.lastIndexOf('/')+1,gtf.lastIndexOf('.'))
 filename = genome.substring(genome.lastIndexOf('/')+1,genome.length())
 newDirName = "Hisat2Index"
 resultDir = gtf_dir.substring(0, gtf_dir.lastIndexOf('/')) +"/"+ newDirName 
+tmpResultDir = gtf_dir.substring(0, gtf_dir.lastIndexOf('/')) +"/_tmp_"+ newDirName 
 
-extract_splice_sites = "hisat2_extract_splice_sites.py ${gtf} > ${resultDir}/${basenameGTF}.hisat2_splice_sites.txt"
-extract_exons = "hisat2_extract_exons.py ${gtf}> ${resultDir}/${basenameGTF}.hisat2_exons.txt"
+extract_splice_sites = "hisat2_extract_splice_sites.py ${gtf} > ${tmpResultDir}/${basenameGTF}.hisat2_splice_sites.txt"
+extract_exons = "hisat2_extract_exons.py ${gtf}> ${tmpResultDir}/${basenameGTF}.hisat2_exons.txt"
 ss = "--ss ${basenameGTF}.hisat2_splice_sites.txt"
 exon = "--exon ${basenameGTF}.hisat2_exons.txt"
 
 """
-if [ ! -e "${resultDir}/${basenameGenome}.1.ht2" ] ; then
-    echo "Hisat2 index not found"
-    mkdir -p $resultDir 
+if [ ! -e "${resultDir}/${basenameGenome}.8.ht2" ] ; then
+    echo "${resultDir}/${basenameGenome}.8.ht2 Hisat2 index not found"
+    rm -rf $tmpResultDir $resultDir && mkdir -p $tmpResultDir && cd $tmpResultDir 
     $extract_splice_sites
     $extract_exons
-    cd $resultDir
     hisat2-build ${hisat2_build_parameters} $ss $exon ${genome} ${basenameGenome}
+    cd .. && mv $tmpResultDir $resultDir 
 fi
 """
 
@@ -330,7 +335,7 @@ input:
  val gtf from g209_15_gtfPath_g209_6
 
 output:
- val resultDir  into g209_6_genomeIndexPath_g218_11
+ val resultDir  into g209_6_genomeIndexPath_g209_18, g209_6_genomeIndexPath_g218_11
 
 when:
 (params.use_Bowtie2_Index == "yes") && (params.run_checkAndBuild == "yes")
@@ -343,13 +348,15 @@ basename = genome.substring(genome.lastIndexOf('/')+1,genome.lastIndexOf('.'))
 filename = genome.substring(genome.lastIndexOf('/')+1,genome.length())
 newDirName = "Bowtie2Index"
 resultDir = basedir.substring(0, basedir.lastIndexOf('/')) +"/"+ newDirName 
+tmpResultDir = basedir.substring(0, basedir.lastIndexOf('/')) +"/_tmp_"+ newDirName 
+
 """
-if [ ! -e "${resultDir}/${basename}.1.bt2" ] ; then
-    echo "Bowtie2 index not found"
-    mkdir -p $resultDir  && cd $resultDir
+if [ ! -e "${resultDir}/${basename}.rev.1.bt2" ] ; then
+    echo "${resultDir}/${basename}.rev.1.bt2 Bowtie2 index not found"
+    rm -rf $tmpResultDir $resultDir && mkdir -p $tmpResultDir && cd $tmpResultDir
     ln -s ../main/${filename} ${filename}
     bowtie2-build ${bowtie2_build_parameters} ${filename} ${basename}
-    
+    cd .. && mv $tmpResultDir $resultDir 
 fi
 """
 
@@ -395,7 +402,7 @@ input:
  val gtf from g209_15_gtfPath_g209_0
 
 output:
- val resultDir  into g209_0_genomeIndexPath_g217_16
+ val resultDir  into g209_0_genomeIndexPath_g209_18, g209_0_genomeIndexPath_g217_16
 
 when:
 (params.use_STAR_Index == "yes") && (params.run_checkAndBuild == "yes")
@@ -405,13 +412,18 @@ star_build_parameters = params.Check_and_Build_Module_STAR_Index_Check_Build.sta
 gtf_dir  = gtf.substring(0, gtf.lastIndexOf('/')) 
 indexbasedir  = gtf_dir.substring(0, gtf_dir.lastIndexOf('/'))
 genome_dir  = genome.substring(0, genome.lastIndexOf('/')) 
+filename = genome.substring(genome.lastIndexOf('/')+1,genome.length())
 newDirName = "STARIndex" 
 resultDir = indexbasedir +"/"+ newDirName 
+tmpResultDir = indexbasedir +"/_tmp_"+ newDirName
 """
 if [ ! -e "${resultDir}/SA" ] ; then
     echo "STAR index not found"
-    mkdir -p $resultDir  && cd $resultDir
-    STAR --runMode genomeGenerate ${star_build_parameters} --genomeDir $resultDir --genomeFastaFiles ${genome} --sjdbGTFfile ${gtf}
+    rm -rf $tmpResultDir ${resultDir} && mkdir -p $tmpResultDir && cd $tmpResultDir
+    STAR --runMode genomeGenerate ${star_build_parameters} --genomeDir $tmpResultDir --genomeFastaFiles ${genome} --sjdbGTFfile ${gtf}
+    cd .. && mv $tmpResultDir $resultDir && cd ${resultDir}
+    ln -s ../../main/${filename} ${filename}
+    ln -s ../../main/${filename}.fai ${filename}.fai
 fi
 """
 
@@ -451,7 +463,36 @@ for (i = 0; i < run_parameters.size(); i++) {
 
 }
 
-params.run_Adapter_Removal =  "no"  //* @dropdown @options:"yes","no" @show_settings:"Adapter_Removal"
+params.gtf =  ""  //* @input
+params.genome =  ""  //* @input
+params.commondb =  ""  //* @input
+if (!(params.run_checkAndBuild == "yes" && params.run_Sequential_Mapping  == "yes")){
+g209_15_commondb_path_g209_18.into{g209_18_commondb_path_g214_32}
+} else {
+
+
+process Check_and_Build_Module_Check_Sequential_Mapping_Indexes {
+
+input:
+ val commondb from g209_15_commondb_path_g209_18
+ val bowtieIndex from g209_13_genomeIndexPath_g209_18
+ val bowtie2Index from g209_6_genomeIndexPath_g209_18
+ val starIndex from g209_0_genomeIndexPath_g209_18
+
+output:
+ val commondb  into g209_18_commondb_path_g214_32
+
+when:
+params.run_checkAndBuild == "yes" && params.run_Sequential_Mapping  == "yes"
+
+script:
+"""
+"""
+}
+}
+
+
+params.run_Adapter_Removal =   "no"   //* @dropdown @options:"yes","no" @show_settings:"Adapter_Removal"
 //* @style @multicolumn:{seed_mismatches, palindrome_clip_threshold, simple_clip_threshold} @condition:{Tool_for_Adapter_Removal="trimmomatic", seed_mismatches, palindrome_clip_threshold, simple_clip_threshold}, {Tool_for_Adapter_Removal="fastx_clipper", discard_non_clipped}
 
 //* autofill
@@ -478,7 +519,7 @@ input:
 
 output:
  set val(name), file("reads/*")  into g213_18_reads_g213_19
- file "*.fastx.log" optional true  into g213_18_log_file_g213_11
+ file "*.{fastx,trimmomatic}.log"  into g213_18_log_file_g213_11
 
 when:
 (params.run_Adapter_Removal && (params.run_Adapter_Removal == "yes")) || !params.run_Adapter_Removal
@@ -546,14 +587,14 @@ print "tool: !{Tool_for_Adapter_Removal}\\n";
 
 if ("!{mate}" eq "pair") {
     if ("!{Tool_for_Adapter_Removal}" eq "trimmomatic") {
-        system("trimmomatic PE -threads 1 -phred64 -trimlog !{name}.log !{file1} !{file2} reads/!{name}.1.fastq unpaired/!{name}.1.fastq.unpaired reads/!{name}.2.fastq unpaired/!{name}.1.fastq.unpaired ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length}");
+        system("trimmomatic PE -threads 1 -phred${quality} !{file1} !{file2} reads/!{name}.1.fastq unpaired/!{name}.1.fastq.unpaired reads/!{name}.2.fastq unpaired/!{name}.1.fastq.unpaired ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length} 2> !{name}.trimmomatic.log");
     } elsif ("!{Tool_for_Adapter_Removal}" eq "fastx_clipper") {
         print "Fastx_clipper is not suitable for paired reads.";
     }
 } else {
     if ("!{Tool_for_Adapter_Removal}" eq "trimmomatic") {
-        print "trimmomatic SE -threads 1 -phred64 -trimlog !{name}.log !{file1} reads/!{name}.fastq ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length}";
-        system("trimmomatic SE -threads 1 -phred64 -trimlog !{name}.log !{file1} reads/!{name}.fastq ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length}");
+        print "trimmomatic SE -threads 1  -phred${quality} !{file1} reads/!{name}.fastq ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length} 2> !{name}.trimmomatic.log";
+        system("trimmomatic SE -threads 1  -phred${quality} !{file1} reads/!{name}.fastq ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length} 2> !{name}.trimmomatic.log");
     } elsif ("!{Tool_for_Adapter_Removal}" eq "fastx_clipper") {
         print "fastx_clipper  -Q $quality -a !{Adapter_Sequence} -l !{min_length} !{discard_non_clipped_text} -v -i !{file1} -o reads/!{name}.fastq > !{name}.fastx.log";
         system("fastx_clipper  -Q $quality -a !{Adapter_Sequence} -l !{min_length} !{discard_non_clipped_text} -v -i !{file1} -o reads/!{name}.fastq > !{name}.fastx.log");
@@ -620,13 +661,18 @@ sub getFormat
     # return file format
     return( $format,$len );
 }
+
+
+
+
+
 '''
 
 }
 }
 
 
-params.run_Trimmer =  "no"  //* @dropdown @options:"yes","no" @show_settings:"Trimmer"
+params.run_Trimmer =   "no"   //* @dropdown @options:"yes","no" @show_settings:"Trimmer"
 //* @style @multicolumn:{trim_length_5prime,trim_length_3prime}, {trim_length_5prime_R1,trim_length_3prime_R1}, {trim_length_5prime_R2,trim_length_3prime_R2} @condition:{single_or_paired_end_reads="single", trim_length_5prime,trim_length_3prime}, {single_or_paired_end_reads="pair", trim_length_5prime_R1,trim_length_3prime_R1,trim_length_5prime_R2,trim_length_3prime_R2}
 
 //* autofill
@@ -641,6 +687,7 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 //* autofill
 if (!((params.run_Trimmer && (params.run_Trimmer == "yes")) || !params.run_Trimmer)){
 g213_18_reads_g213_19.into{g213_19_reads_g213_20}
+g213_19_log_file_g213_21 = Channel.empty()
 } else {
 
 
@@ -652,6 +699,7 @@ input:
 
 output:
  set val(name), file("reads/*")  into g213_19_reads_g213_20
+ file "*.log" optional true  into g213_19_log_file_g213_21
 
 when:
 (params.run_Trimmer && (params.run_Trimmer == "yes")) || !params.run_Trimmer
@@ -728,7 +776,7 @@ sub trimFiles
       $param .= " -l ".($len-$nts[1]) if (exists($nts[0]) && $nts[1] > 0 );
       print "parameters for $file: $param \\n ";
       $outfile="reads/$file";  
-      $com="fastx_trimmer $quality -v $param -o $outfile -i $file " if ((exists($nts[0]) && $nts[0] > 0) || (exists($nts[0]) && $nts[1] > 0 ));
+      $com="fastx_trimmer $quality -v $param -o $outfile -i $file > !{name}.fastx_trimmer.log" if ((exists($nts[0]) && $nts[0] > 0) || (exists($nts[0]) && $nts[1] > 0 ));
       print "$com\\n";
       if ($com eq ""){
           print "trimmer skipped for $file \\n";
@@ -808,7 +856,91 @@ sub getFormat
 }
 
 
-params.run_Quality_Filtering =  "no"  //* @dropdown @options:"yes","no" @show_settings:"Quality_Filtering"
+
+process Adapter_Trimmer_Quality_Module_Trimmer_Removal_Summary {
+
+input:
+ file logfile from g213_19_log_file_g213_21.collect()
+ val mate from g_204_mate_g213_21
+
+output:
+ file "trimmer_summary.tsv"  into g213_21_outputFileTSV_g_198
+
+shell:
+'''
+#!/usr/bin/env perl
+use List::Util qw[min max];
+use strict;
+use File::Basename;
+use Getopt::Long;
+use Pod::Usage;
+use Data::Dumper;
+
+my @header;
+my %all_files;
+my %tsv;
+my %tsvDetail;
+my %headerHash;
+my %headerText;
+my %headerTextDetail;
+
+my $i = 0;
+chomp( my $contents = `ls *.log` );
+
+my @files = split( /[\\n]+/, $contents );
+foreach my $file (@files) {
+    $i++;
+    my $mapOrder = "1";
+    if ($file =~ /(.*)\\.fastx_trimmer\\.log/){
+        $file =~ /(.*)\\.fastx_trimmer\\.log/;
+        my $mapper   = "fastx_trimmer";
+        my $name = $1;    ##sample name
+        push( @header, $mapper );
+        my $in;
+        my $out;
+        chomp( $in =`cat $file | grep 'Input:' | awk '{sum+=\\$2} END {print sum}'` );
+        chomp( $out =`cat $file | grep 'Output:' | awk '{sum+=\\$2} END {print sum}'` );
+
+        $tsv{$name}{$mapper} = [ $in, $out ];
+        $headerHash{$mapOrder} = $mapper;
+        $headerText{$mapOrder} = [ "Total Reads", "Reads After Trimmer" ];
+    }
+}
+
+my @mapOrderArray = ( keys %headerHash );
+my @sortedOrderArray = sort { $a <=> $b } @mapOrderArray;
+
+my $summary          = "trimmer_summary.tsv";
+writeFile( $summary,          \\%headerText,       \\%tsv );
+
+sub writeFile {
+    my $summary    = $_[0];
+    my %headerText = %{ $_[1] };
+    my %tsv        = %{ $_[2] };
+    open( OUT, ">$summary" );
+    print OUT "Sample\\t";
+    my @headArr = ();
+    for my $mapOrder (@sortedOrderArray) {
+        push( @headArr, @{ $headerText{$mapOrder} } );
+    }
+    my $headArrAll = join( "\\t", @headArr );
+    print OUT "$headArrAll\\n";
+
+    foreach my $name ( keys %tsv ) {
+        my @rowArr = ();
+        for my $mapOrder (@sortedOrderArray) {
+            push( @rowArr, @{ $tsv{$name}{ $headerHash{$mapOrder} } } );
+        }
+        my $rowArrAll = join( "\\t", @rowArr );
+        print OUT "$name\\t$rowArrAll\\n";
+    }
+    close(OUT);
+}
+
+'''
+}
+
+params.run_Quality_Filtering =   "no"   //* @dropdown @options:"yes","no" @show_settings:"Quality_Filtering"
 //* @style @multicolumn:{window_size,required_quality}, {leading,trailing,minlen}, {minQuality,minPercent} @condition:{tool="trimmomatic", minlen, trailing, leading, required_quality_for_window_trimming, window_size}, {tool="fastx", minQuality, minPercent}
 
 //* autofill
@@ -835,7 +967,7 @@ input:
 
 output:
  set val(name), file("reads/*")  into g213_20_reads_g214_32
- file "*.fastx_quality.log" optional true  into g213_20_log_file_g213_16
+ file "*.{fastx,trimmomatic}_quality.log" optional true  into g213_20_log_file_g213_16
 
 when:
 (params.run_Quality_Filtering && (params.run_Quality_Filtering == "yes")) || !params.run_Quality_Filtering    
@@ -895,9 +1027,9 @@ print "fastq quality: $quality\\n";
      
 if ("!{tool}" eq "trimmomatic") {
     if ("!{mate}" eq "pair") {
-        system("trimmomatic PE -threads 1 -phred${quality} -trimlog !{name}.log !{file1} !{file2} reads/!{name}.1.fastq unpaired/!{name}.1.fastq.unpaired reads/!{name}.2.fastq unpaired/!{name}.1.fastq.unpaired $param");
+        system("trimmomatic PE -phred${quality} !{file1} !{file2} reads/!{name}.1.fastq unpaired/!{name}.1.fastq.unpaired reads/!{name}.2.fastq unpaired/!{name}.1.fastq.unpaired $param 2> !{name}.trimmomatic_quality.log");
     } else {
-        system("trimmomatic SE -threads 1 -phred${quality} -trimlog !{name}.log !{file1} reads/!{name}.fastq $param");
+        system("trimmomatic SE -phred${quality} !{file1} reads/!{name}.fastq $param 2> !{name}.trimmomatic_quality.log");
     }
 } elsif ("!{tool}" eq "fastx") {
     if ("!{mate}" eq "pair") {
@@ -973,9 +1105,9 @@ sub getFormat
 }
 
 
-g209_15_commondb_path_g214_32= g209_15_commondb_path_g214_32.ifEmpty(file('commondb_path', type: 'any')) 
+g209_18_commondb_path_g214_32= g209_18_commondb_path_g214_32.ifEmpty(file('commondb_path', type: 'any')) 
 
-
+params.run_Sequential_Mapping =   "yes"   //* @dropdown @options:"yes","no" @show_settings:"Sequential_Mapping"
 params.bowtieInd_rRNA =  ""  //* @input
 params.bowtieInd_ercc =  ""  //* @input
 params.bowtieInd_miRNA =  ""  //* @input
@@ -983,16 +1115,22 @@ params.bowtieInd_tRNA =  ""  //* @input
 params.bowtieInd_piRNA =  ""  //* @input
 params.bowtieInd_snRNA =  ""  //* @input
 params.bowtieInd_rmsk =  ""  //* @input
-params.run_Sequential_Mapping =  "no"  //* @dropdown @options:"yes","no" @show_settings:"Sequential_Mapping"
+params.bowtie_index =  ""  //* @input
+params.bowtie2_index =  ""  //* @input
+params.star_index =  ""  //* @input
 
+//both bowtie and bowtie2 indexes located in same path
 bowtieIndexes = [rRNA: params.bowtieInd_rRNA, 
                  ercc: params.bowtieInd_ercc,
                  miRNA: params.bowtieInd_miRNA,
                  tRNA: params.bowtieInd_tRNA,
                  piRNA: params.bowtieInd_piRNA,
                  snRNA: params.bowtieInd_snRNA,
-                 rmsk: params.bowtieInd_rmsk,
-                 genome: params.genomeIndexPath]
+                 rmsk: params.bowtieInd_rmsk]
+                 
+genomeIndexes = [bowtie: params.bowtie_index,
+                 bowtie2: params.bowtie2_index,
+                 STAR: params.star_index+"/genome"]
 
 
 //_nucleicAcidType="dna" should be defined in the autofill section of pipeline header in case dna is used.
@@ -1018,10 +1156,12 @@ description.eachWithIndex() {param,i ->
 }
 custom_index=[]
 index_directory.eachWithIndex() {param,i -> 
-    if (_select_sequence[i] != "custom"){
+    if (_select_sequence[i] == "genome"){
+        custom_index[i] = genomeIndexes[_aligner[i]]
+    }else if (_select_sequence[i] == "custom"){
+        custom_index[i] = param+"/"+name_of_the_index_file[i]
+    }else {
         custom_index[i] = bowtieIndexes[_select_sequence[i]]
-    }  else {
-        custom_index[i] = param+"/"+name_of_the_index_file[i] 
     }
 }
 
@@ -1085,7 +1225,7 @@ publishDir params.outdir, overwrite: true, mode: 'copy',
 input:
  set val(name), file(reads) from g213_20_reads_g214_32
  val mate from g_204_mate_g214_32
- val commondb_path from g209_15_commondb_path_g214_32
+ val commondb_path from g209_18_commondb_path_g214_32
 
 output:
  set val(name), file("final_reads/*")  into g214_32_reads_g_127, g214_32_reads_g215_19
@@ -1159,6 +1299,7 @@ if [ -n "${mappingList}" ]; then
             elif [ -e "\${indexesListAr[\$k-1]}.fasta" ] ; then
                 fasta=\${indexesListAr[\$k-1]}.fasta
             fi
+            echo "INFO: fasta: \$fasta"
             if [ -e "\${indexesListAr[\$k-1]}.1.bt2" -a "\${alignersListAr[\$k-1]}" == "bowtie2" ] ; then
                 echo "INFO: \${indexesListAr[\$k-1]}.1.bt2 Bowtie2 index found."
             elif [ -e "\${indexesListAr[\$k-1]}.1.ebwt" -a "\${alignersListAr[\$k-1]}" == "bowtie" ] ; then
@@ -1206,9 +1347,11 @@ if [ -n "${mappingList}" ]; then
                     
                 fi
             fi
-            samtools view -bT \$fasta \${rna_set}_${name}_alignment.sam > \${rna_set}_${name}_alignment.bam
+            echo "INFO: samtools view -bT \${fasta} \${rna_set}_${name}_alignment.sam > \${rna_set}_${name}_alignment.bam"
+            samtools view -bT \${fasta} \${rna_set}_${name}_alignment.sam > \${rna_set}_${name}_alignment.bam
             if [ "\${alignersListAr[\$k-1]}" == "bowtie" ]; then
                 mv \${rna_set}_${name}_alignment.bam \${rna_set}_${name}_tmp0.bam
+                echo "INFO: samtools view -F 0x04 -b \${rna_set}_${name}_tmp0.bam > \${rna_set}_${name}_alignment.bam"
                 samtools view -F 0x04 -b \${rna_set}_${name}_tmp0.bam > \${rna_set}_${name}_alignment.bam  # Remove unmapped reads
                 if [ "${mate}" == "pair" ]; then
                     echo "# unique mapped reads: \$(samtools view -f 0x40 -F 0x4 -q 255 \${rna_set}_${name}_alignment.bam | cut -f 1 | sort | uniq | wc -l)" >> \${k2}_${name}.bow1_\${rna_set}
@@ -1218,11 +1361,15 @@ if [ -n "${mappingList}" ]; then
             fi
             if [ "${mate}" == "pair" ]; then
                 mv \${rna_set}_${name}_alignment.bam \${rna_set}_${name}_alignment.tmp1.bam
-                samtools sort -n \${rna_set}_${name}_alignment.tmp1.bam \${rna_set}_${name}_alignment.tmp2
+                echo "INFO: samtools sort -n -o \${rna_set}_${name}_alignment.tmp2 \${rna_set}_${name}_alignment.tmp1.bam"
+                samtools sort -n -o \${rna_set}_${name}_alignment.tmp2.bam \${rna_set}_${name}_alignment.tmp1.bam 
+                echo "INFO: samtools view -bf 0x02 \${rna_set}_${name}_alignment.tmp2.bam >\${rna_set}_${name}_alignment.bam"
                 samtools view -bf 0x02 \${rna_set}_${name}_alignment.tmp2.bam >\${rna_set}_${name}_alignment.bam
                 rm \${rna_set}_${name}_alignment.tmp1.bam \${rna_set}_${name}_alignment.tmp2.bam
             fi
-            samtools sort \${rna_set}_${name}_alignment.bam \${rna_set}@${name}_sorted
+            echo "INFO: samtools sort -o \${rna_set}@${name}_sorted.bam \${rna_set}_${name}_alignment.bam"
+            samtools sort -o \${rna_set}@${name}_sorted.bam \${rna_set}_${name}_alignment.bam 
+            echo "INFO: samtools index \${rna_set}@${name}_sorted.bam"
             samtools index \${rna_set}@${name}_sorted.bam
             
             if [ "${remove_duplicates}" == "yes" ]; then
@@ -1232,12 +1379,14 @@ if [ -n "${mappingList}" ]; then
                 # based on remove_duplicates_based_on_UMI_after_mapping
                 if [ "${remove_duplicates_based_on_UMI_after_mapping}" == "yes" -a ! -z "\$umiCheck" ]; then
                     echo "INFO: umi_mark_duplicates.py will be executed for removing duplicates from bam file"
+                    echo "python umi_mark_duplicates.py -f \${rna_set}@${name}_sorted.bam -p 4"
                     python umi_mark_duplicates.py -f \${rna_set}@${name}_sorted.bam -p 4
                 else
                     echo "INFO: Picard MarkDuplicates will be executed for removing duplicates from bam file"
                     if [ "${remove_duplicates_based_on_UMI_after_mapping}" == "yes"  ]; then
                         echo "WARNING: Read header have no UMI tags which are separated with underscore. Picard MarkDuplicates will be executed to remove duplicates from alignment file (bam) instead of remove_duplicates_based_on_UMI_after_mapping."
                     fi
+                    echo "INFO: picard MarkDuplicates OUTPUT=\${rna_set}@${name}_sorted.deumi.sorted.bam METRICS_FILE=${name}_picard_PCR_duplicates.log  VALIDATION_STRINGENCY=LENIENT REMOVE_DUPLICATES=false INPUT=\${rna_set}@${name}_sorted.bam"
                     picard MarkDuplicates OUTPUT=\${rna_set}@${name}_sorted.deumi.sorted.bam METRICS_FILE=${name}_picard_PCR_duplicates.log  VALIDATION_STRINGENCY=LENIENT REMOVE_DUPLICATES=false INPUT=\${rna_set}@${name}_sorted.bam 
                 fi
                 #get duplicates stats (read the sam flags)
@@ -1245,7 +1394,8 @@ if [ -n "${mappingList}" ]; then
                 #remove alignments marked as duplicates
                 samtools view -b -F 0x400 \${rna_set}@${name}_sorted.deumi.sorted.bam > \${rna_set}@${name}_sorted.deumi.sorted.bam.x_dup
                 #sort deduplicated files by chrom pos
-                samtools sort \${rna_set}@${name}_sorted.deumi.sorted.bam.x_dup \${rna_set}@${name}_sorted.dedup
+                echo "INFO: samtools sort -o \${rna_set}@${name}_sorted.dedup.bam \${rna_set}@${name}_sorted.deumi.sorted.bam.x_dup"
+                samtools sort -o \${rna_set}@${name}_sorted.dedup.bam \${rna_set}@${name}_sorted.deumi.sorted.bam.x_dup 
                 samtools index \${rna_set}@${name}_sorted.dedup.bam
             fi
             
@@ -1492,8 +1642,9 @@ nameAll = bam.toString()
 if (nameAll.contains('_sorted.bam')) {
     runSamtools = ''
 } else {
-    runSamtools = "samtools sort " +bam+ " "+ name +"_sorted && samtools index "+ name+"_sorted.bam "
+    runSamtools = "samtools sort -o ${name}_sorted.bam $bam && samtools index "+ name+"_sorted.bam "
 }
+
 """
 $runSamtools
 bedtools genomecov -split -bg -ibam ${name}_sorted.bam -g ${params.genome_sizes} > ${name}.bg 
@@ -1529,7 +1680,7 @@ nameAll = bam.toString()
 if (nameAll.contains('_sorted.bam')) {
     runSamtools = ''
 } else {
-    runSamtools = "samtools sort " +bam+ " "+ name +"_sorted && samtools index "+ name+"_sorted.bam "
+    runSamtools = "samtools sort -o ${name}_sorted.bam $bam && samtools index "+ name+"_sorted.bam "
 }
 """
 $runSamtools
@@ -1920,8 +2071,9 @@ nameAll = bam.toString()
 if (nameAll.contains('_sorted.bam')) {
     runSamtools = ''
 } else {
-    runSamtools = "samtools sort " +bam+ " "+ name +"_sorted && samtools index "+ name+"_sorted.bam "
+    runSamtools = "samtools sort -o ${name}_sorted.bam $bam && samtools index "+ name+"_sorted.bam "
 }
+
 """
 $runSamtools
 bedtools genomecov -split -bg -ibam ${name}_sorted.bam -g ${params.genome_sizes} > ${name}.bg 
@@ -1957,7 +2109,7 @@ nameAll = bam.toString()
 if (nameAll.contains('_sorted.bam')) {
     runSamtools = ''
 } else {
-    runSamtools = "samtools sort " +bam+ " "+ name +"_sorted && samtools index "+ name+"_sorted.bam "
+    runSamtools = "samtools sort -o ${name}_sorted.bam $bam && samtools index "+ name+"_sorted.bam "
 }
 """
 $runSamtools
@@ -2581,8 +2733,9 @@ nameAll = bam.toString()
 if (nameAll.contains('_sorted.bam')) {
     runSamtools = ''
 } else {
-    runSamtools = "samtools sort " +bam+ " "+ name +"_sorted && samtools index "+ name+"_sorted.bam "
+    runSamtools = "samtools sort -o ${name}_sorted.bam $bam && samtools index "+ name+"_sorted.bam "
 }
+
 """
 $runSamtools
 bedtools genomecov -split -bg -ibam ${name}_sorted.bam -g ${params.genome_sizes} > ${name}.bg 
@@ -2618,7 +2771,7 @@ nameAll = bam.toString()
 if (nameAll.contains('_sorted.bam')) {
     runSamtools = ''
 } else {
-    runSamtools = "samtools sort " +bam+ " "+ name +"_sorted && samtools index "+ name+"_sorted.bam "
+    runSamtools = "samtools sort -o ${name}_sorted.bam $bam && samtools index "+ name+"_sorted.bam "
 }
 """
 $runSamtools
@@ -3267,8 +3420,9 @@ nameAll = bam.toString()
 if (nameAll.contains('_sorted.bam')) {
     runSamtools = ''
 } else {
-    runSamtools = "samtools sort " +bam+ " "+ name +"_sorted && samtools index "+ name+"_sorted.bam "
+    runSamtools = "samtools sort -o ${name}_sorted.bam $bam && samtools index "+ name+"_sorted.bam "
 }
+
 """
 $runSamtools
 bedtools genomecov -split -bg -ibam ${name}_sorted.bam -g ${params.genome_sizes} > ${name}.bg 
@@ -3304,7 +3458,7 @@ nameAll = bam.toString()
 if (nameAll.contains('_sorted.bam')) {
     runSamtools = ''
 } else {
-    runSamtools = "samtools sort " +bam+ " "+ name +"_sorted && samtools index "+ name+"_sorted.bam "
+    runSamtools = "samtools sort -o ${name}_sorted.bam $bam && samtools index "+ name+"_sorted.bam "
 }
 """
 $runSamtools
@@ -3947,29 +4101,43 @@ my %tsv;
 my %headerHash;
 my %headerText;
 
-
 my $i = 0;
-chomp( my $contents = `ls *.fastx_quality.log` );
+chomp( my $contents = `ls *.log` );
 my @files = split( /[\\n]+/, $contents );
 foreach my $file (@files) {
     $i++;
-    my $mapper   = "fastx";
+    my $mapper   = "";
     my $mapOrder = "1";
-    $file =~ /(.*).fastx_quality\\.log/;
-    my $name = $1;    ##sample name
-    push( @header, "fastx" );
-
-    my $in;
-    my $out;
-
-
-    chomp( $in =`cat $file | grep 'Input:' | awk '{sum+=\\$2} END {print sum}'` );
-    chomp( $out =`cat $file | grep 'Output:' | awk '{sum+=\\$2} END {print sum}'` );
-   
-
-    $tsv{$name}{$mapper} = [ $in, $out ];
-    $headerHash{$mapOrder} = $mapper;
-    $headerText{$mapOrder} = [ "Total Reads", "Reads After Quality Filtering" ];
+    if ($file =~ /(.*)\\.fastx_quality\\.log/){
+        $mapper   = "fastx";
+        $file =~ /(.*)\\.fastx_quality\\.log/;
+        my $name = $1;    ##sample name
+        push( @header, $mapper );
+        my $in;
+        my $out;
+        chomp( $in =`cat $file | grep 'Input:' | awk '{sum+=\\$2} END {print sum}'` );
+        chomp( $out =`cat $file | grep 'Output:' | awk '{sum+=\\$2} END {print sum}'` );
+        $tsv{$name}{$mapper} = [ $in, $out ];
+        $headerHash{$mapOrder} = $mapper;
+        $headerText{$mapOrder} = [ "Total Reads", "Reads After Quality Filtering" ];
+    } elsif ($file =~ /(.*)\\.trimmomatic_quality\\.log/){
+        $mapper   = "trimmomatic";
+        $file =~ /(.*)\\.trimmomatic_quality\\.log/;
+        my $name = $1;    ##sample name
+        push( @header, $mapper );
+        my $in;
+        my $out;
+        if ( "!{mate}" eq "pair"){
+            chomp( $in =`cat $file | grep 'Input Read Pairs:' | awk '{sum+=\\$4} END {print sum}'` );
+            chomp( $out =`cat $file | grep 'Input Read Pairs:' | awk '{sum+=\\$7} END {print sum}'` );
+        } else {
+            chomp( $in =`cat $file | grep 'Input Reads:' | awk '{sum+=\\$3} END {print sum}'` );
+            chomp( $out =`cat $file | grep 'Input Reads:' | awk '{sum+=\\$5} END {print sum}'` );
+        }
+        $tsv{$name}{$mapper} = [ $in, $out ];
+        $headerHash{$mapOrder} = $mapper;
+        $headerText{$mapOrder} = [ "Total Reads", "Reads After Quality Filtering" ];
+    }
     
 }
 
@@ -4021,7 +4189,7 @@ input:
 
 output:
  file "adapter_removal_summary.tsv"  into g213_11_outputFileTSV_g_198
- file "adapter_removal_detailed_summary.tsv"  into g213_11_outputFile
+ file "adapter_removal_detailed_summary.tsv" optional true  into g213_11_outputFile
 
 shell:
 '''
@@ -4042,43 +4210,62 @@ my %headerText;
 my %headerTextDetail;
 
 my $i = 0;
-chomp( my $contents = `ls *.fastx.log` );
+chomp( my $contents = `ls *.log` );
+
 my @files = split( /[\\n]+/, $contents );
 foreach my $file (@files) {
     $i++;
-    my $mapper   = "fastx";
     my $mapOrder = "1";
-    $file =~ /(.*).fastx\\.log/;
-    my $name = $1;    ##sample name
-    push( @header, "fastx" );
+    if ($file =~ /(.*)\\.fastx\\.log/){
+        $file =~ /(.*)\\.fastx\\.log/;
+        my $mapper   = "fastx";
+        my $name = $1;    ##sample name
+        push( @header, $mapper );
 
-    my $in;
-    my $out;
-    my $tooshort;
-    my $adapteronly;
-    my $noncliped;
-    my $Nreads;
+        my $in;
+        my $out;
+        my $tooshort;
+        my $adapteronly;
+        my $noncliped;
+        my $Nreads;
 
-    chomp( $in =`cat $file | grep 'Input:' | awk '{sum+=\\$2} END {print sum}'` );
-    chomp( $out =`cat $file | grep 'Output:' | awk '{sum+=\\$2} END {print sum}'` );
-    chomp( $tooshort =`cat $file | grep 'too-short reads' | awk '{sum+=\\$2} END {print sum}'`);
-    chomp( $adapteronly =`cat $file | grep 'adapter-only reads' | awk '{sum+=\\$2} END {print sum}'`);
-    chomp( $noncliped =`cat $file | grep 'non-clipped reads.' | awk '{sum+=\\$2} END {print sum}'`);
-    chomp( $Nreads =`cat $file | grep 'N reads.' | awk '{sum+=\\$2} END {print sum}'` );
+        chomp( $in =`cat $file | grep 'Input:' | awk '{sum+=\\$2} END {print sum}'` );
+        chomp( $out =`cat $file | grep 'Output:' | awk '{sum+=\\$2} END {print sum}'` );
+        chomp( $tooshort =`cat $file | grep 'too-short reads' | awk '{sum+=\\$2} END {print sum}'`);
+        chomp( $adapteronly =`cat $file | grep 'adapter-only reads' | awk '{sum+=\\$2} END {print sum}'`);
+        chomp( $noncliped =`cat $file | grep 'non-clipped reads.' | awk '{sum+=\\$2} END {print sum}'`);
+        chomp( $Nreads =`cat $file | grep 'N reads.' | awk '{sum+=\\$2} END {print sum}'` );
 
-    $tsv{$name}{$mapper} = [ $in, $out ];
-    $headerHash{$mapOrder} = $mapper;
-    $headerText{$mapOrder} = [ "Total Reads", "Reads After Adapter Removal" ];
-    $tsvDetail{$name}{$mapper} =
-      [ $in, $tooshort, $adapteronly, $noncliped, $Nreads, $out ];
-    $headerTextDetail{$mapOrder} = [
-        "Total Reads",
-        "Too-short reads",
-        "Adapter-only reads",
-        "Non-clipped reads",
-        "N reads",
-        "Reads After Adapter Removal"
-    ];
+        $tsv{$name}{$mapper} = [ $in, $out ];
+        $headerHash{$mapOrder} = $mapper;
+        $headerText{$mapOrder} = [ "Total Reads", "Reads After Adapter Removal" ];
+        $tsvDetail{$name}{$mapper} = [ $in, $tooshort, $adapteronly, $noncliped, $Nreads, $out ];
+        $headerTextDetail{$mapOrder} = ["Total Reads","Too-short reads","Adapter-only reads","Non-clipped reads","N reads","Reads After Adapter Removal"];
+    } elsif ($file =~ /(.*)\\.trimmomatic\\.log/){
+        $file =~ /(.*)\\.trimmomatic\\.log/;
+        my $mapper   = "trimmomatic";
+        my $name = $1;    ##sample name
+        push( @header, $mapper );
+        
+        my $in;
+        my $out;
+
+        if ( "!{mate}" eq "pair"){
+            chomp( $in =`cat $file | grep 'Input Read Pairs:' | awk '{sum+=\\$4} END {print sum}'` );
+            chomp( $out =`cat $file | grep 'Input Read Pairs:' | awk '{sum+=\\$7} END {print sum}'` );
+        } else {
+            chomp( $in =`cat $file | grep 'Input Reads:' | awk '{sum+=\\$3} END {print sum}'` );
+            chomp( $out =`cat $file | grep 'Input Reads:' | awk '{sum+=\\$5} END {print sum}'` );
+        }
+        
+
+
+        $tsv{$name}{$mapper} = [ $in, $out ];
+        $headerHash{$mapOrder} = $mapper;
+        $headerText{$mapOrder} = [ "Total Reads", "Reads After Adapter Removal" ];
+        
+    }
+    
 }
 
 my @mapOrderArray = ( keys %headerHash );
@@ -4087,7 +4274,9 @@ my @sortedOrderArray = sort { $a <=> $b } @mapOrderArray;
 my $summary          = "adapter_removal_summary.tsv";
 my $detailed_summary = "adapter_removal_detailed_summary.tsv";
 writeFile( $summary,          \\%headerText,       \\%tsv );
-writeFile( $detailed_summary, \\%headerTextDetail, \\%tsvDetail );
+if (%headerTextDetail){
+    writeFile( $detailed_summary, \\%headerTextDetail, \\%tsvDetail );  
+}
 
 sub writeFile {
     my $summary    = $_[0];
@@ -4268,7 +4457,7 @@ input:
  file mainSum from g214_13_outputFileTSV_g214_14
 
 output:
- file "sequential_mapping_short_sum.tsv"  into g214_14_outputFileTSV
+ file "sequential_mapping_short_sum.tsv"  into g214_14_outputFileTSV_g_198
  file "sequential_mapping_detailed_sum.tsv"  into g214_14_outputFile
 
 shell:
@@ -4948,10 +5137,12 @@ awk 'FNR==1 && NR!=1 {  getline; } 1 {print} ' *.tsv > ${name}.tsv
 }
 
 g217_11_outputFileTSV_g_198= g217_11_outputFileTSV_g_198.ifEmpty(file('starSum', type: 'any')) 
+g214_14_outputFileTSV_g_198= g214_14_outputFileTSV_g_198.ifEmpty(file('sequentialSum', type: 'any')) 
 g216_10_outputFileTSV_g_198= g216_10_outputFileTSV_g_198.ifEmpty(file('hisatSum', type: 'any')) 
 g215_17_outputFileTSV_g_198= g215_17_outputFileTSV_g_198.ifEmpty(file('rsemSum', type: 'any')) 
 g218_9_outputFileTSV_g_198= g218_9_outputFileTSV_g_198.ifEmpty(file('tophatSum', type: 'any')) 
 g213_11_outputFileTSV_g_198= g213_11_outputFileTSV_g_198.ifEmpty(file('adapterSum', type: 'any')) 
+g213_21_outputFileTSV_g_198= g213_21_outputFileTSV_g_198.ifEmpty(file('trimmerSum', type: 'any')) 
 g213_16_outputFileTSV_g_198= g213_16_outputFileTSV_g_198.ifEmpty(file('qualitySum', type: 'any')) 
 
 //* autofill
@@ -4974,10 +5165,12 @@ publishDir params.outdir, overwrite: true, mode: 'copy',
 
 input:
  file starSum from g217_11_outputFileTSV_g_198
+ file sequentialSum from g214_14_outputFileTSV_g_198
  file hisatSum from g216_10_outputFileTSV_g_198
  file rsemSum from g215_17_outputFileTSV_g_198
  file tophatSum from g218_9_outputFileTSV_g_198
  file adapterSum from g213_11_outputFileTSV_g_198
+ file trimmerSum from g213_21_outputFileTSV_g_198
  file qualitySum from g213_16_outputFileTSV_g_198
 
 output:
