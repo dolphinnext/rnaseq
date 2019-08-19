@@ -38,8 +38,3 @@ To start using the dolphinnext/rnaseq pipeline please go to [*DolphinNext Web pa
 #### Run through Command Line:
 
 To install and start using the dolphinnext/rnaseq pipeline by using command line, please follow these steps: [*Installation*](https://github.com/dolphinnext/rnaseq/blob/master/docs/local.md).
-
-
-
-
-
