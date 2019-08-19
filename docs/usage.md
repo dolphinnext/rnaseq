@@ -183,29 +183,7 @@ Instructs Trim Galore to re move bp from the 3' end of read 2 _AFTER_ adapter/qu
 
 
 
-## Skipping QC steps
-The pipeline contains a large number of quality control steps. Sometimes, it may not be desirable to run all of them if time and compute resources are limited.
-The following options make this easy:
 
-* `--skip_qc` -                Skip **all QC steps**, apart from MultiQC
-* `--skip_fastqc` -            Skip FastQC
-* `--skip_rseqc` -             Skip RSeQC
-* `--skip_genebody_coverage` - Skip calculating the genebody coverage
-* `--skip_preseq` -            Skip Preseq
-* `--skip_dupradar` -          Skip dupRadar (and Picard MarkDups)
-* `--skip_edger` -             Skip edgeR MDS plot and heatmap
-* `--skip_multiqc` -           Skip MultiQC
-
-## Job resources
-### Automatic resubmission
-Each step in the pipeline has a default set of requirements for number of CPUs, memory and time. For most of the steps in the pipeline, if the job exits with an error code of `143` (exceeded requested resources) it will automatically resubmit with higher requests (2 x original, then 3 x original). If it still fails after three times then the pipeline is stopped.
-
-### Custom resource requests
-Wherever process-specific requirements are set in the pipeline, the default value can be changed by creating a custom config file. See the files hosted at [`nf-core/configs`](https://github.com/nf-core/configs/tree/master/conf) for examples.
-
-If you are likely to be running `nf-core` pipelines regularly it may be a good idea to request that your custom config file is uploaded to the `nf-core/configs` git repository. Before you do this please can you test that the config file works with your pipeline of choice using the `-c` parameter (see definition below). You can then create a pull request to the `nf-core/configs` repository with the addition of your config file, associated documentation file (see examples in [`nf-core/configs/docs`](https://github.com/nf-core/configs/tree/master/docs)), and amending [`nfcore_custom.config`](https://github.com/nf-core/configs/blob/master/nfcore_custom.config) to include your custom profile.
-
-If you have any questions or issues please send us a message on [`Slack`](https://nf-core-invite.herokuapp.com/).
 
 
 ## Other command line parameters
@@ -213,93 +191,19 @@ If you have any questions or issues please send us a message on [`Slack`](https:
 ### `--outdir`
 The output directory where the results will be saved.
 
-
 ### `-resume`
 Specify this when restarting a pipeline. Nextflow will used cached results from any pipeline steps where the inputs are the same, continuing from where it got to previously.
 
 You can also supply a run name to resume a specific run: `-resume [run-name]`. Use the `nextflow log` command to show previous run names.
 
-**NB:** Single hyphen (core Nextflow option)
-
 ### `-c`
-Specify the path to a specific config file (this is a core NextFlow command).
-
-**NB:** Single hyphen (core Nextflow option)
+Specify the path to a specific config file (this is a core NextFlow command). 
 
 Note - you can use this to override pipeline defaults.
 
-### `--custom_config_version`
-Provide git commit id for custom Institutional configs hosted at `nf-core/configs`. This was implemented for reproducibility purposes. Default is set to `master`.
-
-```bash
-## Download and use config file with following git commid id
---custom_config_version d52db660777c4bf36546ddb188ec530c3ada1b96
-```
-
-### `--custom_config_base`
-If you're running offline, nextflow will not be able to fetch the institutional config files
-from the internet. If you don't need them, then this is not a problem. If you do need them,
-you should download the files from the repo and tell nextflow where to find them with the
-`custom_config_base` option. For example:
-
-```bash
-## Download and unzip the config files
-cd /path/to/my/configs
-wget https://github.com/nf-core/configs/archive/master.zip
-unzip master.zip
-
-## Run the pipeline
-cd /path/to/my/data
-nextflow run /path/to/pipeline/ --custom_config_base /path/to/my/configs/configs-master/
-```
-
-> Note that the nf-core/tools helper package has a `download` command to download all required pipeline
-> files + singularity containers + institutional configs in one go for you, to make this process easier.
-
-### `--max_memory`
-Use to set a top-limit for the default memory requirement for each process.
-Should be a string in the format integer-unit. eg. `--max_memory '8.GB'`
-
-### `--max_time`
-Use to set a top-limit for the default time requirement for each process.
-Should be a string in the format integer-unit. eg. `--max_time '2.h'`
-
-### `--max_cpus`
-Use to set a top-limit for the default CPU requirement for each process.
-Should be a string in the format integer-unit. eg. `--max_cpus 1`
-
-### `--hisatBuildMemory`
-Required amount of memory in GB to build HISAT2 index with splice sites.
-The HiSAT2 index build can proceed with or without exon / splice junction information.
-To work with this, a very large amount of memory is required.
-If this memory is not available, the index build will proceed without splicing information.
-The `--hisatBuildMemory` option changes this threshold. By default it is `200GB` - if your system
-`--max_memory` is set to `128GB` but your genome is small enough to build using this, then you can
-allow the exon build to proceed by supplying `--hisatBuildMemory 100GB`
-
-### `--subsampFilesizeThreshold`
-This parameter defines the threshold in BAM file size (in bytes) at which data subsampling is used prior to the RSeQC `gene_body_coverage` step. This step is done to speed up and reduce compute resources for the gene body coverage analysis .
-For very large files this means, that the BAM file will be subsampled to compute the `gene_body_coverage`, for small files there will not be a subsampling step.
-By default this parameter is set to `10000000000` - ten gigabytes.
-
-### `--sampleLevel`
-Used to turn of the edgeR MDS and heatmap. Set automatically when running on fewer than 3 samples.
-
-### `--plaintext_email`
-Set to receive plain-text e-mails instead of HTML formatted.
-
-### `--monochrome_logs`
-Set to disable colourful command line output and live life in monochrome.
-
-### `--multiqc_config`
-Specify a path to a custom MultiQC configuration file.
-
 ## Stand-alone scripts
-The `bin` directory contains some scripts used by the pipeline which may also be run manually:
+The `dolphinnext/tools` repository contains some scripts used by the pipeline which may also be run manually:
 
 * `gtf2bed`
   * Script used to generate the BED12 reference files used by RSeQC. Takes a `.gtf` file as input
-* `dupRadar.r`
-  * dupRadar script used in the _dupRadar_ pipeline process.
-* `edgeR_heatmap_MDS.r`
-  * edgeR script used in the _Sample Correlation_ process
+
