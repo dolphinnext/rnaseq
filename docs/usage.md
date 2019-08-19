@@ -306,7 +306,7 @@ Optianally,Bowtie2/Bowtie/STAR is used to count or filter out common RNAs reads 
 ```
 
 ## TDF Conversion for IGV Genome Browser
-Optionally, you can convert bam files to TDF for IGV Genome Browser visualization by using igvtools.
+Optionally, you can convert bam files to TDF for IGV Genome Browser visualization by using IGVtools.
 ```bash
 --run_IGV_TDF_Conversion "yes"
 ## For RSEM BAM output
@@ -329,13 +329,33 @@ Optionally, you can convert bam files to TDF for IGV Genome Browser visualizatio
 
 ```
 
+## BigWig Conversion for UCSC Genome Browser
+Optionally, you can convert bam files to bigwig files for UCSC Genome Browser visualization.
 
+```bash
+--run_BigWig_Conversion "yes"
+```
 
+## BigWig Conversion for UCSC Genome Browser
+Optionally, you can convert bam files to bigwig files for UCSC Genome Browser visualization.
 
+```bash
+--run_BigWig_Conversion "yes"
+```
 
-params.run_RSeQC = "no" //* @dropdown @options:"yes","no"
-params.run_Picard_CollectMultipleMetrics = "no" //* @dropdown @options:"yes","no"
-params.run_BigWig_Conversion = "no" //* @dropdown @options:"yes","no"
+## RSeQC Analysis
+Optionally, you can enable RSeQC to calculate how mapped reads were distributed over genome feature (like CDS exon, 5’UTR exon, 3’ UTR exon, Intron, Intergenic regions).
+
+```bash
+--run_RSeQC "yes"
+```
+
+## Picard Analysis
+Optionally, you can enable Picard to calculate multiple metrics such as CollectAlignmentSummaryMetrics, CollectInsertSizeMetrics, QualityScoreDistribution, MeanQualityByCycle, CollectBaseDistributionByCycle, CollectGcBiasMetrics, RnaSeqMetrics, CollectSequencingArtifactMetrics, and CollectQualityYieldMetrics. 
+
+```bash
+--run_Picard_CollectMultipleMetrics "yes"
+```
 
 
 ## Other command line parameters
