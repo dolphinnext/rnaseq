@@ -140,7 +140,7 @@ If you prefer, you can specify the full path to your reference genome and withou
 ## Alignment tool
 By default, the pipeline uses [STAR](https://github.com/alexdobin/STAR) to align the raw FastQ reads to the reference genome. STAR is fast and common, but requires a lot of memory to run, typically around 38GB for the Human hg19 reference genome.
 
-If you prefer, you can use [HISAT2](https://ccb.jhu.edu/software/hisat2/index.shtml) or TOPHAT2 as the alignment tool instead. Both tools developed by the same group, and HISAT2 has a much smaller memory footprint.
+If you prefer, you can use [HISAT2](https://ccb.jhu.edu/software/hisat2/index.shtml) or TOPHAT2 as the alignment tool. Both tools developed by the same group, and HISAT2 has a much smaller memory footprint.
 
 You can choose multiple aligner to compare their results by enabling/disabling following parameters:
 ```bash
@@ -153,7 +153,7 @@ To disable Tophat2: `--run_Tophat no`
 ```
 
 ## Transcripts Quantification
-By default, RSEM is used to align RNA-Seq reads to a reference transcripts and estimates gene and isoform expression levels. But you can enable featureCounts after running HISAT2 and/or STAR and/or Tophat2 as well.
+By default, RSEM is used to align RNA-Seq reads to a reference transcripts and estimates gene and isoform expression levels. Besides, you can enable featureCounts after running HISAT2 and/or STAR and/or Tophat2 as well.
 
 You can choose multiple tools to compare their results by enabling/disabling following parameters:
 ```bash
@@ -166,6 +166,34 @@ To disable featureCounts after running STAR   : `--run_FeatureCounts_after_STAR 
 To enable featureCounts after running Tophat2 : `--run_Tophat yes --run_FeatureCounts_after_Tophat2 yes`
 To disable featureCounts after running Tophat2: `--run_FeatureCounts_after_Tophat2 no`
 ```
+
+## Feature Counts Parameters
+You can change feature count parameters by assigning new parameters to following options:
+
+```bash
+# FeatureCounts after Hisat2 Parameters:
+--BAM_Analysis_Hisat2_featureCounts_Prep.run_name [array @default:["gene_id","transcript_id"] ]
+# Prefix for run output
+
+--BAM_Analysis_Hisat2_featureCounts_Prep.run_parameters =  [array @default:["-g gene_id -s 0 -Q 20 -T 2 -B -d 50 -D 1000 -C --fracOverlap 0 --minOverlap 1","-g transcript_id -s 0 -Q 20 -T 2 -B -d 50 -D 1000 -C --fracOverlap 0 --minOverlap 1"]]  
+
+# -s Indicate strand-specific read counting: 0 (unstranded, default), 1 (stranded) and 2 (reversely stranded) 
+# -Q The minimum mapping quality score 
+# -T Number of threads 
+# -B requireBothEndsMapped 
+# -C countChimericFragments 
+# −−fracOverlap Minimum fraction of overlapping bases 
+# −−minOverlap Minimum number of overlapping bases
+
+# FeatureCounts after Tophat2 Parameters:
+--BAM_Analysis_Tophat2_featureCounts_Prep.run_name [array @default:["gene_id","transcript_id"] ]
+--BAM_Analysis_Tophat2_featureCounts_Prep.run_parameters =  [array @default:["-g gene_id -s 0 -Q 20 -T 2 -B -d 50 -D 1000 -C --fracOverlap 0 --minOverlap 1","-g transcript_id -s 0 -Q 20 -T 2 -B -d 50 -D 1000 -C --fracOverlap 0 --minOverlap 1"]]  
+
+# FeatureCounts after STAR Parameters:
+--BAM_Analysis_STAR_featureCounts_Prep.run_name [array @default:["gene_id","transcript_id"] ]
+--BAM_Analysis_STAR_featureCounts_Prep.run_parameters =  [array @default:["-g gene_id -s 0 -Q 20 -T 2 -B -d 50 -D 1000 -C --fracOverlap 0 --minOverlap 1","-g transcript_id -s 0 -Q 20 -T 2 -B -d 50 -D 1000 -C --fracOverlap 0 --minOverlap 1"]]  
+```
+
 
 ## Adapter Removal
 If specific Adapter Removal is required, you can enable trimmomatic and enter the adapter sequence. 
@@ -198,11 +226,13 @@ Optianally, you can trim your reads by defining trimming lenghts as shown at bel
 
 ```bash
 For Single End Reads  : 
+--run_Trimmer "yes"
 --Adapter_Trimmer_Quality_Module_Trimmer.single_or_paired_end_reads "single"
 --Adapter_Trimmer_Quality_Module_Trimmer.trim_length_5prime [int]
 --Adapter_Trimmer_Quality_Module_Trimmer.trim_length_3prime [int]
 
 For Paired End Reads  : 
+--run_Trimmer "yes"
 --Adapter_Trimmer_Quality_Module_Trimmer.single_or_paired_end_reads "pair"
 --Adapter_Trimmer_Quality_Module_Trimmer.trim_length_5prime_R1 [int]
 --Adapter_Trimmer_Quality_Module_Trimmer.trim_length_3prime_R1 [int]
@@ -215,6 +245,7 @@ Optianally, you can trim your reads based on their quality. Trimmomatic works on
 
 ```bash
 To use Trimmomatic  : 
+--run_Quality_Filtering "yes"
 --Adapter_Trimmer_Quality_Module_Quality_Filtering.tool "trimmomatic"
 --Adapter_Trimmer_Quality_Module_Quality_Filtering.window_size [int @default:10]
 # Performs a sliding window trimming approach. It starts scanning at the 5' end and clips the read once the average quality within the window falls below a threshold (=required_quality).
@@ -234,6 +265,7 @@ To use Trimmomatic  :
 
 ```bash
 To use fastx_toolkit  : 
+--run_Quality_Filtering "yes"
 --Adapter_Trimmer_Quality_Module_Quality_Filtering.tool "fastx"
 --Adapter_Trimmer_Quality_Module_Quality_Filtering.minQuality [int @default:20]
 # Minimum quality score to keep reads
@@ -246,26 +278,64 @@ To use fastx_toolkit  :
 Optianally,Bowtie2/Bowtie/STAR is used to count or filter out common RNAs reads (eg. rRNA, miRNA, tRNA, piRNA etc.). You need to specify mapping set by entering following paramters in array format.
 
 ```bash
+--run_Sequential_Mapping "yes"
 --Sequential_Mapping_Module_Sequential_Mapping.remove_duplicates [@options:"yes","no" @default:"no"] 
 # Duplicates (both PCR and optical) will be removed from alignment file (bam) and separate count table will be created for comparison
 
---Sequential_Mapping_Module_Sequential_Mapping._select_sequence =  [array @options:"rRNA","ercc","miRNA","tRNA","piRNA","snRNA","rmsk", "custom"]   
+--Sequential_Mapping_Module_Sequential_Mapping._select_sequence [array @options:"rRNA","ercc","miRNA","tRNA","piRNA","snRNA","rmsk", "custom"]   
 # Sequence Set for Mapping. eg. ["rRNA", "rmsk", "custom"]
 
---Sequential_Mapping_Module_Sequential_Mapping.index_directory =  [array]
+--Sequential_Mapping_Module_Sequential_Mapping.index_directory [array]
 # If custom sequence is defined please enter index directory of custom sequence(full path), otherwise you need to enter empty string. The index directory must include the full path and the name of the index file must only be the prefix of the fasta or index file. Index files and fasta files also need to have the same prefix.For STAR alignment, gtf file which has the same prefix, must be found in same directory. eg. ["", "", "/share/custom_seq_dir"]
 
---Sequential_Mapping_Module_Sequential_Mapping.name_of_the_index_file =  [array]  //* @input  @autofill:{_select_sequence=("rRNA","ercc","miRNA","tRNA","piRNA","snRNA","rmsk","genome"), _select_sequence},{_select_sequence="custom", " "} 
-# Name of the index or fasta file (prefix)
+--Sequential_Mapping_Module_Sequential_Mapping.name_of_the_index_file [array]  
+# If custom sequence is defined please enter name of the index or fasta file (prefix), otherwise you need to enter selected sequence as string. eg. ["rRNA", "rmsk", "custom_seq_prefix"]
 
+--Sequential_Mapping_Module_Sequential_Mapping._aligner =  [array @options:"bowtie","bowtie2" @default:"bowtie2"] 
+# Aligner set for mapping: eg. ["bowtie", "bowtie2", "bowtie2"]
 
---Sequential_Mapping_Module_Sequential_Mapping._aligner =  "bowtie2"  //* @dropdown @description:"Select aligner tool"  @options:{_select_sequence=("rRNA","ercc","miRNA","tRNA","piRNA","snRNA","rmsk"),"bowtie","bowtie2"},{_select_sequence=("genome","custom"),"bowtie","bowtie2","STAR"}
+--Sequential_Mapping_Module_Sequential_Mapping.aligner_Parameters [array]
+# Aligner parameters." eg. ["--threads 1","-N 1","-N 1"]
 
---Sequential_Mapping_Module_Sequential_Mapping.aligner_Parameters =  ""  //* @input @description:"Aligner parameters." @autofill:{_aligner="bowtie", "--threads 1"},{_aligner="bowtie2", "-N 1"},{_aligner="STAR", "--runThreadN 1"} 
-params.Sequential_Mapping_Module_Sequential_Mapping.description =  ""  //* @input @autofill:{_select_sequence=("rRNA","ercc","miRNA","tRNA","piRNA","snRNA","rmsk","genome"), _select_sequence},{_select_sequence="custom", " "} @description:"Description of index file (please don't use comma or quotes in this field" 
+--params.Sequential_Mapping_Module_Sequential_Mapping.description [array] 
+# Description of index file (please don't use comma or quotes in this field). eg. ["rRNA", "rmsk", "custom_seq_explanation"]
 
---Sequential_Mapping_Module_Sequential_Mapping.filter_Out =  "Yes"  //* @dropdown @dropdown @options:"Yes","No" @description:"Select whether or not you want the reads mapped to this index filtered out of your total reads." 
+--Sequential_Mapping_Module_Sequential_Mapping.filter_Out =  "[array @options:"Yes","No" @default:"Yes"] 
+# Select whether or not you want the reads mapped to this index filtered out of your total reads.
+
 ```
+
+## TDF Conversion for IGV Genome Browser
+Optionally, you can convert bam files to TDF for IGV Genome Browser visualization by using igvtools.
+```bash
+--run_IGV_TDF_Conversion "yes"
+## For RSEM BAM output
+--BAM_Analysis_RSEM_IGV_BAM2TDF_converter.igv_extention_factor [int @default:0]
+# The read or feature is extended by the specified distance in bp prior to counting. This option is useful for chip-seq and rna-seq applications. The value is generally set to the average fragment length of the library minus the average read length.
+--BAM_Analysis_RSEM_IGV_BAM2TDF_converter.igv_window_size [int @default:5]
+# The window size over which coverage is averaged.
+
+## For Tophat2 BAM output
+--BAM_Analysis_Tophat2_IGV_BAM2TDF_converter.igv_extention_factor [int @default:0]
+--BAM_Analysis_Tophat2_IGV_BAM2TDF_converter.igv_window_size [int @default:5]
+
+## For STAR BAM output
+--BAM_Analysis_STAR_IGV_BAM2TDF_converter.igv_extention_factor [int @default:0]
+--BAM_Analysis_STAR_IGV_BAM2TDF_converter.igv_window_size [int @default:5]
+
+## For HISAT2 BAM output
+--BAM_Analysis_Hisat2_IGV_BAM2TDF_converter.igv_extention_factor [int @default:0]
+--BAM_Analysis_Hisat2_IGV_BAM2TDF_converter.igv_window_size [int @default:5]
+
+```
+
+
+
+
+
+params.run_RSeQC = "no" //* @dropdown @options:"yes","no"
+params.run_Picard_CollectMultipleMetrics = "no" //* @dropdown @options:"yes","no"
+params.run_BigWig_Conversion = "no" //* @dropdown @options:"yes","no"
 
 
 ## Other command line parameters
