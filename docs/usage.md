@@ -186,7 +186,7 @@ To enable adapter_removal:
 --Adapter_Trimmer_Quality_Module_Adapter_Removal.simple_clip_threshold [int @default:5]
 # Specifies how accurate the match between any adapter etc. sequence must be against a read.
 
---Adapter_Trimmer_Quality_Module_Adapter_Removal.discard_non_clipped [@dropdown @options:"yes","no" @default:"yes"]
+--Adapter_Trimmer_Quality_Module_Adapter_Removal.discard_non_clipped [@options:"yes","no" @default:"yes"]
 # Discard_non_clipped sequences (keep only sequences which contained the adapter)
 ```
 
@@ -215,12 +215,16 @@ To use Trimmomatic  :
 --Adapter_Trimmer_Quality_Module_Quality_Filtering.tool "trimmomatic"
 --Adapter_Trimmer_Quality_Module_Quality_Filtering.window_size [int @default:10]
 # Performs a sliding window trimming approach. It starts scanning at the 5' end and clips the read once the average quality within the window falls below a threshold (=required_quality).
+
 --Adapter_Trimmer_Quality_Module_Quality_Filtering.required_quality_for_window_trimming [int @default:15]
 # Specifies the average quality required for window trimming approach
+
 --Adapter_Trimmer_Quality_Module_Quality_Filtering.leading [int @default:5]
 # Cut bases off the start of a read, if below a threshold quality
+
 --Adapter_Trimmer_Quality_Module_Quality_Filtering.trailing [int @default:5]
 # Cut bases off the end of a read, if below a threshold quality
+
 --Adapter_Trimmer_Quality_Module_Quality_Filtering.minlen [int @default:36]
 # Specifies the minimum length of reads to be kept
 ```
@@ -230,8 +234,34 @@ To use fastx_toolkit  :
 --Adapter_Trimmer_Quality_Module_Quality_Filtering.tool "fastx"
 --Adapter_Trimmer_Quality_Module_Quality_Filtering.minQuality [int @default:20]
 # Minimum quality score to keep reads
+
 --Adapter_Trimmer_Quality_Module_Quality_Filtering.minPercent [int @default:100]
 # Minimum percent of bases that must have entered minQuality
+```
+
+## Sequential Mapping
+Optianally,Bowtie2/Bowtie/STAR is used to count or filter out common RNAs reads (eg. rRNA, miRNA, tRNA, piRNA etc.). You need to specify mapping set by entering following paramters in array format.
+
+```bash
+--Sequential_Mapping_Module_Sequential_Mapping.remove_duplicates [@options:"yes","no" @default:"no"] 
+# Duplicates (both PCR and optical) will be removed from alignment file (bam) and separate count table will be created for comparison
+
+--Sequential_Mapping_Module_Sequential_Mapping._select_sequence =  [array @options:"rRNA","ercc","miRNA","tRNA","piRNA","snRNA","rmsk", "custom"]   
+# Sequence Set for Mapping. eg. ["rRNA", "rmsk", "custom"]
+
+--Sequential_Mapping_Module_Sequential_Mapping.index_directory =  [array]
+# If custom sequence is defined please enter index directory of custom sequence(full path), otherwise you need to enter empty string. The index directory must include the full path and the name of the index file must only be the prefix of the fasta or index file. Index files and fasta files also need to have the same prefix.For STAR alignment, gtf file which has the same prefix, must be found in same directory. eg. ["", "", "/share/custom_seq_dir"]
+
+--Sequential_Mapping_Module_Sequential_Mapping.name_of_the_index_file =  [array]  //* @input  @autofill:{_select_sequence=("rRNA","ercc","miRNA","tRNA","piRNA","snRNA","rmsk","genome"), _select_sequence},{_select_sequence="custom", " "} 
+# Name of the index or fasta file (prefix)
+
+
+--Sequential_Mapping_Module_Sequential_Mapping._aligner =  "bowtie2"  //* @dropdown @description:"Select aligner tool"  @options:{_select_sequence=("rRNA","ercc","miRNA","tRNA","piRNA","snRNA","rmsk"),"bowtie","bowtie2"},{_select_sequence=("genome","custom"),"bowtie","bowtie2","STAR"}
+
+--Sequential_Mapping_Module_Sequential_Mapping.aligner_Parameters =  ""  //* @input @description:"Aligner parameters." @autofill:{_aligner="bowtie", "--threads 1"},{_aligner="bowtie2", "-N 1"},{_aligner="STAR", "--runThreadN 1"} 
+params.Sequential_Mapping_Module_Sequential_Mapping.description =  ""  //* @input @autofill:{_select_sequence=("rRNA","ercc","miRNA","tRNA","piRNA","snRNA","rmsk","genome"), _select_sequence},{_select_sequence="custom", " "} @description:"Description of index file (please don't use comma or quotes in this field" 
+
+--Sequential_Mapping_Module_Sequential_Mapping.filter_Out =  "Yes"  //* @dropdown @dropdown @options:"Yes","No" @description:"Select whether or not you want the reads mapped to this index filtered out of your total reads." 
 ```
 
 
