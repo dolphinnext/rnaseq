@@ -189,6 +189,27 @@ Specifies how accurate the match between any adapter etc. sequence must be again
 Discard_non_clipped sequences (keep only sequences which contained the adapter)
 
 
+## Trimmer
+Optianally, you trim your reads by defining trimming lenghts as shown at below: 
+
+```bash
+For Single End Reads  : 
+--Adapter_Trimmer_Quality_Module_Trimmer.single_or_paired_end_reads "single"
+--Adapter_Trimmer_Quality_Module_Trimmer.trim_length_5prime [int]
+--Adapter_Trimmer_Quality_Module_Trimmer.trim_length_3prime [int]
+
+For Paired End Reads  : 
+--Adapter_Trimmer_Quality_Module_Trimmer.single_or_paired_end_reads "pair"
+--Adapter_Trimmer_Quality_Module_Trimmer.trim_length_5prime_R1 [int]
+--Adapter_Trimmer_Quality_Module_Trimmer.trim_length_3prime_R1 [int]
+--Adapter_Trimmer_Quality_Module_Trimmer.trim_length_5prime_R2 [int]
+--Adapter_Trimmer_Quality_Module_Trimmer.trim_length_3prime_R2 [int]
+```
+
+
+
+
+
 
 ## Other command line parameters
 
