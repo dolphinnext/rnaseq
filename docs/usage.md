@@ -164,24 +164,62 @@ To enable featureCounts after running Tophat2 : `--run_Tophat yes --run_FeatureC
 To disable featureCounts after running Tophat2: `--run_FeatureCounts_after_Tophat2 no`
 ```
 
-## Adapter Trimming
-If specific additional trimming is required (for example, from additional tags),
-you can use any of the following command line parameters. These affect the command
-used to launch TrimGalore!
+## Adapter Removal
+If specific Adapter Removal is required, you can enable trimmomatic and enter the adapter sequence. 
 
-### `--clip_r1 [int]`
-Instructs Trim Galore to remove bp from the 5' end of read 1 (or single-end reads).
+```bash
+To enable adapter_removal  : `--run_Adapter_Removal yes`
+```
+#### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.Adapter_Sequence [string]`
+You can enter a single sequence or multiple sequences in different lines. Reverse sequences will not be removed.
 
-### `--clip_r2 [int]`
-Instructs Trim Galore to remove bp from the 5' end of read 2 (paired-end reads only).
+#### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.min_length [int]`
+Specifies the minimum length of reads to be kept
 
-### `--three_prime_clip_r1 [int]`
-Instructs Trim Galore to remove bp from the 3' end of read 1 _AFTER_ adapter/quality trimming has been performed.
+#### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.seed_mismatches [int]`
+Specifies the maximum mismatch count which will still allow a full match to be performed
 
-### `--three_prime_clip_r2 [int]`
-Instructs Trim Galore to re move bp from the 3' end of read 2 _AFTER_ adapter/quality trimming has been performed.
+#### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.palindrome_clip_threshold [int (default=30)]`
+Specifies how accurate the match between the two -adapter ligated- reads must be for PE palindrome read alignment
+
+#### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.simple_clip_threshold [int (default=5)]`
+Specifies how accurate the match between any adapter etc. sequence must be against a read.
+
+#### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.discard_non_clipped [@dropdown @options:"yes","no" @default="yes"]`
+Discard_non_clipped sequences (keep only sequences which contained the adapter)
 
 
+
+
+// Process Parameters for Adapter_Trimmer_Quality_Module_Trimmer:
+params.Adapter_Trimmer_Quality_Module_Trimmer.single_or_paired_end_reads =  ""  //* @dropdown @options:"single","pair" 
+params.Adapter_Trimmer_Quality_Module_Trimmer.trim_length_5prime =  0  //* @input @description:"Trimming length from 5' end"  
+params.Adapter_Trimmer_Quality_Module_Trimmer.trim_length_3prime =  0  //* @input @description:"Trimming length from 3' end"  
+params.Adapter_Trimmer_Quality_Module_Trimmer.trim_length_5prime_R1 =  0  //* @input @description:"Trimming length from 5' end of R1 reads"  
+params.Adapter_Trimmer_Quality_Module_Trimmer.trim_length_3prime_R1 =  0  //* @input @description:"Trimming length from 3' end of R1 reads"  
+params.Adapter_Trimmer_Quality_Module_Trimmer.trim_length_5prime_R2 =  0  //* @input @description:"Trimming length from 5' end of R2 reads"  
+params.Adapter_Trimmer_Quality_Module_Trimmer.trim_length_3prime_R2 =  0  //* @input @description:"Trimming length from 3' end of R2 reads" 
+
+// Process Parameters for Adapter_Trimmer_Quality_Module_Quality_Filtering:
+params.Adapter_Trimmer_Quality_Module_Quality_Filtering.tool =  "trimmomatic"  //* @dropdown @options:"trimmomatic","fastx" @description:"Choose quality removal tool to be used. Note:fastx option (fastx_toolkit fastq_quality_filter) is not suitable for paired reads." 
+params.Adapter_Trimmer_Quality_Module_Quality_Filtering.window_size =  10  //* @input @description:"Performs a sliding window trimming approach. It starts scanning at the 5' end and clips the read once the average quality within the window falls below a threshold (=required_quality)."  
+params.Adapter_Trimmer_Quality_Module_Quality_Filtering.required_quality_for_window_trimming =  15  //* @input @description:"specifies the average quality required for window trimming approach" 
+params.Adapter_Trimmer_Quality_Module_Quality_Filtering.leading =  5  //* @input @description:"Cut bases off the start of a read, if below a threshold quality" 
+params.Adapter_Trimmer_Quality_Module_Quality_Filtering.trailing =  5  //* @input @description:"Cut bases off the end of a read, if below a threshold quality"  
+params.Adapter_Trimmer_Quality_Module_Quality_Filtering.minlen =  36  //* @input @description:"Specifies the minimum length of reads to be kept"  
+params.Adapter_Trimmer_Quality_Module_Quality_Filtering.minQuality =  20  //* @input @description:"Minimum quality score to keep reads"
+params.Adapter_Trimmer_Quality_Module_Quality_Filtering.minPercent =  100  //* @input @description:"Minimum percent of bases that must have entered minQuality"
+
+// Process Parameters for Sequential_Mapping_Module_Sequential_Mapping:
+params.Sequential_Mapping_Module_Sequential_Mapping.remove_duplicates =  "no"  //* @dropdown @description:"Duplicates (both PCR and optical) will be removed from alignment file (bam) and separate count table will be created for comparison" @title:"General Mapping Options" @options:{"yes","no"}
+params.Sequential_Mapping_Module_Sequential_Mapping.remove_duplicates_based_on_UMI_after_mapping =  "no"  //* @dropdown @description:"UMI extract process should have executed before this step. Read headers should have UMI tags which are separated with underscore.(eg. NS5HGY:2:11_GTATAACCTT)" @options:{"yes","no"}
+params.Sequential_Mapping_Module_Sequential_Mapping._select_sequence =  ""  //* @dropdown @description:"Select sequence for mapping" @title:"Sequence Set for Mapping" @options:{"rRNA","ercc","miRNA","tRNA","piRNA","snRNA","rmsk","genome",custom"},{_nucleicAcidType="dna","ercc","rmsk","genome","custom"}
+params.Sequential_Mapping_Module_Sequential_Mapping.index_directory =  ""  //* @input  @description:"index directory of sequence(full path)" @tooltip:"The index directory must include the full path and the name of the index file must only be the prefix of the fasta or index file. Index files and Fasta files also need to have the same prefix.For STAR alignment, gtf file which has the same prefix, must be found in same directory" 
+params.Sequential_Mapping_Module_Sequential_Mapping.name_of_the_index_file =  ""  //* @input  @autofill:{_select_sequence=("rRNA","ercc","miRNA","tRNA","piRNA","snRNA","rmsk","genome"), _select_sequence},{_select_sequence="custom", " "} @description:"Name of the index or fasta file (prefix)" @tooltip:"The index directory must include the full path and the name of the index file must only be the prefix of the fasta or index file. Index files and Fasta files also need to have the same prefix.For STAR alignment, gtf file which has the same prefix, must be found in same directory" 
+params.Sequential_Mapping_Module_Sequential_Mapping._aligner =  "bowtie2"  //* @dropdown @description:"Select aligner tool"  @options:{_select_sequence=("rRNA","ercc","miRNA","tRNA","piRNA","snRNA","rmsk"),"bowtie","bowtie2"},{_select_sequence=("genome","custom"),"bowtie","bowtie2","STAR"}
+params.Sequential_Mapping_Module_Sequential_Mapping.aligner_Parameters =  ""  //* @input @description:"Aligner parameters." @autofill:{_aligner="bowtie", "--threads 1"},{_aligner="bowtie2", "-N 1"},{_aligner="STAR", "--runThreadN 1"} 
+params.Sequential_Mapping_Module_Sequential_Mapping.description =  ""  //* @input @autofill:{_select_sequence=("rRNA","ercc","miRNA","tRNA","piRNA","snRNA","rmsk","genome"), _select_sequence},{_select_sequence="custom", " "} @description:"Description of index file (please don't use comma or quotes in this field" 
+params.Sequential_Mapping_Module_Sequential_Mapping.filter_Out =  "Yes"  //* @dropdown @dropdown @options:"Yes","No" @description:"Select whether or not you want the reads mapped to this index filtered out of your total reads." 
 
 
 
