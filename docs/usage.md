@@ -179,13 +179,13 @@ Specifies the minimum length of reads to be kept
 #### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.seed_mismatches [int]`
 Specifies the maximum mismatch count which will still allow a full match to be performed
 
-#### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.palindrome_clip_threshold [int @default=30]`
+#### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.palindrome_clip_threshold [int @default:30]`
 Specifies how accurate the match between the two -adapter ligated- reads must be for PE palindrome read alignment
 
-#### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.simple_clip_threshold [int @default=5]`
+#### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.simple_clip_threshold [int @default:5]`
 Specifies how accurate the match between any adapter etc. sequence must be against a read.
 
-#### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.discard_non_clipped [@dropdown @options:"yes","no" @default="yes"]`
+#### `--Adapter_Trimmer_Quality_Module_Adapter_Removal.discard_non_clipped [@dropdown @options:"yes","no" @default:"yes"]`
 Discard_non_clipped sequences (keep only sequences which contained the adapter)
 
 
@@ -206,8 +206,28 @@ For Paired End Reads  :
 --Adapter_Trimmer_Quality_Module_Trimmer.trim_length_3prime_R2 [int]
 ```
 
+## Quality Filtering
+Optianally, you can trim your reads based on their quality. Trimmomatic works on both paired-end and single ended data. Alternatively fastx option (fastx_toolkit) could be used for single reads. 
 
+To use Trimmomatic  : 
+#### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.tool "trimmomatic"`
+#### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.window_size [int @default:10]`
+Performs a sliding window trimming approach. It starts scanning at the 5' end and clips the read once the average quality within the window falls below a threshold (=required_quality).
+#### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.required_quality_for_window_trimming [int @default:15]`
+Specifies the average quality required for window trimming approach
+#### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.leading [int @default:5]`
+Cut bases off the start of a read, if below a threshold quality
+#### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.trailing [int @default:5]`
+Cut bases off the end of a read, if below a threshold quality
+#### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.minlen [int @default:36]`
+Specifies the minimum length of reads to be kept
 
+To use fastx_toolkit  : 
+#### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.tool "fastx"`
+#### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.minQuality [int @default:20]`
+Minimum quality score to keep reads
+#### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.minPercent [int @default:100]`
+Minimum percent of bases that must have entered minQuality
 
 
 
