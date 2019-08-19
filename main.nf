@@ -109,7 +109,7 @@ tmpResultDir = basedir.substring(0, basedir.lastIndexOf('/')) +"/_tmp_"+ newDirN
 """
 if [ ! -e "${resultDir}/${basename}.rev.2.ebwt" ] ; then
     echo "${resultDir}/${basename}.rev.2.ebwt Bowtie index not found"
-    rm -rf $tmpResultDir && mkdir -p $tmpResultDir && cd $tmpResultDir
+    rm -rf $tmpResultDir $resultDir && mkdir -p $tmpResultDir && cd $tmpResultDir
     ln -s ../main/${filename} ${filename}
     bowtie-build ${bowtie_build_parameters} ${filename} ${basename}
     cd .. && mv $tmpResultDir $resultDir
@@ -227,7 +227,7 @@ for (i = 0; i < newDirNameAr.size(); i++) {
         indexType = "--star "
         checkFile = "genomeParameters.txt" 
     }
-    cmd = "if [ ! -e \"${resultDir}/${checkFile}\" ] ; then rm -rf $tmpResultDir && mkdir -p $tmpResultDir && cd $tmpResultDir && rsem-prepare-reference ${RSEM_build_parameters} --gtf ${gtf} ${transcript_to_gene_mapText} ${indexType} ${genome} ${basenameGenome} && cd .. && mv $tmpResultDir $resultDir; fi"
+    cmd = "if [ ! -e \"${resultDir}/${checkFile}\" ] ; then rm -rf $tmpResultDir $resultDir && mkdir -p $tmpResultDir && cd $tmpResultDir && rsem-prepare-reference ${RSEM_build_parameters} --gtf ${gtf} ${transcript_to_gene_mapText} ${indexType} ${genome} ${basenameGenome} && cd .. && mv $tmpResultDir $resultDir; fi"
     cmdAr.push(cmd)
 }
 
@@ -286,7 +286,7 @@ exon = "--exon ${basenameGTF}.hisat2_exons.txt"
 """
 if [ ! -e "${resultDir}/${basenameGenome}.8.ht2" ] ; then
     echo "${resultDir}/${basenameGenome}.8.ht2 Hisat2 index not found"
-    rm -rf $tmpResultDir && mkdir -p $tmpResultDir && cd $tmpResultDir 
+    rm -rf $tmpResultDir $resultDir && mkdir -p $tmpResultDir && cd $tmpResultDir 
     $extract_splice_sites
     $extract_exons
     hisat2-build ${hisat2_build_parameters} $ss $exon ${genome} ${basenameGenome}
@@ -353,7 +353,7 @@ tmpResultDir = basedir.substring(0, basedir.lastIndexOf('/')) +"/_tmp_"+ newDirN
 """
 if [ ! -e "${resultDir}/${basename}.rev.1.bt2" ] ; then
     echo "${resultDir}/${basename}.rev.1.bt2 Bowtie2 index not found"
-    rm -rf $tmpResultDir && mkdir -p $tmpResultDir && cd $tmpResultDir
+    rm -rf $tmpResultDir $resultDir && mkdir -p $tmpResultDir && cd $tmpResultDir
     ln -s ../main/${filename} ${filename}
     bowtie2-build ${bowtie2_build_parameters} ${filename} ${basename}
     cd .. && mv $tmpResultDir $resultDir 
@@ -419,7 +419,7 @@ tmpResultDir = indexbasedir +"/_tmp_"+ newDirName
 """
 if [ ! -e "${resultDir}/SA" ] ; then
     echo "STAR index not found"
-    rm -rf $tmpResultDir && mkdir -p $tmpResultDir && cd $tmpResultDir
+    rm -rf $tmpResultDir ${resultDir} && mkdir -p $tmpResultDir && cd $tmpResultDir
     STAR --runMode genomeGenerate ${star_build_parameters} --genomeDir $tmpResultDir --genomeFastaFiles ${genome} --sjdbGTFfile ${gtf}
     cd .. && mv $tmpResultDir $resultDir && cd ${resultDir}
     ln -s ../../main/${filename} ${filename}
