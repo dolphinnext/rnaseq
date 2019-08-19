@@ -49,7 +49,7 @@ If `-profile` is not specified at all the pipeline will be run locally and expec
 
 * `docker`
   * A generic configuration profile to be used with [Docker](http://docker.com/)
-  * Pulls software from Dockerhub: [`nfcore/rnaseq`](http://hub.docker.com/r/nfcore/rnaseq/)
+  * Pulls software from Dockerhub: [`dolphinnext/rna-seq`](http://hub.docker.com/r/dolphinnext/rna-seq/)
 * `singularity`
   * A generic configuration profile to be used with [Singularity](http://singularity.lbl.gov/)
   * Pulls software from DockerHub
@@ -105,7 +105,10 @@ List of genomes that are supported are:
   * `--genome_build rat_rn6_refseq`
   * `--genome_build rat_rn6_ensembl_v86`
 * Zebrafish
-  * `--genome_build 'zebrafish_danRer10'`
+  * `--genome_build 'zebrafish_GRCz11_ensembl_v95'`
+  * `--genome_build 'zebrafish_GRCz11_refseq'`
+* C. elegans
+  * `--genome_build 'c_elegans_ce11_ensembl_ws245'`
 
 
 ### `--DOWNDIR` `--run_checkAndBuild`
