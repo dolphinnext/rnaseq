@@ -212,26 +212,26 @@ Optianally, you can trim your reads based on their quality. Trimmomatic works on
 
 ```bash
 To use Trimmomatic  : 
-#### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.tool "trimmomatic"`
-#### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.window_size [int @default:10]`
-Performs a sliding window trimming approach. It starts scanning at the 5' end and clips the read once the average quality within the window falls below a threshold (=required_quality).
-#### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.required_quality_for_window_trimming [int @default:15]`
-Specifies the average quality required for window trimming approach
-#### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.leading [int @default:5]`
-Cut bases off the start of a read, if below a threshold quality
-#### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.trailing [int @default:5]`
-Cut bases off the end of a read, if below a threshold quality
-#### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.minlen [int @default:36]`
-Specifies the minimum length of reads to be kept
+--Adapter_Trimmer_Quality_Module_Quality_Filtering.tool "trimmomatic"
+--Adapter_Trimmer_Quality_Module_Quality_Filtering.window_size [int @default:10]
+# Performs a sliding window trimming approach. It starts scanning at the 5' end and clips the read once the average quality within the window falls below a threshold (=required_quality).
+--Adapter_Trimmer_Quality_Module_Quality_Filtering.required_quality_for_window_trimming [int @default:15]
+# Specifies the average quality required for window trimming approach
+--Adapter_Trimmer_Quality_Module_Quality_Filtering.leading [int @default:5]
+# Cut bases off the start of a read, if below a threshold quality
+--Adapter_Trimmer_Quality_Module_Quality_Filtering.trailing [int @default:5]
+# Cut bases off the end of a read, if below a threshold quality
+--Adapter_Trimmer_Quality_Module_Quality_Filtering.minlen [int @default:36]
+# Specifies the minimum length of reads to be kept
 ```
 
 ```bash
 To use fastx_toolkit  : 
-#### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.tool "fastx"`
-#### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.minQuality [int @default:20]`
-Minimum quality score to keep reads
-#### `--Adapter_Trimmer_Quality_Module_Quality_Filtering.minPercent [int @default:100]`
-Minimum percent of bases that must have entered minQuality
+--Adapter_Trimmer_Quality_Module_Quality_Filtering.tool "fastx"
+--Adapter_Trimmer_Quality_Module_Quality_Filtering.minQuality [int @default:20]
+# Minimum quality score to keep reads
+--Adapter_Trimmer_Quality_Module_Quality_Filtering.minPercent [int @default:100]
+# Minimum percent of bases that must have entered minQuality
 ```
 
 
