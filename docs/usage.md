@@ -190,7 +190,7 @@ Discard_non_clipped sequences (keep only sequences which contained the adapter)
 
 
 ## Trimmer
-Optianally, you trim your reads by defining trimming lenghts as shown at below: 
+Optianally, you can trim your reads by defining trimming lenghts as shown at below: 
 
 ```bash
 For Single End Reads  : 
