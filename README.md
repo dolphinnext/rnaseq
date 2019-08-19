@@ -1,10 +1,10 @@
-[![Travis-ci tests:](https://travis-ci.org/onuryukselen/rnaseq.svg?branch=master)](https://travis-ci.org/onuryukselen/rnaseq)
+[![Travis-ci tests:](https://travis-ci.org/dolphinnext/rnaseq.svg?branch=master)](https://travis-ci.org/dolphinnext/rnaseq)
 
 RNA-seq pipeline includes Quality Control, rRNA filtering, Genome Alignment using HISAT2, STAR and Tophat2, and estimating gene and isoform expression levels by RSEM and featureCounts.  
   
 #### Steps:
   1. For Quality Control, we use FastQC to create qc outputs. There are optional read quality filtering (trimmomatic), read quality trimming (trimmomatic), adapter removal (cutadapt) processes available.
-  2. Bowtie2/Bowtie/STAR is used to count or filter out common RNAs reads (eg. rRNA, miRNA, tRNA, piRNA etc.). 
+  2. Bowtie2/Bowtie/STAR is used to count or filter out common RNAs (eg. rRNA, miRNA, tRNA, piRNA etc.). 
   3. RSEM is used to align RNA-Seq reads to a reference transcripts and estimates gene and isoform expression levels.
   4. HISAT2, STAR and Tophat2 is used to align RNA-Seq reads to a genome. Optional estimation of gene and isoform expression levels could be done by featureCounts.
   5. Genome-wide Bam analysis is done by RseQC, Picard.
@@ -33,11 +33,11 @@ RNA-seq pipeline includes Quality Control, rRNA filtering, Genome Alignment usin
 
 #### Run through DolphinNext User Interface:
 
-To start using the dolphinnext/rnaseq pipeline please follow [*this link*](https://dolphinnext.umassmed.edu/index.php?np=1&id=437) and click run button.
+To start using the dolphinnext/rnaseq pipeline please go to [*DolphinNext Web page*](https://dolphinnext.umassmed.edu/index.php?np=1&id=437) and click run button.
 
 #### Run through Command Line:
 
-To install and start using the dolphinnext/rnaseq pipeline by using command line, please follow these steps: [*Installation*](https://github.com/onuryukselen/rnaseq/blob/master/docs/local.md).
+To install and start using the dolphinnext/rnaseq pipeline by using command line, please follow these steps: [*Installation*](https://github.com/dolphinnext/rnaseq/blob/master/docs/local.md).
 
 
 

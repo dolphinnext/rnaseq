@@ -35,7 +35,7 @@ This pipeline itself needs no installation - NextFlow will automatically fetch i
 ### Docker
 First, install docker on your system: [Docker Installation Instructions](https://docs.docker.com/engine/installation/)
 
-Then, running the pipeline with the option `-profile docker` tells Nextflow to enable Docker for this run. An image containing all of the software requirements will be automatically fetched and used from dockerhub ([https://hub.docker.com/r/onuryukselen/rna-seq](https://hub.docker.com/r/onuryukselen/rna-seq)).
+Then, running the pipeline with the option `-profile docker` tells Nextflow to enable Docker for this run. An image containing all of the software requirements will be automatically fetched and used from dockerhub ([https://hub.docker.com/r/dolphinnext/rnaseq](https://hub.docker.com/r/dolphinnext/rnaseq)).
 
 ```
 nextflow run dolphinnext/rnaseq -profile docker --DOWNDIR /path/to/save/genome-data --reads '*_R{1,2}.fastq.gz' --genome_build mouse_mm10_refseq

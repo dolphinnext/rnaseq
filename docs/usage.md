@@ -49,7 +49,7 @@ If `-profile` is not specified at all the pipeline will be run locally and expec
 
 * `docker`
   * A generic configuration profile to be used with [Docker](http://docker.com/)
-  * Pulls software from Dockerhub: [`dolphinnext/rna-seq`](http://hub.docker.com/r/dolphinnext/rna-seq/)
+  * Pulls software from Dockerhub: [`dolphinnext/rnaseq`](http://hub.docker.com/r/dolphinnext/rnaseq/)
 * `singularity`
   * A generic configuration profile to be used with [Singularity](http://singularity.lbl.gov/)
   * Pulls software from DockerHub
