@@ -1397,6 +1397,9 @@ if [ -n "${mappingList}" ]; then
                 echo "INFO: samtools sort -o \${rna_set}@${name}_sorted.dedup.bam \${rna_set}@${name}_sorted.deumi.sorted.bam.x_dup"
                 samtools sort -o \${rna_set}@${name}_sorted.dedup.bam \${rna_set}@${name}_sorted.deumi.sorted.bam.x_dup 
                 samtools index \${rna_set}@${name}_sorted.dedup.bam
+                #get flagstat after dedup
+                echo "##After Deduplication##" >> \${k2}@\${rna_set}@${name}_duplicates_stats.log
+                samtools flagstat \${rna_set}@${name}_sorted.dedup.bam >> \${k2}@\${rna_set}@${name}_duplicates_stats.log
             fi
             
         
@@ -4030,13 +4033,21 @@ foreach my $file (@files){
     my $name = $3; ##sample name
     push(@header, $mapper) unless grep{$_ eq $mapper} @header; 
         
-    my $duplicates;
+    # my $duplicates;
     my $aligned;
-    my $dedup;
+    my $dedup; #aligned reads after dedup
     my $percent=0;
-    chomp($aligned = `cat $file | grep 'mapped (' | awk '{sum+=\\$1+\\$3} END {print sum}'`);
-    chomp($duplicates = `cat $file | grep 'duplicates' | awk '{sum+=\\$1+\\$3} END {print sum}'`);
-    $dedup = int($aligned) - int($duplicates);
+    if ("!{mate}" eq "pair" ){
+        #first flagstat belongs to first bam file
+        chomp($aligned = `cat $file | grep 'properly paired (' | sed -n 1p | awk '{sum+=\\$1+\\$3} END {print sum}'`);
+        #second flagstat belongs to dedup bam file
+        chomp($dedup = `cat $file | grep 'properly paired (' | sed -n 2p | awk '{sum+=\\$1+\\$3} END {print sum}'`);
+    } else {
+        chomp($aligned = `cat $file | grep 'mapped (' | sed -n 1p | awk '{sum+=\\$1+\\$3} END {print sum}'`);
+        chomp($dedup = `cat $file | grep 'mapped (' | sed -n 2p | awk '{sum+=\\$1+\\$3} END {print sum}'`);
+    }
+    # chomp($duplicates = `cat $file | grep 'duplicates' | awk '{sum+=\\$1+\\$3} END {print sum}'`);
+    # $dedup = int($aligned) - int($duplicates);
     if ("!{mate}" eq "pair" ){
        $dedup = int($dedup/2);
        $aligned = int($aligned/2);
@@ -4179,8 +4190,7 @@ process Adapter_Trimmer_Quality_Module_Adapter_Removal_Summary {
 
 publishDir params.outdir, overwrite: true, mode: 'copy',
 	saveAs: {filename ->
-	if (filename =~ /adapter_removal_summary.tsv$/) "adapter_removal/$filename"
-	else if (filename =~ /adapter_removal_detailed_summary.tsv$/) "adapter_removal_detailed_summary/$filename"
+	if (filename =~ /adapter_removal_detailed_summary.tsv$/) "adapter_removal_detailed_summary/$filename"
 }
 
 input:
@@ -5194,7 +5204,9 @@ my $ID_header;
 chomp(my $contents = `ls *.tsv`);
 my @rawFiles = split(/[\\n]+/, $contents);
 my @files = ();
-my @order = ("adapter_removal","trimmer","quality","extractUMI","sequential_mapping", "star", "rsem", "hisat2", "tophat2", "bowtie");
+# order must be in this order for chipseq pipeline: bowtie->dedup
+# rsem bam pipeline: dedup->rsem, star->dedup
+my @order = ("adapter_removal","trimmer","quality","extractUMI","sequential_mapping","bowtie","star","hisat2","tophat2", "dedup","rsem");
 for ( my $k = 0 ; $k <= $#order ; $k++ ) {
     for ( my $i = 0 ; $i <= $#rawFiles ; $i++ ) {
         if ( $rawFiles[$i] =~ /$order[$k]/ ) {

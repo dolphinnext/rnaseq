@@ -105,10 +105,10 @@ List of genomes that are supported are:
   * `--genome_build rat_rn6_refseq`
   * `--genome_build rat_rn6_ensembl_v86`
 * Zebrafish
-  * `--genome_build 'zebrafish_GRCz11_ensembl_v95'`
-  * `--genome_build 'zebrafish_GRCz11_refseq'`
+  * `--genome_build zebrafish_GRCz11_ensembl_v95`
+  * `--genome_build zebrafish_GRCz11_refseq`
 * C. elegans
-  * `--genome_build 'c_elegans_ce11_ensembl_ws245'`
+  * `--genome_build c_elegans_ce11_ensembl_ws245`
 
 
 ### `--DOWNDIR` `--run_checkAndBuild`
