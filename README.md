@@ -2,7 +2,7 @@
 
 RNA-seq pipeline includes Quality Control, rRNA filtering, Genome Alignment using HISAT2, STAR and Tophat2, and estimating gene and isoform expression levels by RSEM and featureCounts.  
   
-#### Steps:
+##### Steps:
   1. For Quality Control, we use FastQC to create qc outputs. There are optional read quality filtering (trimmomatic), read quality trimming (trimmomatic), adapter removal (cutadapt) processes available.
   2. Bowtie2/Bowtie/STAR is used to count or filter out common RNAs (eg. rRNA, miRNA, tRNA, piRNA etc.). 
   3. RSEM is used to align RNA-Seq reads to a reference transcripts and estimates gene and isoform expression levels.
@@ -10,7 +10,7 @@ RNA-seq pipeline includes Quality Control, rRNA filtering, Genome Alignment usin
   5. Genome-wide Bam analysis is done by RseQC, Picard.
   6. Optionally you can create Integrative Genomics Viewer (IGV)  and Genome Browser Files (TDF and Bigwig, respectively)
 
-#### Program Versions:
+##### Program Versions:
   - FastQC v0.11.8
   - Star v2.6.1
   - Hisat2 v2.1.0
@@ -31,10 +31,10 @@ RNA-seq pipeline includes Quality Control, rRNA filtering, Genome Alignment usin
   - Pdfbox-App v2.0.0
  
 
-#### Run through DolphinNext User Interface:
+##### Run through DolphinNext User Interface:
 
 To start using the dolphinnext/rnaseq pipeline please go to [*DolphinNext Web page*](https://dolphinnext.umassmed.edu/index.php?np=1&id=437) and click run button.
 
-#### Run through Command Line:
+##### Run through Command Line:
 
 To install and start using the dolphinnext/rnaseq pipeline by using command line, please follow these steps: [*Installation*](https://github.com/dolphinnext/rnaseq/blob/master/docs/local.md).

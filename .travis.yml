@@ -42,6 +42,6 @@ script:
   # Lint the documentation
   # markdownlint ${TRAVIS_BUILD_DIR} -c ${TRAVIS_BUILD_DIR}/.github/markdownlint.yml
   - export NXF_ANSI_LOG=false
-  # Run, build reference genome with STAR
+  # Start Test Run
   - nextflow run ${TRAVIS_BUILD_DIR} -profile test,docker 
 
