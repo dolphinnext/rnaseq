@@ -1,4 +1,5 @@
 [![Travis-ci tests:](https://travis-ci.org/dolphinnext/rnaseq.svg?branch=master)](https://travis-ci.org/dolphinnext/rnaseq)
+[![DOI:10.1101/689539](https://zenodo.org/badge/DOI/10.1101/689539.svg)](https://doi.org/10.1101/689539)
 
 RNA-seq pipeline includes Quality Control, rRNA filtering, Genome Alignment using HISAT2, STAR and Tophat2, and estimating gene and isoform expression levels by RSEM and featureCounts.  
   
