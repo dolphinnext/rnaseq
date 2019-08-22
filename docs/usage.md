@@ -110,6 +110,7 @@ List of genomes that are supported are:
 * C. elegans
   * `--genome_build c_elegans_ce11_ensembl_ws245`
 
+Note: For new genome requests, please send e-mail to UMMS-Biocore(biocore@umassmed.edu).
 
 ### `--DOWNDIR` `--run_checkAndBuild`
 If your indexes are not build before, you can enable `--run_checkAndBuild` by assinging it's value to 'yes' which will check genome files in `--DOWNDIR` and download into that directory. Afterwards it will start building indexes based on the selected parameters in the pipeline. 
