@@ -98,7 +98,7 @@ List of genomes that are supported are:
 
 * Human
   * `--genome_build human_hg19_refseq`
-  * `--genome_build human_hg38_genecode_v28`
+  * `--genome_build human_hg38_gencode_v28`
 * Mouse
   * `--genome_build mouse_mm10_refseq`
 * Rat
@@ -110,6 +110,7 @@ List of genomes that are supported are:
 * C. elegans
   * `--genome_build c_elegans_ce11_ensembl_ws245`
 
+Note: For new genome requests, please send e-mail to UMMS-Biocore(biocore@umassmed.edu).
 
 ### `--DOWNDIR` `--run_checkAndBuild`
 If your indexes are not build before, you can enable `--run_checkAndBuild` by assinging it's value to 'yes' which will check genome files in `--DOWNDIR` and download into that directory. Afterwards it will start building indexes based on the selected parameters in the pipeline. 
@@ -140,7 +141,7 @@ If you prefer, you can specify the full path to your reference genome and disabl
 ## Alignment tool
 By default, the pipeline uses [STAR](https://github.com/alexdobin/STAR) to align the raw FastQ reads to the reference genome. STAR is fast and common, but requires a lot of memory to run, typically around 38GB for the Human hg19 reference genome.
 
-If you prefer, you can use [HISAT2](https://ccb.jhu.edu/software/hisat2/index.shtml) or TOPHAT2 as the alignment tool. Both tools developed by the same group, and HISAT2 has a much smaller memory footprint.
+If you prefer, you can use [HISAT2](https://ccb.jhu.edu/software/hisat2/index.shtml) or [TOPHAT2](https://ccb.jhu.edu/software/tophat/) as the alignment tool. Both tools developed by the same group and have a much smaller memory footprint compared to STAR. However, HISAT2 is recommended by the same group.  
 
 You can choose multiple aligner to compare their results by enabling/disabling following parameters:
 ```bash
@@ -176,7 +177,6 @@ You can change feature count parameters by assigning new parameters to following
 # Prefix for run output
 
 --BAM_Analysis_Hisat2_featureCounts_Prep.run_parameters =  [array @default:["-g gene_id -s 0 -Q 20 -T 2 -B -d 50 -D 1000 -C --fracOverlap 0 --minOverlap 1","-g transcript_id -s 0 -Q 20 -T 2 -B -d 50 -D 1000 -C --fracOverlap 0 --minOverlap 1"]]  
-
 # -s Indicate strand-specific read counting: 0 (unstranded, default), 1 (stranded) and 2 (reversely stranded) 
 # -Q The minimum mapping quality score 
 # -T Number of threads 
@@ -205,10 +205,10 @@ To enable adapter_removal:
 --Adapter_Trimmer_Quality_Module_Adapter_Removal.Adapter_Sequence [string]
 # You can enter a single sequence or multiple sequences in different lines. Reverse sequences will not be removed.
 
---Adapter_Trimmer_Quality_Module_Adapter_Removal.min_length [int]
+--Adapter_Trimmer_Quality_Module_Adapter_Removal.min_length [int @default:10]
 # Specifies the minimum length of reads to be kept
 
---Adapter_Trimmer_Quality_Module_Adapter_Removal.seed_mismatches [int]
+--Adapter_Trimmer_Quality_Module_Adapter_Removal.seed_mismatches [int @default:1]
 # Specifies the maximum mismatch count which will still allow a full match to be performed
 
 --Adapter_Trimmer_Quality_Module_Adapter_Removal.palindrome_clip_threshold [int @default:30]
