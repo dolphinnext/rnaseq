@@ -202,6 +202,9 @@ If specific Adapter Removal is required, you can enable trimmomatic and enter th
 To enable adapter_removal: 
 --run_Adapter_Removal "yes"
 
+--Adapter_Trimmer_Quality_Module_Adapter_Removal.phred = [@options:33,64 @default:33]
+# Specifies the fastq quality encoding. Default is 33 which is now almost universally used, and 64 which is used in some older Illumina data
+
 --Adapter_Trimmer_Quality_Module_Adapter_Removal.Adapter_Sequence [string]
 # You can enter a single sequence or multiple sequences in different lines. Reverse sequences will not be removed.
 
@@ -225,14 +228,19 @@ To enable adapter_removal:
 Optianally, you can trim your reads by defining trimming lenghts as shown at below: 
 
 ```bash
+
+--run_Trimmer [@options:"yes","no" @default:"no"]
+# Enables Trimmer by setting this parameter as "yes"
+
+--Adapter_Trimmer_Quality_Module_Trimmer.phred = [@options:33,64 @default:33]
+# Specifies the fastq quality encoding. Default is 33 which is now almost universally used, and 64 which is used in some older Illumina data
+
 For Single End Reads  : 
---run_Trimmer "yes"
 --Adapter_Trimmer_Quality_Module_Trimmer.single_or_paired_end_reads "single"
 --Adapter_Trimmer_Quality_Module_Trimmer.trim_length_5prime [int]
 --Adapter_Trimmer_Quality_Module_Trimmer.trim_length_3prime [int]
 
 For Paired End Reads  : 
---run_Trimmer "yes"
 --Adapter_Trimmer_Quality_Module_Trimmer.single_or_paired_end_reads "pair"
 --Adapter_Trimmer_Quality_Module_Trimmer.trim_length_5prime_R1 [int]
 --Adapter_Trimmer_Quality_Module_Trimmer.trim_length_3prime_R1 [int]
@@ -247,6 +255,10 @@ Optianally, you can trim your reads based on their quality. Trimmomatic works on
 To use Trimmomatic  : 
 --run_Quality_Filtering "yes"
 --Adapter_Trimmer_Quality_Module_Quality_Filtering.tool "trimmomatic"
+
+--Adapter_Trimmer_Quality_Module_Quality_Filtering.phred = [@options:33,64 @default:33]
+# Specifies the fastq quality encoding. Default is 33 which is now almost universally used, and 64 which is used in some older Illumina data
+
 --Adapter_Trimmer_Quality_Module_Quality_Filtering.window_size [int @default:10]
 # Performs a sliding window trimming approach. It starts scanning at the 5' end and clips the read once the average quality within the window falls below a threshold (=required_quality).
 
