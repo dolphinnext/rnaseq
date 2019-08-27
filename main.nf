@@ -525,6 +525,7 @@ when:
 (params.run_Adapter_Removal && (params.run_Adapter_Removal == "yes")) || !params.run_Adapter_Removal
 
 shell:
+phred = params.Adapter_Trimmer_Quality_Module_Adapter_Removal.phred
 Tool_for_Adapter_Removal = params.Adapter_Trimmer_Quality_Module_Adapter_Removal.Tool_for_Adapter_Removal
 Adapter_Sequence = params.Adapter_Trimmer_Quality_Module_Adapter_Removal.Adapter_Sequence
 //trimmomatic_inputs
@@ -575,13 +576,7 @@ close(OUT);
 
 
 system("!{runGzip}");
-my $quality="33";
-my $format="";
-my ($format, $len)=getFormat("!{file1}");
-print "fastq format: $format\\n";
-if ($format eq "solexa"){   
-    $quality="64";
-}
+my $quality="!{phred}";
 print "fastq quality: $quality\\n";
 print "tool: !{Tool_for_Adapter_Removal}\\n";
 
@@ -600,72 +595,6 @@ if ("!{mate}" eq "pair") {
         system("fastx_clipper  -Q $quality -a !{Adapter_Sequence} -l !{min_length} !{discard_non_clipped_text} -v -i !{file1} -o reads/!{name}.fastq > !{name}.fastx.log");
     }
 }
-
-
-# automatic format detection
-sub getFormat
-{
-   my ($filename)=@_;
-
-   # set function variables
-   open (IN, $filename);
-   my $j=1;
-   my $qualities="";
-   my $len=0;
-   while(my $line=<IN>)
-   {
-     chomp($line);
-     if ($j >50) { last;}
-     if ($j%4==0)
-     {
-        $qualities.=$line;
-        $len=length($line);
-     }
-     $j++;
-   }
-   close(IN);
-  
-   my $format = "";
-
-   # set regular expressions
-   my $sanger_regexp = qr/[!"#$%&'()*+,-.\\/0123456789:]/;
-   my $solexa_regexp = qr/[\\;<=>\\?]/;
-   my $solill_regexp = qr/[JKLMNOPQRSTUVWXYZ\\[\\]\\^\\_\\`abcdefgh]/;
-   my $all_regexp = qr/[\\@ABCDEFGHI]/;
-
-   # set counters
-   my $sanger_counter = 0;
-   my $solexa_counter = 0;
-   my $solill_counter = 0;
-
-   # check qualities
-   if( $qualities =~ m/$sanger_regexp/ ){
-          $sanger_counter = 1;
-   }
-   if( $qualities =~ m/$solexa_regexp/ ){
-          $solexa_counter = 1;
-   }
-   if( $qualities =~ m/$solill_regexp/ ){
-          $solill_counter = 1;
-   }
-
-   # determine format
-   if( $sanger_counter ){
-        $format = "sanger";
-    }elsif($solexa_counter ){
-        $format = "solexa";
-    }elsif($solill_counter ){
-        $format = "illumina";
-    }
-
-    # return file format
-    return( $format,$len );
-}
-
-
-
-
-
 '''
 
 }
@@ -705,6 +634,7 @@ when:
 (params.run_Trimmer && (params.run_Trimmer == "yes")) || !params.run_Trimmer
 
 shell:
+phred = params.Adapter_Trimmer_Quality_Module_Trimmer.phred
 single_or_paired_end_reads = params.Adapter_Trimmer_Quality_Module_Trimmer.single_or_paired_end_reads
 trim_length_5prime = params.Adapter_Trimmer_Quality_Module_Trimmer.trim_length_5prime
 trim_length_3prime = params.Adapter_Trimmer_Quality_Module_Trimmer.trim_length_3prime
@@ -742,34 +672,31 @@ if ("!{mate}" eq "pair") {
     my $file2 = "!{file2}";
     my $trim1 = "!{trim_length_5prime_R1}:!{trim_length_3prime_R1}";
     my $trim2 = "!{trim_length_5prime_R2}:!{trim_length_3prime_R2}";
-    my ($format, $len)=getFormat($file1);
+    my $len=getLength($file1);
     print "length of $file1: $len\\n";
-    trimFiles($file1, $trim1, $format, $len);
-    my ($format, $len)=getFormat($file2);
+    trimFiles($file1, $trim1, $len);
+    my $len=getLength($file2);
     print "length of $file2: $len\\n";
-    trimFiles($file2, $trim2, $format, $len);
+    trimFiles($file2, $trim2, $len);
 } else {
     my $file1 = "!{file1}";
     my $trim1 = "!{trim_length_5prime}:!{trim_length_3prime}";
-    my ($format, $len)=getFormat($file1);
-    print "length of file1 $len\\n";
-    trimFiles($file1, $trim1, $format, $len);
+    my $len=getLength($file1);
+    print "length of file1: $len\\n";
+    trimFiles($file1, $trim1, $len);
 }
 
 sub trimFiles
 {
-  my ($file, $trim, $format, $len)=@_;
+  my ($file, $trim, $len)=@_;
     my @nts=split(/[,:\\s\\t]+/,$trim);
     my $inpfile="";
     my $com="";
     my $i=1;
     my $outfile="";
     my $param="";
-    my $quality="";
-    #if ($format eq "sanger")
-    #{   
-      $quality="-Q33";
-    #}
+    my $quality="-Q!{phred}";
+
     if (scalar(@nts)==2)
     {
       $param = "-f ".($nts[0]+1) if (exists($nts[0]) && $nts[0] >= 0 );
@@ -790,15 +717,12 @@ sub trimFiles
     
 }
 
-# automatic format detection
-sub getFormat
+
+sub getLength
 {
    my ($filename)=@_;
-
-   # set function variables
    open (IN, $filename);
    my $j=1;
-   my $qualities="";
    my $len=0;
    while(my $line=<IN>)
    {
@@ -806,48 +730,12 @@ sub getFormat
      if ($j >50) { last;}
      if ($j%4==0)
      {
-        $qualities.=$line;
         $len=length($line);
      }
      $j++;
    }
    close(IN);
-  
-   my $format = "";
-
-   # set regular expressions
-   my $sanger_regexp = qr/[!"#$%&'()*+,-.\\/0123456789:]/;
-   my $solexa_regexp = qr/[\\;<=>\\?]/;
-   my $solill_regexp = qr/[JKLMNOPQRSTUVWXYZ\\[\\]\\^\\_\\`abcdefgh]/;
-   my $all_regexp = qr/[\\@ABCDEFGHI]/;
-
-   # set counters
-   my $sanger_counter = 0;
-   my $solexa_counter = 0;
-   my $solill_counter = 0;
-
-   # check qualities
-   if( $qualities =~ m/$sanger_regexp/ ){
-          $sanger_counter = 1;
-   }
-   if( $qualities =~ m/$solexa_regexp/ ){
-          $solexa_counter = 1;
-   }
-   if( $qualities =~ m/$solill_regexp/ ){
-          $solill_counter = 1;
-   }
-
-   # determine format
-   if( $sanger_counter ){
-        $format = "sanger";
-    }elsif($solexa_counter ){
-        $format = "solexa";
-    }elsif($solill_counter ){
-        $format = "illumina";
-    }
-
-    # return file format
-    return( $format,$len );
+   return $len;
 }
 
 '''
@@ -974,11 +862,13 @@ when:
 
 shell:
 tool = params.Adapter_Trimmer_Quality_Module_Quality_Filtering.tool
+phred = params.Adapter_Trimmer_Quality_Module_Quality_Filtering.phred
 window_size = params.Adapter_Trimmer_Quality_Module_Quality_Filtering.window_size
 required_quality_for_window_trimming = params.Adapter_Trimmer_Quality_Module_Quality_Filtering.required_quality_for_window_trimming
 leading = params.Adapter_Trimmer_Quality_Module_Quality_Filtering.leading
 trailing = params.Adapter_Trimmer_Quality_Module_Quality_Filtering.trailing
 minlen = params.Adapter_Trimmer_Quality_Module_Quality_Filtering.minlen
+
 
 // fastx parameters
 minQuality = params.Adapter_Trimmer_Quality_Module_Quality_Filtering.minQuality
@@ -1015,14 +905,9 @@ my $param = "SLIDINGWINDOW:"."!{window_size}".":"."!{required_quality_for_window
 $param.=" LEADING:"."!{leading}";
 $param.=" TRAILING:"."!{trailing}";
 $param.=" MINLEN:"."!{minlen}";
-my $format=getFormat("!{file1}");
-print "fastq format: $format\\n";
-my $quality="33";
-if ($format eq "sanger"){   
-    $quality="33";
-} elsif ($format eq "illumina" || $format eq "solexa"){
-    $quality="64";
-} 
+
+my $quality="!{phred}";
+
 print "fastq quality: $quality\\n";
      
 if ("!{tool}" eq "trimmomatic") {
@@ -1042,62 +927,6 @@ if ("!{tool}" eq "trimmomatic") {
 }
 
 
-# automatic format detection
-sub getFormat
-{
-   my ($filename)=@_;
-
-   # set function variables
-   open (IN, $filename);
-   my $j=1;
-   my $qualities="";
-   while(my $line=<IN>)
-   {
-     if ($j >50) { last;}
-     if ($j%4==0)
-     {
-        $qualities.=$line;
-     }
-     $j++;
-   }
-   close(IN);
-  
-   my $format = "";
-
-   # set regular expressions
-   my $sanger_regexp = qr/[!"#$%&'()*+,-.\\/0123456789:]/;
-   my $solexa_regexp = qr/[\\;<=>\\?]/;
-   my $solill_regexp = qr/[JKLMNOPQRSTUVWXYZ\\[\\]\\^\\_\\`abcdefgh]/;
-   my $all_regexp = qr/[\\@ABCDEFGHI]/;
-
-   # set counters
-   my $sanger_counter = 0;
-   my $solexa_counter = 0;
-   my $solill_counter = 0;
-
-   # check qualities
-   if( $qualities =~ m/$sanger_regexp/ ){
-          $sanger_counter = 1;
-   }
-   if( $qualities =~ m/$solexa_regexp/ ){
-          $solexa_counter = 1;
-   }
-   if( $qualities =~ m/$solill_regexp/ ){
-          $solill_counter = 1;
-   }
-
-   # determine format
-   if( $sanger_counter ){
-        $format = "sanger";
-    }elsif($solexa_counter ){
-        $format = "solexa";
-    }elsif($solill_counter ){
-        $format = "illumina";
-    }
-
-    # return file format
-    return( $format );
-}
 
 '''
 
@@ -1831,7 +1660,7 @@ mv align_summary.txt ${newName}_align_summary.txt
 //* autofill
 //* platform
 if ($HOSTNAME == "ghpcc06.umassrc.org"){
-    $TIME = 1000
+    $TIME = 2000
     $CPU  = 1
     $MEMORY = 8
     $QUEUE = "long"
@@ -2493,7 +2322,7 @@ samtools flagstat ${newName}.bam > ${newName}.flagstat.txt
 //* autofill
 //* platform
 if ($HOSTNAME == "ghpcc06.umassrc.org"){
-    $TIME = 1000
+    $TIME = 2000
     $CPU  = 1
     $MEMORY = 8
     $QUEUE = "long"
@@ -3081,7 +2910,7 @@ sub getMetricVals{
 //* autofill
 //* platform
 if ($HOSTNAME == "ghpcc06.umassrc.org"){
-    $TIME = 1000
+    $TIME = 2000
     $CPU  = 1
     $MEMORY = 8
     $QUEUE = "long"
@@ -3181,7 +3010,7 @@ samtools flagstat ${newName}.bam > ${newName}.flagstat.txt
 //* autofill
 //* platform
 if ($HOSTNAME == "ghpcc06.umassrc.org"){
-    $TIME = 1000
+    $TIME = 2000
     $CPU  = 1
     $MEMORY = 8
     $QUEUE = "long"
@@ -3990,8 +3819,7 @@ sub makeBed {
 
 }
 
-mappingListQuoteSep = mapList.collect{ '"' + it + '"'}.join(",") 
-rawIndexList = indexList.collect{ '"' + it + '"'}.join(",") 
+
 process Sequential_Mapping_Module_Deduplication_Summary {
 
 publishDir params.outdir, overwrite: true, mode: 'copy',
