@@ -6,7 +6,7 @@ RNA-seq pipeline includes Quality Control, rRNA filtering, Genome Alignment usin
   1. For Quality Control, we use FastQC to create qc outputs. There are optional read quality filtering (trimmomatic), read quality trimming (trimmomatic), adapter removal (cutadapt) processes available.
   2. Bowtie2/Bowtie/STAR is used to count or filter out common RNAs (eg. rRNA, miRNA, tRNA, piRNA etc.). 
   3. RSEM is used to align RNA-Seq reads to a reference transcripts and estimates gene and isoform expression levels.
-  4. HISAT2, STAR and Tophat2 is used to align RNA-Seq reads to a genome. Optional estimation of gene and isoform expression levels could be done by featureCounts.
+  4. HISAT2, STAR and Tophat2 are used to align RNA-Seq reads to a genome. Optional estimation of gene and isoform expression levels could be done by featureCounts.
   5. Genome-wide Bam analysis is done by RseQC, Picard.
   6. Optionally you can create Integrative Genomics Viewer (IGV)  and Genome Browser Files (TDF and Bigwig, respectively)
 
