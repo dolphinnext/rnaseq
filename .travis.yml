@@ -43,4 +43,4 @@ script:
   # markdownlint ${TRAVIS_BUILD_DIR} -c ${TRAVIS_BUILD_DIR}/.github/markdownlint.yml
   - export NXF_ANSI_LOG=false
   # Start Test Run
-  - nextflow run ${TRAVIS_BUILD_DIR} -profile test,docker 
+  - nextflow run ${TRAVIS_BUILD_DIR} -profile test,docker
