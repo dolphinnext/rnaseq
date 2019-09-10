@@ -44,4 +44,3 @@ script:
   - export NXF_ANSI_LOG=false
   # Start Test Run
   - nextflow run ${TRAVIS_BUILD_DIR} -profile test,docker 
-
