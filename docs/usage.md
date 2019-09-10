@@ -390,4 +390,3 @@ The `dolphinnext/tools` repository contains some scripts used by the pipeline wh
 
 * `gtf2bed`
   * Script used to generate the BED12 reference files used by RSeQC. Takes a `.gtf` file as input
-
