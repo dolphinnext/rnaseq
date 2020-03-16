@@ -1,4 +1,4 @@
-FROM nfcore/base
+FROM nfcore/base:1.8 #Don't upgrade, it gives Kernel too old error for singularity
 LABEL author="onur.yukselen@umassmed.edu" description="Docker image containing all requirements for the dolphinnext/rnaseq pipeline"
 
 COPY environment.yml /
