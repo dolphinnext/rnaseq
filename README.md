@@ -10,7 +10,6 @@ RNA-seq pipeline includes Quality Control, rRNA filtering, Genome Alignment usin
   5. Genome-wide Bam analysis is done by RseQC, Picard.
   6. Optionally you can create Integrative Genomics Viewer (IGV)  and Genome Browser Files (TDF and Bigwig, respectively)
 
-
 ##### Pipeline Container:
   * Docker: dolphinnext/rnaseq:1.0
 
