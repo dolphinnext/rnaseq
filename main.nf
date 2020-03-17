@@ -518,7 +518,7 @@ input:
  val mate from g_204_mate_g213_18
 
 output:
- set val(name), file("reads/*")  into g213_18_reads_g213_19
+ set val(name), file("reads/*.fastq")  into g213_18_reads_g213_19
  file "*.{fastx,trimmomatic}.log"  into g213_18_log_file_g213_11
 
 when:
@@ -627,7 +627,7 @@ input:
  val mate from g_204_mate_g213_19
 
 output:
- set val(name), file("reads/*")  into g213_19_reads_g213_20
+ set val(name), file("reads/*q")  into g213_19_reads_g213_20
  file "*.log" optional true  into g213_19_log_file_g213_21
 
 when:
@@ -854,7 +854,7 @@ input:
  val mate from g_204_mate_g213_20
 
 output:
- set val(name), file("reads/*")  into g213_20_reads_g214_32
+ set val(name), file("reads/*q")  into g213_20_reads_g214_32
  file "*.{fastx,trimmomatic}_quality.log" optional true  into g213_20_log_file_g213_16
 
 when:
@@ -934,7 +934,7 @@ if ("!{tool}" eq "trimmomatic") {
 }
 
 
-g209_18_commondb_path_g214_32= g209_18_commondb_path_g214_32.ifEmpty(file('commondb_path', type: 'any')) 
+g209_18_commondb_path_g214_32= g209_18_commondb_path_g214_32.ifEmpty([""]) 
 
 params.run_Sequential_Mapping =   "yes"   //* @dropdown @options:"yes","no" @show_settings:"Sequential_Mapping"
 params.bowtieInd_rRNA =  ""  //* @input
@@ -1017,14 +1017,14 @@ indexesList = indexList.join(",")
 
 //* autofill
 if ($HOSTNAME == "default"){
-    $CPU  = 1
-    $MEMORY = 32
+    $CPU  = 4
+    $MEMORY = 20
 }
 //* platform
 if ($HOSTNAME == "ghpcc06.umassrc.org"){
-    $TIME = 2500
-    $CPU  = 1
-    $MEMORY = 32
+    $TIME = 2000
+    $CPU  = 4
+    $MEMORY = 20
     $QUEUE = "long"
 }
 //* platform
@@ -1057,14 +1057,16 @@ input:
  val commondb_path from g209_18_commondb_path_g214_32
 
 output:
- set val(name), file("final_reads/*")  into g214_32_reads_g_127, g214_32_reads_g215_19
- set val(name), file("bowfiles/*") optional true  into g214_32_bowfiles_g214_26, g214_32_bowfiles_g_177
+ set val(name), file("final_reads/*q")  into g214_32_reads_g_127, g214_32_reads_g215_19
+ set val(name), file("bowfiles/?*") optional true  into g214_32_bowfiles_g214_26, g214_32_bowfiles_g_177
  file "*/*_sorted.bam" optional true  into g214_32_bam_file_g214_23
  file "*/*_sorted.bam.bai" optional true  into g214_32_bam_index_g214_23
  val filtersList  into g214_32_filter_g214_26
  file "*/*_sorted.dedup.bam" optional true  into g214_32_bam_file_g214_27
  file "*/*_sorted.dedup.bam.bai" optional true  into g214_32_bam_index_g214_27
  file "*/*_duplicates_stats.log" optional true  into g214_32_log_file_g214_30
+
+errorStrategy 'retry'
 
 when:
 params.run_Sequential_Mapping == "yes"
@@ -1178,6 +1180,7 @@ if [ -n "${mappingList}" ]; then
             fi
             echo "INFO: samtools view -bT \${fasta} \${rna_set}_${name}_alignment.sam > \${rna_set}_${name}_alignment.bam"
             samtools view -bT \${fasta} \${rna_set}_${name}_alignment.sam > \${rna_set}_${name}_alignment.bam
+            rm -f \${rna_set}_${name}_alignment.sam
             if [ "\${alignersListAr[\$k-1]}" == "bowtie" ]; then
                 mv \${rna_set}_${name}_alignment.bam \${rna_set}_${name}_tmp0.bam
                 echo "INFO: samtools view -F 0x04 -b \${rna_set}_${name}_tmp0.bam > \${rna_set}_${name}_alignment.bam"
@@ -1260,7 +1263,7 @@ fi
 }
 
 
-g209_11_genomeIndexPath_g215_19= g209_11_genomeIndexPath_g215_19.ifEmpty(file('rsemIndex', type: 'any')) 
+g209_11_genomeIndexPath_g215_19= g209_11_genomeIndexPath_g215_19.ifEmpty([""]) 
 
 params.rsem_ref_using_star_index =  ""  //* @input
 params.rsem_ref_using_bowtie2_index =  ""  //* @input
@@ -1287,7 +1290,7 @@ process RSEM_module_RSEM {
 
 publishDir params.outdir, overwrite: true, mode: 'copy',
 	saveAs: {filename ->
-	if (filename =~ /pipe.rsem..*$/) "rsem/$filename"
+	if (filename =~ /pipe.rsem.${name}$/) "rsem/$filename"
 }
 
 input:
@@ -1296,9 +1299,11 @@ input:
  val rsemIndex from g209_11_genomeIndexPath_g215_19.collect()
 
 output:
- file "pipe.rsem.*"  into g215_19_rsemOut_g215_17, g215_19_rsemOut_g215_15, g215_19_rsemOut_g_177
+ file "pipe.rsem.${name}"  into g215_19_rsemOut_g215_17, g215_19_rsemOut_g215_15, g215_19_rsemOut_g_177
  set val(name), file("pipe.rsem.*/*.genome.bam") optional true  into g215_19_bam_file_g219_121, g215_19_bam_file_g219_122, g215_19_bam_file_g219_123, g215_19_bam_file_g219_124, g215_19_bam_file_g219_126
  set val(name), file("pipe.rsem.*/*.bam") optional true  into g215_19_mapped_reads
+
+errorStrategy 'retry'
 
 when:
 (params.run_RSEM && (params.run_RSEM == "yes")) || !params.run_RSEM
@@ -1575,7 +1580,7 @@ input:
  set val(name), file(reads) from g214_32_reads_g_127.map(flatPairsClosure).splitFastq(splitFastqParams).map(groupPairsClosure)
 
 output:
- set val(name), file("split/*")  into g_127_reads_g216_11, g_127_reads_g217_16, g_127_reads_g218_11
+ set val(name), file("split/*q")  into g_127_reads_g216_11, g_127_reads_g217_16, g_127_reads_g218_11
 
 when:
 params.run_Split_Fastq == "yes"
@@ -1589,7 +1594,7 @@ mv ${reads} split/.
 }
 
 
-g209_6_genomeIndexPath_g218_11= g209_6_genomeIndexPath_g218_11.ifEmpty(file('tophat2_index', type: 'any')) 
+g209_6_genomeIndexPath_g218_11= g209_6_genomeIndexPath_g218_11.ifEmpty([""]) 
 
 params.bowtie2_index =  ""  //* @input
 params.gtf =  ""  //* @input
@@ -2252,7 +2257,7 @@ sub getMetricVals{
 
 }
 
-g209_0_genomeIndexPath_g217_16= g209_0_genomeIndexPath_g217_16.ifEmpty(file('star_index', type: 'any')) 
+g209_0_genomeIndexPath_g217_16= g209_0_genomeIndexPath_g217_16.ifEmpty([""]) 
 
 params.star_index =  ""  //* @input
 
@@ -2287,6 +2292,8 @@ output:
  set val(name), file("${newName}Log.progress.out")  into g217_16_progressOut_g217_18
  set val(name), file("${newName}Aligned.toTranscriptome.out.bam") optional true  into g217_16_transcriptome_bam_g217_15
 
+errorStrategy 'retry'
+
 when:
 (params.run_STAR && (params.run_STAR == "yes")) || !params.run_STAR
 
@@ -2308,6 +2315,7 @@ if (nameAll.contains('.gz')) {
 """
 $runGzip
 STAR ${params_STAR}  --genomeDir ${params.star_index} --readFilesIn $file --outFileNamePrefix ${newName}
+echo "Alignment completed."
 if [ ! -e "${newName}Aligned.toTranscriptome.out.bam" -a -e "${newName}Aligned.toTranscriptome.out.sam" ] ; then
     samtools view -S -b ${newName}Aligned.toTranscriptome.out.sam > ${newName}Aligned.toTranscriptome.out.bam
 elif [ ! -e "${newName}Aligned.out.bam" -a -e "${newName}Aligned.out.sam" ] ; then
@@ -2952,7 +2960,7 @@ fi
 '''
 }
 
-g209_8_genomeIndexPath_g216_11= g209_8_genomeIndexPath_g216_11.ifEmpty(file('hisat2index', type: 'any')) 
+g209_8_genomeIndexPath_g216_11= g209_8_genomeIndexPath_g216_11.ifEmpty([""]) 
 
 params.hisat2_index =  ""  //* @input
 
@@ -4990,14 +4998,14 @@ awk 'FNR==1 && NR!=1 {  getline; } 1 {print} ' *.tsv > ${name}.tsv
 """
 }
 
-g217_11_outputFileTSV_g_198= g217_11_outputFileTSV_g_198.ifEmpty(file('starSum', type: 'any')) 
-g214_14_outputFileTSV_g_198= g214_14_outputFileTSV_g_198.ifEmpty(file('sequentialSum', type: 'any')) 
-g216_10_outputFileTSV_g_198= g216_10_outputFileTSV_g_198.ifEmpty(file('hisatSum', type: 'any')) 
-g215_17_outputFileTSV_g_198= g215_17_outputFileTSV_g_198.ifEmpty(file('rsemSum', type: 'any')) 
-g218_9_outputFileTSV_g_198= g218_9_outputFileTSV_g_198.ifEmpty(file('tophatSum', type: 'any')) 
-g213_11_outputFileTSV_g_198= g213_11_outputFileTSV_g_198.ifEmpty(file('adapterSum', type: 'any')) 
-g213_21_outputFileTSV_g_198= g213_21_outputFileTSV_g_198.ifEmpty(file('trimmerSum', type: 'any')) 
-g213_16_outputFileTSV_g_198= g213_16_outputFileTSV_g_198.ifEmpty(file('qualitySum', type: 'any')) 
+g217_11_outputFileTSV_g_198= g217_11_outputFileTSV_g_198.ifEmpty([""]) 
+g214_14_outputFileTSV_g_198= g214_14_outputFileTSV_g_198.ifEmpty([""]) 
+g216_10_outputFileTSV_g_198= g216_10_outputFileTSV_g_198.ifEmpty([""]) 
+g215_17_outputFileTSV_g_198= g215_17_outputFileTSV_g_198.ifEmpty([""]) 
+g218_9_outputFileTSV_g_198= g218_9_outputFileTSV_g_198.ifEmpty([""]) 
+g213_11_outputFileTSV_g_198= g213_11_outputFileTSV_g_198.ifEmpty([""]) 
+g213_21_outputFileTSV_g_198= g213_21_outputFileTSV_g_198.ifEmpty([""]) 
+g213_16_outputFileTSV_g_198= g213_16_outputFileTSV_g_198.ifEmpty([""]) 
 
 //* autofill
 //* platform
@@ -5321,8 +5329,12 @@ input:
  file "rseqc_hisat/*" from g220_122_outputFileOut_g_177.flatten().toList()
 
 output:
- file "multiqc_report.html" optional true  into g_177_htmlout
+ file "multiqc_report.html" optional true  into g_177_outputHTML
 
+errorStrategy 'retry'
+maxRetries 2
+
+script:
 """
 multiqc -e general_stats -d -dd 2 .
 """
