@@ -518,7 +518,7 @@ input:
  val mate from g_204_mate_g213_18
 
 output:
- set val(name), file("reads/*")  into g213_18_reads_g213_19
+ set val(name), file("reads/*.fastq")  into g213_18_reads_g213_19
  file "*.{fastx,trimmomatic}.log"  into g213_18_log_file_g213_11
 
 when:
@@ -536,6 +536,10 @@ simple_clip_threshold = params.Adapter_Trimmer_Quality_Module_Adapter_Removal.si
 
 //fastx_clipper_inputs
 discard_non_clipped = params.Adapter_Trimmer_Quality_Module_Adapter_Removal.discard_non_clipped
+    
+remove_previous_reads = params.Adapter_Trimmer_Quality_Module_Adapter_Removal.remove_previous_reads
+workdir = workflow.workDir.toString()
+inputsdir = workdir.substring(0, workdir.lastIndexOf('/')) + "/inputs"    
     
 discard_non_clipped_text = ""
 if (discard_non_clipped == "yes") {discard_non_clipped_text = "-c"}
@@ -561,7 +565,7 @@ if (nameAll.contains('.gz')) {
  use Getopt::Long;
  use Pod::Usage; 
  
-system("mkdir reads adapter unpaired");
+runCmd("mkdir reads adapter unpaired");
 
 open(OUT, ">adapter/adapter.fa");
 my @adaps=split(/\n/,"!{Adapter_Sequence}");
@@ -573,27 +577,46 @@ foreach my $adap (@adaps)
 }
 close(OUT);
 
-
-
-system("!{runGzip}");
+runCmd("!{runGzip}");
 my $quality="!{phred}";
 print "fastq quality: $quality\\n";
 print "tool: !{Tool_for_Adapter_Removal}\\n";
 
 if ("!{mate}" eq "pair") {
     if ("!{Tool_for_Adapter_Removal}" eq "trimmomatic") {
-        system("trimmomatic PE -threads 1 -phred${quality} !{file1} !{file2} reads/!{name}.1.fastq unpaired/!{name}.1.fastq.unpaired reads/!{name}.2.fastq unpaired/!{name}.1.fastq.unpaired ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length} 2> !{name}.trimmomatic.log");
+        runCmd("trimmomatic PE -threads 1 -phred${quality} !{file1} !{file2} reads/!{name}.1.fastq unpaired/!{name}.1.fastq.unpaired reads/!{name}.2.fastq unpaired/!{name}.1.fastq.unpaired ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length} 2> !{name}.trimmomatic.log");
     } elsif ("!{Tool_for_Adapter_Removal}" eq "fastx_clipper") {
         print "Fastx_clipper is not suitable for paired reads.";
     }
 } else {
     if ("!{Tool_for_Adapter_Removal}" eq "trimmomatic") {
         print "trimmomatic SE -threads 1  -phred${quality} !{file1} reads/!{name}.fastq ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length} 2> !{name}.trimmomatic.log";
-        system("trimmomatic SE -threads 1  -phred${quality} !{file1} reads/!{name}.fastq ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length} 2> !{name}.trimmomatic.log");
+        runCmd("trimmomatic SE -threads 1  -phred${quality} !{file1} reads/!{name}.fastq ILLUMINACLIP:adapter/adapter.fa:!{seed_mismatches}:!{palindrome_clip_threshold}:!{simple_clip_threshold} MINLEN:!{min_length} 2> !{name}.trimmomatic.log");
     } elsif ("!{Tool_for_Adapter_Removal}" eq "fastx_clipper") {
         print "fastx_clipper  -Q $quality -a !{Adapter_Sequence} -l !{min_length} !{discard_non_clipped_text} -v -i !{file1} -o reads/!{name}.fastq > !{name}.fastx.log";
-        system("fastx_clipper  -Q $quality -a !{Adapter_Sequence} -l !{min_length} !{discard_non_clipped_text} -v -i !{file1} -o reads/!{name}.fastq > !{name}.fastx.log");
+        runCmd("fastx_clipper  -Q $quality -a !{Adapter_Sequence} -l !{min_length} !{discard_non_clipped_text} -v -i !{file1} -o reads/!{name}.fastq > !{name}.fastx.log");
     }
+}
+if ("!{remove_previous_reads}" eq "true") {
+    print "INFO: inputs reads will be removed if they are located in the workdir inputsdir\\n";
+    my @listOfFiles = `readlink -e !{file1} !{file2}`;
+    foreach my $targetFile (@listOfFiles){
+        if (index($targetFile, "!{workdir}") != -1 || index($targetFile, "!{inputsdir}") != -1) {
+            runCmd("rm -f $targetFile");
+            print "INFO: $targetFile deleted.\\n";
+        }
+    }
+}
+
+
+##Subroutines
+sub runCmd {
+    my ($com) = @_;
+    my $error = system($com);
+    print "Command: $com $error\\n";
+    print "Log: $error\\n";
+    # if   ($error) { die "Command failed: $error $com\\n"; }
+    # else          { print "Command successful: $com\\n"; }
 }
 '''
 
@@ -627,7 +650,7 @@ input:
  val mate from g_204_mate_g213_19
 
 output:
- set val(name), file("reads/*")  into g213_19_reads_g213_20
+ set val(name), file("reads/*q")  into g213_19_reads_g213_20
  file "*.log" optional true  into g213_19_log_file_g213_21
 
 when:
@@ -642,6 +665,11 @@ trim_length_5prime_R1 = params.Adapter_Trimmer_Quality_Module_Trimmer.trim_lengt
 trim_length_3prime_R1 = params.Adapter_Trimmer_Quality_Module_Trimmer.trim_length_3prime_R1
 trim_length_5prime_R2 = params.Adapter_Trimmer_Quality_Module_Trimmer.trim_length_5prime_R2
 trim_length_3prime_R2 = params.Adapter_Trimmer_Quality_Module_Trimmer.trim_length_3prime_R2
+remove_previous_reads = params.Adapter_Trimmer_Quality_Module_Trimmer.remove_previous_reads
+workdir = workflow.workDir.toString()
+inputsdir = workdir.substring(0, workdir.lastIndexOf('/')) + "/inputs"
+
+
 nameAll = reads.toString()
 nameArray = nameAll.split(' ')
 file2 = ""
@@ -665,26 +693,39 @@ if (nameAll.contains('.gz')) {
  use Pod::Usage; 
  
 system("mkdir reads");
-
 system("!{runGzip}");
+my $file1 = "";
+my $file2 = "";
 if ("!{mate}" eq "pair") {
-    my $file1 = "!{file1}";
-    my $file2 = "!{file2}";
+    $file1 = "!{file1}";
+    $file2 = "!{file2}";
     my $trim1 = "!{trim_length_5prime_R1}:!{trim_length_3prime_R1}";
     my $trim2 = "!{trim_length_5prime_R2}:!{trim_length_3prime_R2}";
     my $len=getLength($file1);
     print "length of $file1: $len\\n";
     trimFiles($file1, $trim1, $len);
     my $len=getLength($file2);
-    print "length of $file2: $len\\n";
+    print "INFO: length of $file2: $len\\n";
     trimFiles($file2, $trim2, $len);
 } else {
-    my $file1 = "!{file1}";
+    $file1 = "!{file1}";
     my $trim1 = "!{trim_length_5prime}:!{trim_length_3prime}";
     my $len=getLength($file1);
-    print "length of file1: $len\\n";
+    print "INFO: length of file1: $len\\n";
     trimFiles($file1, $trim1, $len);
 }
+if ("!{remove_previous_reads}" eq "true") {
+    print "INFO: inputs reads will be removed if they are located in the workdir/inputsdir\\n";
+    my @listOfFiles = `readlink -e $file1 $file2`;
+    foreach my $targetFile (@listOfFiles){
+        if (index($targetFile, "!{workdir}") != -1 || index($targetFile, "!{inputsdir}") != -1) {
+            system("rm -f $targetFile");
+            print "INFO: $targetFile deleted.\\n";
+        }
+    }
+}
+
+
 
 sub trimFiles
 {
@@ -701,16 +742,15 @@ sub trimFiles
     {
       $param = "-f ".($nts[0]+1) if (exists($nts[0]) && $nts[0] >= 0 );
       $param .= " -l ".($len-$nts[1]) if (exists($nts[0]) && $nts[1] > 0 );
-      print "parameters for $file: $param \\n ";
       $outfile="reads/$file";  
       $com="fastx_trimmer $quality -v $param -o $outfile -i $file > !{name}.fastx_trimmer.log" if ((exists($nts[0]) && $nts[0] > 0) || (exists($nts[0]) && $nts[1] > 0 ));
-      print "$com\\n";
+      print "INFO: $com\\n";
       if ($com eq ""){
-          print "trimmer skipped for $file \\n";
+          print "INFO: Trimmer skipped for $file \\n";
           system("mv $file reads/.");
       } else {
           system("$com");
-          print "trimmer executed for $file \\n";
+          print "INFO: Trimmer executed for $file \\n";
       }
     }
 
@@ -854,7 +894,7 @@ input:
  val mate from g_204_mate_g213_20
 
 output:
- set val(name), file("reads/*")  into g213_20_reads_g214_32
+ set val(name), file("reads/*q")  into g213_20_reads_g214_32
  file "*.{fastx,trimmomatic}_quality.log" optional true  into g213_20_log_file_g213_16
 
 when:
@@ -873,7 +913,10 @@ minlen = params.Adapter_Trimmer_Quality_Module_Quality_Filtering.minlen
 // fastx parameters
 minQuality = params.Adapter_Trimmer_Quality_Module_Quality_Filtering.minQuality
 minPercent = params.Adapter_Trimmer_Quality_Module_Quality_Filtering.minPercent
-    
+
+remove_previous_reads = params.Adapter_Trimmer_Quality_Module_Quality_Filtering.remove_previous_reads
+workdir = workflow.workDir.toString()
+inputsdir = workdir.substring(0, workdir.lastIndexOf('/')) + "/inputs"
     
 nameAll = reads.toString()
 nameArray = nameAll.split(' ')
@@ -898,8 +941,6 @@ if (nameAll.contains('.gz')) {
  use Pod::Usage; 
  
 system("mkdir reads unpaired");
-
-
 system("!{runGzip}");
 my $param = "SLIDINGWINDOW:"."!{window_size}".":"."!{required_quality_for_window_trimming}";
 $param.=" LEADING:"."!{leading}";
@@ -908,7 +949,7 @@ $param.=" MINLEN:"."!{minlen}";
 
 my $quality="!{phred}";
 
-print "fastq quality: $quality\\n";
+print "INFO: fastq quality: $quality\\n";
      
 if ("!{tool}" eq "trimmomatic") {
     if ("!{mate}" eq "pair") {
@@ -923,9 +964,17 @@ if ("!{tool}" eq "trimmomatic") {
     } else {
         system("fastq_quality_filter  -Q $quality -q !{minQuality} -p !{minPercent} -v -i !{file1} -o reads/!{name}.fastq > !{name}.fastx_quality.log");
     }
-    
 }
-
+if ("!{remove_previous_reads}" eq "true") {
+    print "INFO: inputs reads will be removed if they are located in the workdir or inputsdir\\n";
+    my @listOfFiles = `readlink -e !{file1} !{file2}`;
+    foreach my $targetFile (@listOfFiles){
+        if (index($targetFile, "!{workdir}") != -1 || index($targetFile, "!{inputsdir}") != -1) {
+            system("rm -f $targetFile");
+            print "INFO: $targetFile deleted.\\n";
+        }
+    }
+}
 
 
 '''
@@ -934,9 +983,9 @@ if ("!{tool}" eq "trimmomatic") {
 }
 
 
-g209_18_commondb_path_g214_32= g209_18_commondb_path_g214_32.ifEmpty(file('commondb_path', type: 'any')) 
+g209_18_commondb_path_g214_32= g209_18_commondb_path_g214_32.ifEmpty([""]) 
 
-params.run_Sequential_Mapping =   "yes"   //* @dropdown @options:"yes","no" @show_settings:"Sequential_Mapping"
+params.run_Sequential_Mapping =   "yes"   //* @dropdown @options:"yes","no" @show_settings:"Sequential_Mapping" @description:"Filters out or quantify given sequence sets."
 params.bowtieInd_rRNA =  ""  //* @input
 params.bowtieInd_ercc =  ""  //* @input
 params.bowtieInd_miRNA =  ""  //* @input
@@ -963,10 +1012,6 @@ genomeIndexes = [bowtie: params.bowtie_index,
 
 
 //_nucleicAcidType="dna" should be defined in the autofill section of pipeline header in case dna is used.
-remove_duplicates = params.Sequential_Mapping_Module_Sequential_Mapping.remove_duplicates
-remove_duplicates_based_on_UMI_after_mapping = params.Sequential_Mapping_Module_Sequential_Mapping.remove_duplicates_based_on_UMI_after_mapping
-
-
 _select_sequence = params.Sequential_Mapping_Module_Sequential_Mapping._select_sequence
 index_directory = params.Sequential_Mapping_Module_Sequential_Mapping.index_directory
 name_of_the_index_file = params.Sequential_Mapping_Module_Sequential_Mapping.name_of_the_index_file
@@ -1017,14 +1062,14 @@ indexesList = indexList.join(",")
 
 //* autofill
 if ($HOSTNAME == "default"){
-    $CPU  = 1
-    $MEMORY = 32
+    $CPU  = 4
+    $MEMORY = 20
 }
 //* platform
 if ($HOSTNAME == "ghpcc06.umassrc.org"){
-    $TIME = 2500
-    $CPU  = 1
-    $MEMORY = 32
+    $TIME = 2000
+    $CPU  = 4
+    $MEMORY = 20
     $QUEUE = "long"
 }
 //* platform
@@ -1057,14 +1102,16 @@ input:
  val commondb_path from g209_18_commondb_path_g214_32
 
 output:
- set val(name), file("final_reads/*")  into g214_32_reads_g_127, g214_32_reads_g215_19
- set val(name), file("bowfiles/*") optional true  into g214_32_bowfiles_g214_26, g214_32_bowfiles_g_177
+ set val(name), file("final_reads/*q")  into g214_32_reads_g_127, g214_32_reads_g215_19
+ set val(name), file("bowfiles/?*") optional true  into g214_32_bowfiles_g214_26, g214_32_bowfiles_g_177
  file "*/*_sorted.bam" optional true  into g214_32_bam_file_g214_23
  file "*/*_sorted.bam.bai" optional true  into g214_32_bam_index_g214_23
  val filtersList  into g214_32_filter_g214_26
  file "*/*_sorted.dedup.bam" optional true  into g214_32_bam_file_g214_27
  file "*/*_sorted.dedup.bam.bai" optional true  into g214_32_bam_index_g214_27
  file "*/*_duplicates_stats.log" optional true  into g214_32_log_file_g214_30
+
+errorStrategy 'retry'
 
 when:
 params.run_Sequential_Mapping == "yes"
@@ -1085,6 +1132,11 @@ if (nameAll.contains('.gz')) {
     if (mate == "pair") {file2 =  nameArray[1]}
     runGzip = ''
 }
+
+remove_duplicates = params.Sequential_Mapping_Module_Sequential_Mapping.remove_duplicates
+remove_duplicates_based_on_UMI_after_mapping = params.Sequential_Mapping_Module_Sequential_Mapping.remove_duplicates_based_on_UMI_after_mapping
+remove_previous_reads = params.Sequential_Mapping_Module_Sequential_Mapping.remove_previous_reads
+workflowWorkDir = workflow.workDir
 
 """
 #!/bin/bash
@@ -1114,12 +1166,13 @@ if [ -n "${mappingList}" ]; then
         printf -v k2 "%02d" "\$k" #turn into two digit format
         mkdir -p \${rna_set}/unmapped
         cd \$rna_set
-        if [ "\${filtersListAr[\$k-1]}" == "Yes" ]; then
-            ln -s \${wrkDir}/\${prev}/* .
-            prev=\${rna_set}/unmapped
-        else
-            ln -s \${wrkDir}/\${prev}/* .
-        fi
+        ## create link of the target file to prevent "too many symlinks error"
+        for r in \${wrkDir}/\${prev}/*; do
+            targetRead=\$(readlink -e \$r)
+            rname=\$(basename \$r)
+            echo "INFO: ln -s \$targetRead \$rname"
+            ln -s \$targetRead \$rname
+        done
         genomeDir=`dirname "\${indexesListAr[\$k-1]}"`
         echo "INFO: genomeDir: \$genomeDir"
         if [ -e "\${indexesListAr[\$k-1]}.1.bt2" -o  -e "\${indexesListAr[\$k-1]}.fa"  -o  -e "\${indexesListAr[\$k-1]}.fasta"  -o  -e "\$genomeDir/SAindex" ]; then
@@ -1151,7 +1204,7 @@ if [ -n "${mappingList}" ]; then
                 
             if [ "${mate}" == "pair" ]; then
                 if [ "\${alignersListAr[\$k-1]}" == "bowtie2" ]; then
-                    bowtie2 \${paramsListAr[\$k-1]} -x \${indexesListAr[\$k-1]} --no-unal --un-conc unmapped/${name}.unmapped.fastq -1 ${name}.1.fastq -2 ${name}.2.fastq --al-conc ${name}.fq.mapped -S \${rna_set}_${name}_alignment.sam > \${k2}_${name}.bow_\${rna_set}  2>&1
+                    bowtie2 \${paramsListAr[\$k-1]} -x \${indexesListAr[\$k-1]} --no-unal --un-conc unmapped/${name}.unmapped.fastq -1 ${name}.1.fastq -2 ${name}.2.fastq --al-conc ${name}.fq.mapped -S \${rna_set}_${name}_alignment.sam 2>&1 | tee \${k2}_${name}.bow_\${rna_set}
                 elif [ "\${alignersListAr[\$k-1]}" == "STAR" ]; then
                     STAR \${paramsListAr[\$k-1]}  --genomeDir \$genomeDir --readFilesIn ${name}.1.fastq ${name}.2.fastq --outSAMtype SAM  --outFileNamePrefix ${name}.star --outReadsUnmapped Fastx
                     mv ${name}.starAligned.out.sam \${rna_set}_${name}_alignment.sam
@@ -1159,25 +1212,26 @@ if [ -n "${mappingList}" ]; then
                     mv ${name}.starUnmapped.out.mate2 unmapped/${name}.unmapped.2.fastq
                     mv ${name}.starLog.final.out \${k2}_${name}.star_\${rna_set}
                 elif [ "\${alignersListAr[\$k-1]}" == "bowtie" ]; then
-                    bowtie \${paramsListAr[\$k-1]}   \${indexesListAr[\$k-1]}  --un  unmapped/${name}.unmapped.fastq -1 ${name}.1.fastq -2 ${name}.2.fastq -S  \${rna_set}_${name}_alignment.sam > \${k2}_${name}.bow1_\${rna_set}  2>&1
+                    bowtie \${paramsListAr[\$k-1]}   \${indexesListAr[\$k-1]}  --un  unmapped/${name}.unmapped.fastq -1 ${name}.1.fastq -2 ${name}.2.fastq -S  \${rna_set}_${name}_alignment.sam 2>&1 | tee \${k2}_${name}.bow1_\${rna_set}  
                     mv unmapped/${name}.unmapped_1.fastq unmapped/${name}.unmapped.1.fastq
                     mv unmapped/${name}.unmapped_2.fastq unmapped/${name}.unmapped.2.fastq
                 fi
             else
                 if [ "\${alignersListAr[\$k-1]}" == "bowtie2" ]; then
-                    bowtie2 \${paramsListAr[\$k-1]} -x \${indexesListAr[\$k-1]} --no-unal --un  unmapped/${name}.unmapped.fastq -U ${name}.fastq --al ${name}.fq.mapped -S \${rna_set}_${name}_alignment.sam > \${k2}_${name}.bow_\${rna_set}  2>&1
+                    bowtie2 \${paramsListAr[\$k-1]} -x \${indexesListAr[\$k-1]} --no-unal --un  unmapped/${name}.unmapped.fastq -U ${name}.fastq --al ${name}.fq.mapped -S \${rna_set}_${name}_alignment.sam 2>&1 | tee \${k2}_${name}.bow_\${rna_set}  
                 elif [ "\${alignersListAr[\$k-1]}" == "STAR" ]; then
                     STAR \${paramsListAr[\$k-1]}  --genomeDir \$genomeDir --readFilesIn ${name}.fastq --outSAMtype SAM  --outFileNamePrefix ${name}.star --outReadsUnmapped Fastx
                     mv ${name}.starAligned.out.sam \${rna_set}_${name}_alignment.sam
                     mv ${name}.starUnmapped.out.mate1 unmapped/${name}.unmapped.fastq
                     mv ${name}.starLog.final.out \${k2}_${name}.star_\${rna_set}
                 elif [ "\${alignersListAr[\$k-1]}" == "bowtie" ]; then
-                    bowtie \${paramsListAr[\$k-1]}  \${indexesListAr[\$k-1]}  --un  unmapped/${name}.unmapped.fastq  ${name}.fastq  -S \${rna_set}_${name}_alignment.sam > \${k2}_${name}.bow1_\${rna_set}  2>&1
+                    bowtie \${paramsListAr[\$k-1]}  \${indexesListAr[\$k-1]}  --un  unmapped/${name}.unmapped.fastq  ${name}.fastq  -S \${rna_set}_${name}_alignment.sam 2>&1 | tee \${k2}_${name}.bow1_\${rna_set}  
                     
                 fi
             fi
             echo "INFO: samtools view -bT \${fasta} \${rna_set}_${name}_alignment.sam > \${rna_set}_${name}_alignment.bam"
             samtools view -bT \${fasta} \${rna_set}_${name}_alignment.sam > \${rna_set}_${name}_alignment.bam
+            rm -f \${rna_set}_${name}_alignment.sam
             if [ "\${alignersListAr[\$k-1]}" == "bowtie" ]; then
                 mv \${rna_set}_${name}_alignment.bam \${rna_set}_${name}_tmp0.bam
                 echo "INFO: samtools view -F 0x04 -b \${rna_set}_${name}_tmp0.bam > \${rna_set}_${name}_alignment.bam"
@@ -1243,6 +1297,27 @@ if [ -n "${mappingList}" ]; then
                 cp \${k2}_${name}.star_\${rna_set} ./../bowfiles/.
             fi
             cd ..
+            # if filter is on, remove previously created unmapped fastq. 
+            if [ "\${filtersListAr[\$k-1]}" == "Yes" ]; then
+                if [ "\${prev}" != "reads" ]; then
+                    echo "INFO: remove prev: \${prev}/*"
+                    rm -rf \${prev}/*
+                elif  [ "${remove_previous_reads}" == "true" ]; then
+                    echo "INFO: inputs reads will be removed if they are located in the workdir"
+                    for f in \${prev}/*; do
+                        targetFile=\$(readlink -e \$f)
+                        echo "INFO: targetFile: \$targetFile"
+                        if [[ \$targetFile == *"${workflowWorkDir}"* ]]; then
+                            rm -f \$targetFile
+                            echo "INFO: \$targetFile located in workdir and deleted."
+                        fi
+                    done
+                fi
+            # if filter is off remove current unmapped fastq
+            else
+                echo "INFO: remove \${rna_set}/unmapped/*"
+                rm -rf \${rna_set}/unmapped/*
+            fi
         else
             echo "WARNING: \${indexesListAr[\$k-1]} Mapping skipped. File not found."
             cd unmapped 
@@ -1250,17 +1325,22 @@ if [ -n "${mappingList}" ]; then
             cd ..
             cd ..
         fi
+        
+        if [ "\${filtersListAr[\$k-1]}" == "Yes" ]; then
+            prev=\${rna_set}/unmapped
+        fi
     done
     cd final_reads && ln -s \${wrkDir}/\${prev}/* .
 else 
     mv ${reads} final_reads/.
 fi
 """
+
 }
 }
 
 
-g209_11_genomeIndexPath_g215_19= g209_11_genomeIndexPath_g215_19.ifEmpty(file('rsemIndex', type: 'any')) 
+g209_11_genomeIndexPath_g215_19= g209_11_genomeIndexPath_g215_19.ifEmpty([""]) 
 
 params.rsem_ref_using_star_index =  ""  //* @input
 params.rsem_ref_using_bowtie2_index =  ""  //* @input
@@ -1287,7 +1367,7 @@ process RSEM_module_RSEM {
 
 publishDir params.outdir, overwrite: true, mode: 'copy',
 	saveAs: {filename ->
-	if (filename =~ /pipe.rsem..*$/) "rsem/$filename"
+	if (filename =~ /pipe.rsem.${name}$/) "rsem/$filename"
 }
 
 input:
@@ -1296,9 +1376,11 @@ input:
  val rsemIndex from g209_11_genomeIndexPath_g215_19.collect()
 
 output:
- file "pipe.rsem.*"  into g215_19_rsemOut_g215_17, g215_19_rsemOut_g215_15, g215_19_rsemOut_g_177
+ file "pipe.rsem.${name}"  into g215_19_rsemOut_g215_17, g215_19_rsemOut_g215_15, g215_19_rsemOut_g_177
  set val(name), file("pipe.rsem.*/*.genome.bam") optional true  into g215_19_bam_file_g219_121, g215_19_bam_file_g219_122, g215_19_bam_file_g219_123, g215_19_bam_file_g219_124, g215_19_bam_file_g219_126
  set val(name), file("pipe.rsem.*/*.bam") optional true  into g215_19_mapped_reads
+
+errorStrategy 'retry'
 
 when:
 (params.run_RSEM && (params.run_RSEM == "yes")) || !params.run_RSEM
@@ -1524,7 +1606,7 @@ igvtools count -w ${igv_window_size} -e ${igv_extention_factor} ${pairedText} ${
 """
 }
 
-params.run_Split_Fastq =  "no"  //* @dropdown @options:"yes","no" @show_settings:"SplitFastq"
+params.run_Split_Fastq =  "no"  //* @dropdown @options:"yes","no" @show_settings:"SplitFastq" @description:"Splits Fastq files before aligning with Star, Hisat2 or Tophat2 to speed up the process. However, it will require more disk space."
 readsPerFile = params.SplitFastq.readsPerFile
 //Since splitFastq operator requires flat file structure, first convert grouped structure to flat, execute splitFastq, and then return back to original grouped structure
 //.map(flatPairsClosure).splitFastq(splitFastqParams).map(groupPairsClosure)
@@ -1575,7 +1657,7 @@ input:
  set val(name), file(reads) from g214_32_reads_g_127.map(flatPairsClosure).splitFastq(splitFastqParams).map(groupPairsClosure)
 
 output:
- set val(name), file("split/*")  into g_127_reads_g216_11, g_127_reads_g217_16, g_127_reads_g218_11
+ set val(name), file("split/*q")  into g_127_reads_g216_11, g_127_reads_g217_16, g_127_reads_g218_11
 
 when:
 params.run_Split_Fastq == "yes"
@@ -1589,7 +1671,7 @@ mv ${reads} split/.
 }
 
 
-g209_6_genomeIndexPath_g218_11= g209_6_genomeIndexPath_g218_11.ifEmpty(file('tophat2_index', type: 'any')) 
+g209_6_genomeIndexPath_g218_11= g209_6_genomeIndexPath_g218_11.ifEmpty([""]) 
 
 params.bowtie2_index =  ""  //* @input
 params.gtf =  ""  //* @input
@@ -2252,7 +2334,7 @@ sub getMetricVals{
 
 }
 
-g209_0_genomeIndexPath_g217_16= g209_0_genomeIndexPath_g217_16.ifEmpty(file('star_index', type: 'any')) 
+g209_0_genomeIndexPath_g217_16= g209_0_genomeIndexPath_g217_16.ifEmpty([""]) 
 
 params.star_index =  ""  //* @input
 
@@ -2287,6 +2369,8 @@ output:
  set val(name), file("${newName}Log.progress.out")  into g217_16_progressOut_g217_18
  set val(name), file("${newName}Aligned.toTranscriptome.out.bam") optional true  into g217_16_transcriptome_bam_g217_15
 
+errorStrategy 'retry'
+
 when:
 (params.run_STAR && (params.run_STAR == "yes")) || !params.run_STAR
 
@@ -2308,6 +2392,7 @@ if (nameAll.contains('.gz')) {
 """
 $runGzip
 STAR ${params_STAR}  --genomeDir ${params.star_index} --readFilesIn $file --outFileNamePrefix ${newName}
+echo "Alignment completed."
 if [ ! -e "${newName}Aligned.toTranscriptome.out.bam" -a -e "${newName}Aligned.toTranscriptome.out.sam" ] ; then
     samtools view -S -b ${newName}Aligned.toTranscriptome.out.sam > ${newName}Aligned.toTranscriptome.out.bam
 elif [ ! -e "${newName}Aligned.out.bam" -a -e "${newName}Aligned.out.sam" ] ; then
@@ -2952,7 +3037,7 @@ fi
 '''
 }
 
-g209_8_genomeIndexPath_g216_11= g209_8_genomeIndexPath_g216_11.ifEmpty(file('hisat2index', type: 'any')) 
+g209_8_genomeIndexPath_g216_11= g209_8_genomeIndexPath_g216_11.ifEmpty([""]) 
 
 params.hisat2_index =  ""  //* @input
 
@@ -4832,7 +4917,7 @@ sub alteredAligned
 
 }
 
-params.run_FastQC =  "no"  //* @dropdown @options:"yes","no"
+params.run_FastQC =  "no"  //* @dropdown @options:"yes","no" @description:"FastQC provides quality control checks on raw sequence data."
 
 
 
@@ -4990,14 +5075,14 @@ awk 'FNR==1 && NR!=1 {  getline; } 1 {print} ' *.tsv > ${name}.tsv
 """
 }
 
-g217_11_outputFileTSV_g_198= g217_11_outputFileTSV_g_198.ifEmpty(file('starSum', type: 'any')) 
-g214_14_outputFileTSV_g_198= g214_14_outputFileTSV_g_198.ifEmpty(file('sequentialSum', type: 'any')) 
-g216_10_outputFileTSV_g_198= g216_10_outputFileTSV_g_198.ifEmpty(file('hisatSum', type: 'any')) 
-g215_17_outputFileTSV_g_198= g215_17_outputFileTSV_g_198.ifEmpty(file('rsemSum', type: 'any')) 
-g218_9_outputFileTSV_g_198= g218_9_outputFileTSV_g_198.ifEmpty(file('tophatSum', type: 'any')) 
-g213_11_outputFileTSV_g_198= g213_11_outputFileTSV_g_198.ifEmpty(file('adapterSum', type: 'any')) 
-g213_21_outputFileTSV_g_198= g213_21_outputFileTSV_g_198.ifEmpty(file('trimmerSum', type: 'any')) 
-g213_16_outputFileTSV_g_198= g213_16_outputFileTSV_g_198.ifEmpty(file('qualitySum', type: 'any')) 
+g217_11_outputFileTSV_g_198= g217_11_outputFileTSV_g_198.ifEmpty([""]) 
+g214_14_outputFileTSV_g_198= g214_14_outputFileTSV_g_198.ifEmpty([""]) 
+g216_10_outputFileTSV_g_198= g216_10_outputFileTSV_g_198.ifEmpty([""]) 
+g215_17_outputFileTSV_g_198= g215_17_outputFileTSV_g_198.ifEmpty([""]) 
+g218_9_outputFileTSV_g_198= g218_9_outputFileTSV_g_198.ifEmpty([""]) 
+g213_11_outputFileTSV_g_198= g213_11_outputFileTSV_g_198.ifEmpty([""]) 
+g213_21_outputFileTSV_g_198= g213_21_outputFileTSV_g_198.ifEmpty([""]) 
+g213_16_outputFileTSV_g_198= g213_16_outputFileTSV_g_198.ifEmpty([""]) 
 
 //* autofill
 //* platform
@@ -5321,8 +5406,12 @@ input:
  file "rseqc_hisat/*" from g220_122_outputFileOut_g_177.flatten().toList()
 
 output:
- file "multiqc_report.html" optional true  into g_177_htmlout
+ file "multiqc_report.html" optional true  into g_177_outputHTML
 
+errorStrategy 'retry'
+maxRetries 2
+
+script:
 """
 multiqc -e general_stats -d -dd 2 .
 """
