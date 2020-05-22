@@ -1,4 +1,4 @@
-[![Travis-ci tests:](https://travis-ci.org/dolphinnext/rnaseq.svg?branch=master)](https://travis-ci.org/dolphinnext/rnaseq) [![DOI:10.1101/689539](https://zenodo.org/badge/DOI/10.1101/689539.svg)](https://doi.org/10.1101/689539)
+[![Travis-ci tests:](https://travis-ci.org/dolphinnext/rnaseq.svg?branch=master)](https://travis-ci.org/dolphinnext/rnaseq) [![DOI:10.1186/s12864-020-6714-x](https://zenodo.org/badge/DOI/10.1186/s12864-020-6714-x.svg)](https://doi.org/10.1186/s12864-020-6714-x)
 
 RNA-seq pipeline includes Quality Control, rRNA filtering, Genome Alignment using HISAT2, STAR and Tophat2, and estimating gene and isoform expression levels by RSEM and featureCounts.  
   
@@ -12,6 +12,11 @@ RNA-seq pipeline includes Quality Control, rRNA filtering, Genome Alignment usin
 
 ##### Pipeline Container:
   * Docker: dolphinnext/rnaseq:1.0
+
+##### Citation:
+
+If you use DolphinNext in your research, please cite: 
+Yukselen, O., Turkyilmaz, O., Ozturk, A.R. et al. DolphinNext: a distributed data processing platform for high throughput genomics. BMC Genomics 21, 310 (2020). https://doi.org/10.1186/s12864-020-6714-x
 
 ##### Program Versions:
   - FastQC v0.11.8
