@@ -4,8 +4,7 @@ FROM nfcore/base:1.7
 LABEL author="onur.yukselen@umassmed.edu" description="Docker image containing all requirements for the dolphinnext/rnaseq pipeline"
 
 COPY environment.yml /
-RUN apt-get update && apt-get install -y gcc zlib1g-dev g++ tree
-RUN conda env create -f /environment.yml python=3.6 && conda clean -a
+RUN conda env create -f /environment.yml && conda clean -a
 # Install dolphin-tools
 RUN git clone https://github.com/dolphinnext/tools /usr/local/bin/dolphin-tools
 RUN mkdir -p /project /nl /mnt /share
