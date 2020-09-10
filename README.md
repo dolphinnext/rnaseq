@@ -11,7 +11,7 @@ RNA-seq pipeline includes Quality Control, rRNA filtering, Genome Alignment usin
   6. Optionally you can create Integrative Genomics Viewer (IGV)  and Genome Browser Files (TDF and Bigwig, respectively)
 
 ##### Pipeline Container:
-  * Docker: dolphinnext/rnaseq:1.0
+  * Docker: dolphinnext/rnaseq:2.0
 
 ##### Program Versions:
   - FastQC v0.11.8
@@ -32,6 +32,7 @@ RNA-seq pipeline includes Quality Control, rRNA filtering, Genome Alignment usin
   - Fastx_toolkit v0.0.14
   - Ucsc-wigToBigWig v366
   - Pdfbox-App v2.0.0
+  - Kallisto v0.46.0
  
 
 ##### Run through DolphinNext User Interface:
