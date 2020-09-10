@@ -12,3 +12,4 @@ RUN mkdir -p /project /nl /mnt /share
 ENV PATH /opt/conda/envs/dolphinnext-rnaseq-2.0/bin:/usr/local/bin/dolphin-tools/:$PATH
 
 RUN pip install "multiqc==1.7"
+RUN pip install "rseqc==2.6.4"
