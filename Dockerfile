@@ -11,5 +11,8 @@ RUN git clone https://github.com/dolphinnext/tools /usr/local/bin/dolphin-tools
 RUN mkdir -p /project /nl /mnt /share
 ENV PATH /opt/conda/envs/dolphinnext-rnaseq-2.0/bin:/usr/local/bin/dolphin-tools/:$PATH
 
-RUN pip install "multiqc==1.7"
-RUN pip install "rseqc==2.6.4"
+# Install tophat-2.1.1
+wget https://ccb.jhu.edu/software/tophat/downloads/tophat-2.1.1.Linux_x86_64.tar.gz
+tar -xvzf tophat-2.1.1.Linux_x86_64.tar.gz
+mv tophat-2.1.1.Linux_x86_64/ /usr/local/bin/dolphin-tools/tophat-2.1.1/
+export PATH=/usr/local/bin/dolphin-tools/tophat-2.1.1:$PATH
