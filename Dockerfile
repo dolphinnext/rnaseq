@@ -13,4 +13,4 @@ ENV PATH /opt/conda/envs/dolphinnext-rnaseq-2.0/bin:/usr/local/bin/dolphin-tools
 
 # Install tophat-2.1.1
 RUN wget https://ccb.jhu.edu/software/tophat/downloads/tophat-2.1.1.Linux_x86_64.tar.gz && tar -xvzf tophat-2.1.1.Linux_x86_64.tar.gz && mv tophat-2.1.1.Linux_x86_64/ /usr/local/bin/dolphin-tools/tophat-2.1.1/
-export PATH=/usr/local/bin/dolphin-tools/tophat-2.1.1:$PATH
+ENV PATH /usr/local/bin/dolphin-tools/tophat-2.1.1:$PATH
