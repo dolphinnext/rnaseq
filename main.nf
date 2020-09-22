@@ -1064,7 +1064,8 @@ tmpResultDir = indexbasedir +"/_tmp_"+ newDirName
 if [ ! -e "${resultDir}/transcripts.idx" ] ; then
     echo "${resultDir}/transcripts.idx Kallisto index not found"
     rm -rf $tmpResultDir $resultDir && mkdir -p $tmpResultDir && cd $tmpResultDir
-    gffread -F -w transcripts.fa -g ${params.genome} ${params.gtf}
+    filter_gtf_for_genes_in_genome.py --gtf ${params.gtf} --fasta ${params.genome} -o genome_filtered_genes.gtf
+    gffread -F -w transcripts.fa -g ${params.genome} genome_filtered_genes.gtf
     gzip transcripts.fa
     kallisto index -i transcripts.idx transcripts.fa.gz
     cd .. && mv $tmpResultDir $resultDir 
@@ -4825,47 +4826,6 @@ read_distribution.py  -i ${bam} -r ${params.bed}> result/RSeQC.${name}.out
 """
 }
 
-//* autofill
-//* platform
-if ($HOSTNAME == "ghpcc06.umassrc.org"){
-    $TIME = 240
-    $CPU  = 1
-    $MEMORY = 10
-    $QUEUE = "short"
-}
-//* platform
-//* autofill
-
-process MultiQC {
-
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /multiqc_report.html$/) "multiqc/$filename"
-}
-
-input:
- file "tophat/*" from g218_11_summary_g_177.flatten().toList()
- file "rsem/*" from g215_19_rsemOut_g_177.flatten().toList()
- file "star/*" from g217_18_logOut_g_177.flatten().toList()
- file "fastqc/*" from g213_3_FastQCout_g_177.flatten().toList()
- file "sequential_mapping/*" from g214_32_bowfiles_g_177.flatten().toList()
- file "rseqc_tophat/*" from g222_122_outputFileOut_g_177.flatten().toList()
- file "rseqc_rsem/*" from g219_122_outputFileOut_g_177.flatten().toList()
- file "rseqc_star/*" from g221_122_outputFileOut_g_177.flatten().toList()
- file "rseqc_hisat/*" from g220_122_outputFileOut_g_177.flatten().toList()
-
-output:
- file "multiqc_report.html" optional true  into g_177_outputHTML
-
-errorStrategy 'retry'
-maxRetries 2
-
-script:
-"""
-multiqc -e general_stats -d -dd 2 .
-"""
-}
-
 
 process BAM_Analysis_Hisat2_RSeQC_Summary {
 
@@ -5815,8 +5775,8 @@ input:
  val kallisto_index_path from g227_19_genomeIndexPath_g223_21
 
 output:
- file "kallisto_${name}"  into g223_21_outputDir_g223_22, g223_21_outputDir_g223_23
- set val(name), file("kallisto_${name}/*.bam")  into g223_21_bam_file_g224_121, g223_21_bam_file_g224_122, g223_21_bam_file_g224_123, g223_21_bam_file_g224_124, g223_21_bam_file_g224_126
+ file "kallisto_${name}"  into g223_21_outputDir_g223_22, g223_21_outputDir_g223_23, g223_21_outputDir_g_177
+ set val(name), file("kallisto_${name}/*.bam") optional true  into g223_21_bam_file_g224_121, g223_21_bam_file_g224_122, g223_21_bam_file_g224_123, g223_21_bam_file_g224_124, g223_21_bam_file_g224_126
 
 when:
 (params.run_Kallisto && (params.run_Kallisto == "yes")) || !params.run_Kallisto
@@ -5844,17 +5804,34 @@ standard_deviation = params.Kallisto_module_kallisto_quant.standard_deviation
 kallisto_parameters = params.Kallisto_module_kallisto_quant.kallisto_parameters
 genomebam = params.Kallisto_module_kallisto_quant.genomebam
 
-genomebamText = (genomebam.toString() != "false") ? "--genomebam --gtf ${params.gtf} --chromosomes ${params.genome_sizes}" : ""
+genomebamText = (genomebam.toString() != "false") ? "--genomebam --gtf genes.gtf --chromosomes ${params.genome_sizes}" : ""
 fragment_lengthText = (fragment_length.toString() != "" && single_or_paired_end_reads.toString() == "single") ? "-l ${fragment_length}" : ""
 standard_deviationText = (standard_deviation.toString() != "" && single_or_paired_end_reads.toString() == "single") ? "-s ${standard_deviation}" : ""
 """
 $runGzip
+if [[ \$(awk '{print \$3}' ${params.gtf} | grep -c transcript) -le 1 ]]; then
+    echo "transcript entries are not found in gtf file. gffread will add transcript entries."
+    gffread -E --keep-genes ${params.gtf} -T -o- >genes.gtf 2>gffread.log
+else
+    ln -s ${params.gtf} genes.gtf
+fi
+
+
 mkdir -p kallisto_${name}
 if [ "${mate}" == "pair" ]; then
     kallisto quant ${kallisto_parameters} -i ${params.kallisto_index} ${genomebamText} -o kallisto_${name} ${file1} ${file2} > kallisto_${name}/kallisto.log 2>&1
 else
     kallisto quant --single ${kallisto_parameters} ${fragment_lengthText} ${standard_deviationText}  -i ${params.kallisto_index} ${genomebamText} -o kallisto_${name} ${file1} > kallisto_${name}/kallisto.log 2>&1
 fi
+
+if [ -f kallisto_${name}/pseudoalignments.bam ]; then
+   mv kallisto_${name}/pseudoalignments.bam  kallisto_${name}/${name}.bam
+fi
+if [ -f kallisto_${name}/pseudoalignments.bam.bai ]; then
+   mv kallisto_${name}/pseudoalignments.bam.bai  kallisto_${name}/${name}.bam.bai
+fi
+
+
 """
 
 }
@@ -5863,6 +5840,11 @@ params.gtf =  ""  //* @input
 
 
 process BAM_Analysis_Module_featureCounts {
+
+publishDir params.outdir, overwrite: true, mode: 'copy',
+	saveAs: {filename ->
+	if (filename =~ /.*$/) "featureCounts_after_kallisto/$filename"
+}
 
 input:
  set val(name), file(bam) from g223_21_bam_file_g224_126
@@ -5901,6 +5883,12 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 //* autofill
 
 process BAM_Analysis_Module_summary_featureCounts {
+
+publishDir params.outdir, overwrite: true, mode: 'copy',
+	saveAs: {filename ->
+	if (filename =~ /.*_featureCounts.tsv$/) "featureCounts_after_Kallisto_summary/$filename"
+	else if (filename =~ /.*_featureCounts.sum.tsv$/) "featureCounts_after_Kallisto_details/$filename"
+}
 
 input:
  file featureCountsOut from g224_126_outputFileTSV_g224_117.collect()
@@ -6036,6 +6024,11 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process BAM_Analysis_Module_UCSC_BAM2BigWig_converter {
 
+publishDir params.outdir, overwrite: true, mode: 'copy',
+	saveAs: {filename ->
+	if (filename =~ /.*.bw$/) "bigwig_kallisto/$filename"
+}
+
 input:
  set val(name), file(bam) from g223_21_bam_file_g224_124
 
@@ -6084,6 +6077,11 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process BAM_Analysis_Module_IGV_BAM2TDF_converter {
 
+publishDir params.outdir, overwrite: true, mode: 'copy',
+	saveAs: {filename ->
+	if (filename =~ /.*.tdf$/) "igvtools_kallisto/$filename"
+}
+
 input:
  val mate from g_229_mate_g224_123
  set val(name), file(bam) from g223_21_bam_file_g224_123
@@ -6114,11 +6112,16 @@ params.bed =  ""  //* @input
 
 process BAM_Analysis_Module_RSeQC {
 
+publishDir params.outdir, overwrite: true, mode: 'copy',
+	saveAs: {filename ->
+	if (filename =~ /result\/.*.out$/) "rseqc_kallisto/$filename"
+}
+
 input:
  set val(name), file(bam) from g223_21_bam_file_g224_122
 
 output:
- file "result/*.out"  into g224_122_outputFileOut_g224_95
+ file "result/*.out"  into g224_122_outputFileOut_g224_95, g224_122_outputFileOut_g_177
 
 when:
 (params.run_RSeQC && (params.run_RSeQC == "yes")) || !params.run_RSeQC
@@ -6132,6 +6135,11 @@ read_distribution.py  -i ${bam} -r ${params.bed}> result/RSeQC.${name}.out
 
 
 process BAM_Analysis_Module_RSeQC_Summary {
+
+publishDir params.outdir, overwrite: true, mode: 'copy',
+	saveAs: {filename ->
+	if (filename =~ /.*.tsv$/) "rseqc_summary_kallisto/$filename"
+}
 
 input:
  file rseqcOut from g224_122_outputFileOut_g224_95.collect()
@@ -6284,6 +6292,12 @@ mkdir results && java -jar ${params.pdfbox_path} PDFMerger *.pdf results/${name}
 
 process BAM_Analysis_Module_Picard_Summary {
 
+publishDir params.outdir, overwrite: true, mode: 'copy',
+	saveAs: {filename ->
+	if (filename =~ /.*.tsv$/) "picard_summary_kallisto/$filename"
+	else if (filename =~ /results\/.*.pdf$/) "picard_summary_pdf_kallisto/$filename"
+}
+
 input:
  file picardOut from g224_121_outputFileOut_g224_82.collect()
  val mate from g_229_mate_g224_82
@@ -6387,6 +6401,49 @@ sub getMetricVals{
 }
 '''
 
+}
+
+//* autofill
+//* platform
+if ($HOSTNAME == "ghpcc06.umassrc.org"){
+    $TIME = 240
+    $CPU  = 1
+    $MEMORY = 10
+    $QUEUE = "short"
+}
+//* platform
+//* autofill
+
+process MultiQC {
+
+publishDir params.outdir, overwrite: true, mode: 'copy',
+	saveAs: {filename ->
+	if (filename =~ /multiqc_report.html$/) "multiqc/$filename"
+}
+
+input:
+ file "tophat/*" from g218_11_summary_g_177.flatten().toList()
+ file "rsem/*" from g215_19_rsemOut_g_177.flatten().toList()
+ file "star/*" from g217_18_logOut_g_177.flatten().toList()
+ file "fastqc/*" from g213_3_FastQCout_g_177.flatten().toList()
+ file "sequential_mapping/*" from g214_32_bowfiles_g_177.flatten().toList()
+ file "rseqc_tophat/*" from g222_122_outputFileOut_g_177.flatten().toList()
+ file "rseqc_rsem/*" from g219_122_outputFileOut_g_177.flatten().toList()
+ file "rseqc_star/*" from g221_122_outputFileOut_g_177.flatten().toList()
+ file "rseqc_hisat/*" from g220_122_outputFileOut_g_177.flatten().toList()
+ file "kallisto/*" from g223_21_outputDir_g_177.flatten().toList()
+ file "rseqc_kallisto/*" from g224_122_outputFileOut_g_177.flatten().toList()
+
+output:
+ file "multiqc_report.html" optional true  into g_177_outputHTML
+
+errorStrategy 'retry'
+maxRetries 2
+
+script:
+"""
+multiqc -e general_stats -d -dd 2 .
+"""
 }
 
 params.gtf =  ""  //* @input
