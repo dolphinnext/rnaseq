@@ -894,6 +894,7 @@ output:
 when:
 run_featureCounts == "yes"
 
+
 script:
 run_name = params.BAM_Analysis_Tophat2_featureCounts_Prep.run_name
 run_parameters = params.BAM_Analysis_Tophat2_featureCounts_Prep.run_parameters
@@ -951,8 +952,11 @@ input:
 output:
  val run_params  into g224_125_run_parameters_g224_126
 
+errorStrategy 'retry'
+
 when:
 run_featureCounts == "yes"
+
 
 script:
 run_name = params.BAM_Analysis_Module_featureCounts_Prep.run_name
@@ -970,6 +974,18 @@ for (i = 0; i < run_parameters.size(); i++) {
 """
 
 }
+if ("!{remove_previous_reads}" eq "true") {
+    print "INFO: inputs reads will be removed if they are located in the workdir/inputsdir\\n";
+    my @listOfFiles = `readlink -e $file1 $file2`;
+    foreach my $targetFile (@listOfFiles){
+        if (index($targetFile, "!{workdir}") != -1 || index($targetFile, "!{inputsdir}") != -1) {
+            system("rm -f $targetFile");
+            print "INFO: $targetFile deleted.\\n";
+        }
+    }
+}
+
+
 
 params.gtf =  ""  //* @input
 params.genome =  ""  //* @input
@@ -977,6 +993,7 @@ params.commondb =  ""  //* @input
 params.genome_url =  ""  //* @input
 params.gtf_url =  ""  //* @input
 params.commondb_url =  ""  //* @input
+
 
 def downFile(path){
     if (path.take(1).indexOf("/") == 0){
@@ -998,8 +1015,10 @@ output:
  val "${params.gtf}"  into g227_15_gtfPath_g227_0, g227_15_gtfPath_g227_6, g227_15_gtfPath_g227_8, g227_15_gtfPath_g227_10, g227_15_gtfPath_g227_4, g227_15_gtfPath_g227_13, g227_15_gtfPath_g227_19
  val "${params.commondb}"  into g227_15_commondb_path_g227_18
 
+
 when:
 params.run_checkAndBuild == "yes"
+
 
 script:
 gtf_dir  = params.gtf.substring(0, params.gtf.lastIndexOf('/')) 
@@ -1122,8 +1141,11 @@ input:
  val gtf from g227_15_gtfPath_g227_4
 
 
+errorStrategy 'retry'
+
 when:
 params.run_checkAndBuild == "yes"
+
 
 script:
 gtf_dir  = gtf.substring(0, gtf.lastIndexOf('/')) 
@@ -1162,7 +1184,6 @@ if [ ! -e "${params.genome_sizes}" ] ; then
     sed -i '1{/^\$/d}' ${basename_and_path}.chrom.sizes
 fi
 """
-
 
 
 
