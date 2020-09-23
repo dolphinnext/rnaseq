@@ -154,7 +154,9 @@ To disable Tophat2: `--run_Tophat no`
 ```
 
 ## Transcripts Quantification
-By default, RSEM is used to align RNA-Seq reads to a reference transcripts and estimates gene and isoform expression levels. Besides, you can enable featureCounts after running HISAT2 and/or STAR and/or Tophat2 as well.
+By default, RSEM is used to align RNA-Seq reads to a reference transcripts and estimates gene and isoform expression levels. 
+Besides, you can enable featureCounts after running HISAT2 and/or STAR and/or Tophat2 as well.
+Alternatively, Kallisto could be used for quantifying abundances of transcripts based on pseudoalignments, without the need for alignment.
 
 You can choose multiple tools to compare their results by enabling/disabling following parameters:
 ```bash
@@ -166,6 +168,8 @@ To enable featureCounts after running STAR    : `--run_STAR yes --run_FeatureCou
 To disable featureCounts after running STAR   : `--run_FeatureCounts_after_STAR no`
 To enable featureCounts after running Tophat2 : `--run_Tophat yes --run_FeatureCounts_after_Tophat2 yes`
 To disable featureCounts after running Tophat2: `--run_FeatureCounts_after_Tophat2 no`
+To enable Kalliso  : `--run_Kalliso yes`
+To disable Kalliso : `--run_Kalliso no`
 ```
 
 ## Feature Counts Parameters
@@ -194,6 +198,25 @@ You can change feature count parameters by assigning new parameters to following
 --BAM_Analysis_STAR_featureCounts_Prep.run_parameters =  [array @default:["-g gene_id -s 0 -Q 20 -T 2 -B -d 50 -D 1000 -C --fracOverlap 0 --minOverlap 1","-g transcript_id -s 0 -Q 20 -T 2 -B -d 50 -D 1000 -C --fracOverlap 0 --minOverlap 1"]]  
 ```
 
+## Kalliso Parameters
+You can change Kalliso parameters by assigning new parameters to following options:
+
+```bash
+params.Kallisto_module_kallisto_quant.single_or_paired_end_reads = [@options:"single","pair" @default:"pair"] 
+# When single is selected, the fragment_length and standard_deviation parameters are REQUIRED.
+
+params.Kallisto_module_kallisto_quant.fragment_length = [int @default:200] 
+# Estimated average fragment length. Required when using single reads. Typical value: 200.
+
+params.Kallisto_module_kallisto_quant.standard_deviation = [int @default:30] 
+# Estimated standard deviation of fragment length. Required when using single reads. Typical value: 30.
+
+params.Kallisto_module_kallisto_quant.kallisto_parameters = [string @default:"--threads 4"] 
+# Custom Kallisto parameters.
+
+params.Kallisto_module_kallisto_quant.genomebam = [@options:"true","false" @default:"true"] 
+# If true is selected, Kallisto will project pseudoalignments to genome sorted BAM file."
+```
 
 ## Adapter Removal
 If specific Adapter Removal is required, you can enable trimmomatic and enter the adapter sequence. 
