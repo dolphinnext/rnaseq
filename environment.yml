@@ -1,6 +1,6 @@
 # You can use this file to create a conda environment for this pipeline:
 #   conda env create -f environment.yml
-name: dolphinnext-rnaseq-1.0
+name: dolphinnext-rnaseq-2.0
 channels:
   - conda-forge
   - bioconda
@@ -22,3 +22,4 @@ dependencies:
   - bedtools=2.27.1
   - fastx_toolkit=0.0.14
   - ucsc-wigToBigWig=366
+  - bioconda::kallisto=0.46.0
