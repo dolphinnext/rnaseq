@@ -92,23 +92,32 @@ It is not possible to run a mixture of single-end and paired-end files in one ru
 ## Reference genomes
 
 ### `--genome_build` 
-There are 5 different species supported in the UMMS-Biocore references. To run the pipeline, you must specify which to use with the `--genome_build` flag.
+There are 8 different species supported in the UMMS-Biocore references. To run the pipeline, you must specify which to use with the `--genome_build` flag.
 
 List of genomes that are supported are:
 
 * Human
   * `--genome_build human_hg19_refseq`
   * `--genome_build human_hg38_gencode_v28`
+  * `--human_hg38_gencode_v34`
 * Mouse
   * `--genome_build mouse_mm10_refseq`
+  * `--genome_build mouse_mm10_gencode_m25`
 * Rat
   * `--genome_build rat_rn6_refseq`
   * `--genome_build rat_rn6_ensembl_v86`
 * Zebrafish
   * `--genome_build zebrafish_GRCz11_ensembl_v95`
   * `--genome_build zebrafish_GRCz11_refseq`
+  * `--genome_build zebrafish_GRCz11_v4.3.2`
 * C. elegans
   * `--genome_build c_elegans_ce11_ensembl_ws245`
+* S. cerevisiae
+  * `--genome_build s_cerevisiae_sacCer3_refseq` 
+* S. pombe
+  * `--genome_build s_pombe_ASM294v2_ensembl_v31` 
+* D. melanogaster
+  * `--genome_build d_melanogaster_dm6_refseq`
 
 Note: For new genome requests, please send e-mail to UMMS-Biocore(biocore@umassmed.edu).
 
@@ -130,13 +139,12 @@ If you prefer, you can specify the full path to your reference genome and disabl
 --bowtie_index '[path to Bowtie index]' \
 --bowtie2_index '[path to Bowtie index]' \
 --hisat2_index '[path to HISAT2 index]' \
+--kallisto_index '[path to Kallisto index]' \
 --rsem_ref_using_bowtie_index '[path to RSEM reference build with bowtie index]' \
 --rsem_ref_using_bowtie2_index '[path to RSEM reference build with bowtie2 index]' \
 --rsem_ref_using_star_index    '[path to RSEM reference build with STAR index]' \
 
 ```
-
-
 
 ## Alignment tool
 By default, the pipeline uses [STAR](https://github.com/alexdobin/STAR) to align the raw FastQ reads to the reference genome. STAR is fast and common, but requires a lot of memory to run, typically around 38GB for the Human hg19 reference genome.
@@ -154,7 +162,9 @@ To disable Tophat2: `--run_Tophat no`
 ```
 
 ## Transcripts Quantification
-By default, RSEM is used to align RNA-Seq reads to a reference transcripts and estimates gene and isoform expression levels. Besides, you can enable featureCounts after running HISAT2 and/or STAR and/or Tophat2 as well.
+By default, RSEM is used to align RNA-Seq reads to a reference transcripts and estimates gene and isoform expression levels. 
+Besides, you can enable featureCounts after running HISAT2 and/or STAR and/or Tophat2 as well.
+Alternatively, Kallisto could be used for quantifying abundances of transcripts based on pseudoalignments, without the need for alignment.
 
 You can choose multiple tools to compare their results by enabling/disabling following parameters:
 ```bash
@@ -166,6 +176,8 @@ To enable featureCounts after running STAR    : `--run_STAR yes --run_FeatureCou
 To disable featureCounts after running STAR   : `--run_FeatureCounts_after_STAR no`
 To enable featureCounts after running Tophat2 : `--run_Tophat yes --run_FeatureCounts_after_Tophat2 yes`
 To disable featureCounts after running Tophat2: `--run_FeatureCounts_after_Tophat2 no`
+To enable Kalliso  : `--run_Kalliso yes`
+To disable Kalliso : `--run_Kalliso no`
 ```
 
 ## Feature Counts Parameters
@@ -194,6 +206,25 @@ You can change feature count parameters by assigning new parameters to following
 --BAM_Analysis_STAR_featureCounts_Prep.run_parameters =  [array @default:["-g gene_id -s 0 -Q 20 -T 2 -B -d 50 -D 1000 -C --fracOverlap 0 --minOverlap 1","-g transcript_id -s 0 -Q 20 -T 2 -B -d 50 -D 1000 -C --fracOverlap 0 --minOverlap 1"]]  
 ```
 
+## Kalliso Parameters
+You can change Kalliso parameters by assigning new parameters to following options:
+
+```bash
+params.Kallisto_module_kallisto_quant.single_or_paired_end_reads = [@options:"single","pair" @default:"pair"] 
+# When single is selected, the fragment_length and standard_deviation parameters are REQUIRED.
+
+params.Kallisto_module_kallisto_quant.fragment_length = [int @default:200] 
+# Estimated average fragment length. Required when using single reads. Typical value: 200.
+
+params.Kallisto_module_kallisto_quant.standard_deviation = [int @default:30] 
+# Estimated standard deviation of fragment length. Required when using single reads. Typical value: 30.
+
+params.Kallisto_module_kallisto_quant.kallisto_parameters = [string @default:"--threads 4"] 
+# Custom Kallisto parameters.
+
+params.Kallisto_module_kallisto_quant.genomebam = [@options:"true","false" @default:"true"] 
+# If true is selected, Kallisto will project pseudoalignments to genome sorted BAM file."
+```
 
 ## Adapter Removal
 If specific Adapter Removal is required, you can enable trimmomatic and enter the adapter sequence. 
