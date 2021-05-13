@@ -3,7 +3,12 @@ FROM nfcore/base:1.7
 
 LABEL author="onur.yukselen@umassmed.edu" description="Docker image containing all requirements for the dolphinnext/rnaseq pipeline"
 
-RUN apt-get update && apt-get install -y gcc 
+RUN apt-get update && apt-get install -y gcc unzip libtbb-dev g++
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"
+RUN unzip awscliv2.zip
+RUN ./aws/install
+RUN aws --version
+
 COPY environment.yml /
 RUN conda env create -f /environment.yml && conda clean -a
 # Install dolphin-tools
