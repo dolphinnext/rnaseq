@@ -12,7 +12,7 @@ Alternatively, Kallisto could be used for quantifying abundances of transcripts 
   6. Optionally you can create Integrative Genomics Viewer (IGV)  and Genome Browser Files (TDF and Bigwig, respectively)
 
 ##### Pipeline Container:
-  * Docker: dolphinnext/rnaseq:2.0
+  * Docker: dolphinnext/rnaseq:3.0
 
 ##### Program Versions:
   - FastQC v0.11.8
@@ -34,11 +34,12 @@ Alternatively, Kallisto could be used for quantifying abundances of transcripts 
   - Ucsc-wigToBigWig v366
   - Pdfbox-App v2.0.0
   - Kallisto v0.46.0
+  - Megadepth v1.1.0
  
 
 ##### Run through DolphinNext User Interface:
 
-To start using the dolphinnext/rnaseq pipeline please go to [*DolphinNext Web page*](https://dolphinnext.umassmed.edu/index.php?np=1&id=437) and click run button.
+To start using the dolphinnext/rnaseq pipeline please go to [*DolphinNext Web page*](https://dolphinnext.umassmed.edu/index.php?np=1&id=755) and click run button.
 
 ##### Run through Command Line:
 

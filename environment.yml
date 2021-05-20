@@ -21,6 +21,6 @@ dependencies:
   - igvtools=2.5.3
   - bedtools=2.27.1
   - fastx_toolkit=0.0.14
-  - ucsc-wigToBigWig=366
+  - ucsc-wigToBigWig=377
   - bioconda::kallisto=0.46.0
   - bioconda::megadepth=1.1.0
