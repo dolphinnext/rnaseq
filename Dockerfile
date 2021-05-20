@@ -6,9 +6,7 @@ ENV PATH /opt/conda/bin:$PATH
 
 
 RUN apt-get update --fix-missing && \
-    apt-get install -y wget bzip2 ca-certificates curl git && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y wget bzip2 ca-certificates curl git 
     
 RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh -O ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda && \
@@ -32,7 +30,11 @@ RUN unzip awscliv2.zip
 RUN ./aws/install
 RUN aws --version
 
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 COPY environment.yml /
+RUN conda update -n base -c defaults conda
 RUN conda env create -f /environment.yml && conda clean -a
 # Install dolphin-tools
 RUN git clone https://github.com/dolphinnext/tools /usr/local/bin/dolphin-tools
