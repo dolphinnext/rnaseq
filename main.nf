@@ -1068,8 +1068,8 @@ process Check_and_Build_Module_Check_Genome_GTF {
 
 
 output:
- file "${genomeName}"  into g245_21_genome_g245_31, g245_21_genome_g245_32, g245_21_genome_g245_33, g245_21_genome_g245_34, g245_21_genome_g245_35, g245_21_genome_g245_37, g245_21_genome_g245_40, g245_21_genome_g245_41
- file "${gtfName}"  into g245_21_gtfFile_g245_31, g245_21_gtfFile_g245_32, g245_21_gtfFile_g245_33, g245_21_gtfFile_g245_34, g245_21_gtfFile_g245_36, g245_21_gtfFile_g245_37, g245_21_gtfFile_g245_40, g245_21_gtfFile_g245_41
+ file "${genomeName}"  into g245_21_genome_g245_31, g245_21_genome_g245_32, g245_21_genome_g245_34, g245_21_genome_g245_35, g245_21_genome_g245_47, g245_21_genome_g245_48, g245_21_genome_g245_50, g245_21_genome_g245_51
+ file "${gtfName}"  into g245_21_gtfFile_g245_31, g245_21_gtfFile_g245_32, g245_21_gtfFile_g245_34, g245_21_gtfFile_g245_36, g245_21_gtfFile_g245_47, g245_21_gtfFile_g245_48, g245_21_gtfFile_g245_50, g245_21_gtfFile_g245_51
  file "${commondbName}"  into g245_21_commondb_g245_39
 
 when:
@@ -1158,35 +1158,133 @@ fi
 }
 
 
+process Check_and_Build_Module_Check_Build_Kallisto_Index {
+
+input:
+ file genome from g245_21_genome_g245_50
+ file gtf from g245_21_gtfFile_g245_50
+
+output:
+ file "$index"  into g245_50_kallisto_index_g245_51
+
+when:
+(params.use_Kallisto_Index == "yes") && (params.run_checkAndBuild == "yes")
+
+script:
+index_dir = ""
+if (params.kallisto_index.indexOf('/') > -1){
+	index_dir  = params.kallisto_index.substring(0, params.kallisto_index.lastIndexOf('/')) 
+}
+index = "KallistoIndex" 
+
+
+
+"""
+if [ ! -e "${index_dir}/transcripts.idx" ] ; then
+    echo "${index_dir}/transcripts.idx Kallisto index not found"
+    
+    mkdir -p $index && mv $genome $gtf $index/. && cd $index
+    filter_gtf_for_genes_in_genome.py --gtf ${gtf} --fasta ${genome} -o genome_filtered_genes.gtf
+    gffread -F -w transcripts.fa -g ${genome} genome_filtered_genes.gtf
+    gzip transcripts.fa
+    kallisto index -i transcripts.idx transcripts.fa.gz
+    if [ "${index_dir}" != "" ] ; then
+    	cd ..
+		mkdir -p ${index_dir}
+		cp -R -n $index  ${index_dir}
+	fi
+else 
+	ln -s ${index_dir} $index
+fi
+"""
+
+
+
+}
+
+
+process Check_and_Build_Module_Check_Build_Hisat2_Index {
+
+input:
+ file genome from g245_21_genome_g245_48
+ file gtf from g245_21_gtfFile_g245_48
+
+output:
+ file "$index"  into g245_48_hisat2Index_g245_51
+
+when:
+(params.use_Hisat2_Index == "yes") && (params.run_checkAndBuild == "yes")
+
+script:
+basename = genome.baseName
+basenameGTF = gtf.baseName
+index_dir = ""
+if (params.hisat2_index.indexOf('/') > -1){
+	index_dir  = params.hisat2_index.substring(0, params.hisat2_index.lastIndexOf('/')) 
+}
+index = "Hisat2Index" 
+
+extract_splice_sites = "hisat2_extract_splice_sites.py ${gtf} > ${basenameGTF}.hisat2_splice_sites.txt"
+extract_exons = "hisat2_extract_exons.py ${gtf}> ${basenameGTF}.hisat2_exons.txt"
+ss = "--ss ${basenameGTF}.hisat2_splice_sites.txt"
+exon = "--exon ${basenameGTF}.hisat2_exons.txt"
+
+"""
+if [ ! -e "${index_dir}/${basename}.8.ht2" ] ; then
+    echo "${index_dir}/${basename}.8.ht2 Hisat2 index not found"
+    
+    mkdir -p $index && mv $genome $gtf $index/. && cd $index
+    hisat2-build ${hisat2_build_parameters} $ss $exon ${genome} ${basename}
+    $extract_splice_sites
+    $extract_exons
+    if [ "${index_dir}" != "" ] ; then
+    	cd ..
+		mkdir -p ${index_dir}
+		cp -R -n $index  ${index_dir}
+	fi
+else 
+	ln -s ${index_dir} $index
+fi
+"""
+
+
+
+}
+
+
 process Check_and_Build_Module_Check_Build_Bowtie_Index {
 
 input:
- file genome from g245_21_genome_g245_41
- file gtf from g245_21_gtfFile_g245_41
+ file genome from g245_21_genome_g245_47
+ file gtf from g245_21_gtfFile_g245_47
 
 output:
- file resultDir  into g245_41_bowtieIndex_g245_40
+ file "$index"  into g245_47_bowtieIndex_g245_51
 
 when:
 (params.use_Bowtie_Index == "yes") && (params.run_checkAndBuild == "yes")
 
 script:
 bowtie_build_parameters = params.Check_and_Build_Module_Check_Build_Bowtie_Index.bowtie_build_parameters
-basedir  = genome.substring(0, genome.lastIndexOf('/'))
-gtf_dir  = gtf.substring(0, gtf.lastIndexOf('/')) 
-basename = genome.substring(genome.lastIndexOf('/')+1,genome.lastIndexOf('.'))
-filename = genome.substring(genome.lastIndexOf('/')+1,genome.length())
-newDirName = "BowtieIndex"
-resultDir = basedir.substring(0, basedir.lastIndexOf('/')) +"/"+ newDirName 
-tmpResultDir = basedir.substring(0, basedir.lastIndexOf('/')) +"/_tmp_"+ newDirName 
+basename = genome.baseName
+index_dir = ""
+if (params.bowtie_index.indexOf('/') > -1){
+	index_dir  = params.bowtie_index.substring(0, params.bowtie_index.lastIndexOf('/')) 
+}
+index = "BowtieIndex" 
 
 """
-if [ ! -e "${resultDir}/${basename}.rev.2.ebwt" ] ; then
-    echo "${resultDir}/${basename}.rev.2.ebwt Bowtie index not found"
-    rm -rf $tmpResultDir $resultDir && mkdir -p $tmpResultDir && cd $tmpResultDir
-    ln -s ../main/${filename} ${filename}
-    bowtie-build ${bowtie_build_parameters} ${filename} ${basename}
-    cd .. && mv $tmpResultDir $resultDir
+if [ ! -e "${index_dir}/${basename}.rev.2.ebwt" ] ; then
+    echo "${index_dir}/${basename}.rev.2.ebwt Bowtie index not found"
+    
+    mkdir -p $index && mv $genome $gtf $index/. && cd $index
+    bowtie-build ${bowtie_build_parameters} ${genome} ${basename}
+    if [ "${index_dir}" != "" ] ; then
+		mkdir -p ${index_dir}
+		cp -R -n $index  ${index_dir}
+	fi
+else 
+	ln -s ${index_dir} $index
 fi
 """
 
@@ -1615,732 +1713,6 @@ fi
 }
 
 
-//* params.run_Split_Fastq =  "no"  //* @dropdown @options:"yes","no" @show_settings:"SplitFastq" @description:"Splits Fastq files before aligning with Star, Hisat2 or Tophat2 to speed up the process. However, it will require more disk space."
-readsPerFile = params.SplitFastq.readsPerFile
-//Since splitFastq operator requires flat file structure, first convert grouped structure to flat, execute splitFastq, and then return back to original grouped structure
-//.map(flatPairsClosure).splitFastq(splitFastqParams).map(groupPairsClosure)
-
-//Mapping grouped read structure to flat structure
-flatPairsClosure = {row -> if(row[1] instanceof Collection) {
-        if (row[1][1]){
-            tuple(row[0], file(row[1][0]), file(row[1][1]))
-        } else {
-            tuple(row[0], file(row[1][0]))
-        }
-    } else {
-        tuple(row[0], file(row[1]))
-    }
-}
-
-//Mapping flat read structure to grouped read structure
-groupPairsClosure = {row -> tuple(row[0], (row[2]) ? [file(row[1]), file(row[2])] : [file(row[1])])}
-
-// if mate of split process different than rest of the pipeline, use "mate_split" as input parameter. Otherwise use default "mate" as input parameter
-mateParamName = (params.mate_split) ? "mate_split" : "mate"
-splitFastqParams = ""
-if (params[mateParamName] != "pair"){
-    splitFastqParams = [by: readsPerFile, file:true]
-}else {
-    splitFastqParams = [by: readsPerFile, pe:true, file:true]
-}
-
-//* autofill
-//* platform
-if ($HOSTNAME == "ghpcc06.umassrc.org"){
-    $TIME = 240
-    $CPU  = 1
-    $MEMORY = 8
-    $QUEUE = "short"
-}
-//* platform
-//* autofill
-if (!(params.run_Split_Fastq == "yes")){
-g241_34_reads_g_127.into{g_127_reads_g216_11; g_127_reads_g246_20; g_127_reads_g247_14}
-} else {
-
-
-process SplitFastq {
-
-input:
- set val(name), file(reads) from g241_34_reads_g_127.map(flatPairsClosure).splitFastq(splitFastqParams).map(groupPairsClosure)
-
-output:
- set val(name), file("split/*q")  into g_127_reads_g216_11, g_127_reads_g246_20, g_127_reads_g247_14
-
-errorStrategy 'retry'
-maxRetries 3
-
-when:
-params.run_Split_Fastq == "yes"
-
-script:
-"""    
-mkdir -p split
-mv ${reads} split/.
-"""
-}
-}
-
-
-mappingListQuoteSep = mapList.collect{ '"' + it + '"'}.join(",") 
-rawIndexList = indexList.collect{ '"' + it + '"'}.join(",") 
-process Sequential_Mapping_Module_Sequential_Mapping_Bam_dedup_count {
-
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.counts.tsv$/) "Sequential_Mapping_Bam_dedup_count/$filename"
-}
-
-input:
- file bam from g241_34_bam_file_g241_36.collect()
- file index from g241_34_bam_index_g241_36.collect()
-
-output:
- file "*.counts.tsv"  into g241_36_outputFileTSV
-
-shell:
-'''
-#!/usr/bin/env perl
-use List::Util qw[min max];
-use File::Basename;
-use Getopt::Long;
-use Pod::Usage;
-use Data::Dumper;
-
-my @header;
-my @header_antisense;
-my @header_sense;
-my %all_files;
-my %sense_files;
-my %antisense_files;
-
-my @mappingList = (!{mappingListQuoteSep});
-my @rawIndexList = (!{rawIndexList});
-my %indexHash;
-my $dedup = "";
-@indexHash{@mappingList} = @rawIndexList;
-
-chomp(my $contents = `ls *.bam`);
-my @files = split(/[\\n]+/, $contents);
-foreach my $file (@files){
-        $file=~/(.*)@(.*)_sorted(.*)\\.bam/;
-        my $mapper = $1; 
-        my $name = $2; ##header
-        #print $3;
-        if ($3 eq ".dedup"){
-            $dedup = ".dedup";
-        }
-        if ($name=~/_antisense$/){
-        	push(@header_antisense, $name) unless grep{$_ eq $name} @header_antisense; #mapped element header
-        	$antisense_files{$mapper} .= $file." ";
-        }
-        elsif ($name=~/_sense$/){
-        	push(@header_sense, $name) unless grep{$_ eq $name} @header_sense; #mapped element header
-        	$sense_files{$mapper} .= $file." ";
-        }
-        else{
-			push(@header, $name) unless grep{$_ eq $name} @header; #mapped element header
-	        $all_files{$mapper} .= $file." ";
-        }
-}
-
-runCov(\\%all_files, \\@header, \\@indexHash, "", $dedup);
-runCov(\\%sense_files, \\@header_sense, \\@indexHash, "sense", $dedup);
-runCov(\\%antisense_files, \\@header_antisense, \\@indexHash, "antisense", $dedup);
-
-sub runCov {
-	my ( \$files, \$header, \$indexHash, \$sense_antisense, \$dedup) = @_;
-	open OUT, ">header".\$sense_antisense.".tsv";
-	print OUT join ("\\t", "id","len",@{\$header}),"\\n";
-	close OUT;
-	my $par = "";
-	if ($sense_antisense=~/^sense\$/){
-      $par = "-s";
-    }elsif($sense_antisense=~/^antisense\$/){
-      $par = "-S";
-    }
-	
-	foreach my $key (sort keys %{\$files}) {  
-	   my $bamFiles = ${\$files}{$key};
-		unless (-e ${indexHash}{$key}.".bed") {
-            print "2: bed not found run makeBed\n";
-                if (-e ${indexHash}{$key}.".fa") {
-                    makeBed(${indexHash}{$key}.".fa", $key, ${indexHash}{$key}.".bed");
-                } elsif(-e ${indexHash}{$key}.".fasta"){
-                    makeBed(${indexHash}{$key}.".fasta", $key, ${indexHash}{$key}.".bed");
-                }
-        }
-	    
-		my $com =  "bedtools multicov $par -bams $bamFiles -bed ".${indexHash}{$key}.".bed >$key${dedup}${sense_antisense}.counts.tmp\n";
-        print $com;
-        `$com`;
-        my $iniResColumn = int(countColumn(${indexHash}{$key}.".bed")) + 1;
-	    `awk -F \\"\\\\t\\" \\'{a=\\"\\";for (i=$iniResColumn;i<=NF;i++){a=a\\"\\\\t\\"\\$i;} print \\$4\\"\\\\t\\"(\\$3-\\$2)\\"\\"a}\\' $key${dedup}${sense_antisense}.counts.tmp> $key${dedup}${sense_antisense}.counts.tsv`;
-	    `sort -k3,3nr $key${dedup}${sense_antisense}.counts.tsv>$key${dedup}${sense_antisense}.sorted.tsv`;
-        `cat header${sense_antisense}.tsv $key${dedup}${sense_antisense}.sorted.tsv> $key${dedup}${sense_antisense}.counts.tsv`;
-	}
-}
-
-sub countColumn {
-    my ( \$file) = @_;
-    open(IN, \$file);
-    my $line=<IN>;
-    chomp($line);
-    my @cols = split('\\t', $line);
-    my $n = @cols;
-    close OUT;
-    return $n;
-}
-
-sub makeBed {
-    my ( \$fasta, \$type, \$bed) = @_;
-    print "makeBed $fasta\\n";
-    print "makeBed $bed\\n";
-    open OUT, ">$bed";
-    open(IN, \$fasta);
-    my $name="";
-    my $seq="";
-    my $i=0;
-    while(my $line=<IN>){
-        chomp($line);
-        if($line=~/^>(.*)/){
-            $i++ if (length($seq)>0);
-            print OUT "$name\\t1\\t".length($seq)."\\t$name\\t0\\t+\\n" if (length($seq)>0); 
-            $name="$1";
-            $seq="";
-        } elsif($line=~/[ACGTNacgtn]+/){
-            $seq.=$line;
-        }
-    }
-    print OUT "$name\\t1\\t".length($seq)."\\t$name\\t0\\t+\\n" if (length($seq)>0); 
-    close OUT;
-}
-
-'''
-}
-
-mappingListQuoteSep = mapList.collect{ '"' + it + '"'}.join(",") 
-rawIndexList = indexList.collect{ '"' + it + '"'}.join(",") 
-process Sequential_Mapping_Module_Sequential_Mapping_Bam_count {
-
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.counts.tsv$/) "Sequential_Mapping_Bam_count/$filename"
-}
-
-input:
- file bam from g241_34_bam_file_g241_35.collect()
- file index from g241_34_bam_index_g241_35.collect()
-
-output:
- file "*.counts.tsv"  into g241_35_outputFileTSV
-
-shell:
-'''
-#!/usr/bin/env perl
-use List::Util qw[min max];
-use File::Basename;
-use Getopt::Long;
-use Pod::Usage;
-use Data::Dumper;
-
-my @header;
-my @header_antisense;
-my @header_sense;
-my %all_files;
-my %sense_files;
-my %antisense_files;
-
-my @mappingList = (!{mappingListQuoteSep});
-my @rawIndexList = (!{rawIndexList});
-my %indexHash;
-my $dedup = "";
-@indexHash{@mappingList} = @rawIndexList;
-
-chomp(my $contents = `ls *.bam`);
-my @files = split(/[\\n]+/, $contents);
-foreach my $file (@files){
-        $file=~/(.*)@(.*)_sorted(.*)\\.bam/;
-        my $mapper = $1; 
-        my $name = $2; ##header
-        #print $3;
-        if ($3 eq ".dedup"){
-            $dedup = ".dedup";
-        }
-        if ($name=~/_antisense$/){
-        	push(@header_antisense, $name) unless grep{$_ eq $name} @header_antisense; #mapped element header
-        	$antisense_files{$mapper} .= $file." ";
-        }
-        elsif ($name=~/_sense$/){
-        	push(@header_sense, $name) unless grep{$_ eq $name} @header_sense; #mapped element header
-        	$sense_files{$mapper} .= $file." ";
-        }
-        else{
-			push(@header, $name) unless grep{$_ eq $name} @header; #mapped element header
-	        $all_files{$mapper} .= $file." ";
-        }
-}
-
-runCov(\\%all_files, \\@header, \\@indexHash, "", $dedup);
-runCov(\\%sense_files, \\@header_sense, \\@indexHash, "sense", $dedup);
-runCov(\\%antisense_files, \\@header_antisense, \\@indexHash, "antisense", $dedup);
-
-sub runCov {
-	my ( \$files, \$header, \$indexHash, \$sense_antisense, \$dedup) = @_;
-	open OUT, ">header".\$sense_antisense.".tsv";
-	print OUT join ("\\t", "id","len",@{\$header}),"\\n";
-	close OUT;
-	my $par = "";
-	if ($sense_antisense=~/^sense\$/){
-      $par = "-s";
-    }elsif($sense_antisense=~/^antisense\$/){
-      $par = "-S";
-    }
-	
-	foreach my $key (sort keys %{\$files}) {  
-	   my $bamFiles = ${\$files}{$key};
-		unless (-e ${indexHash}{$key}.".bed") {
-            print "2: bed not found run makeBed\n";
-                if (-e ${indexHash}{$key}.".fa") {
-                    makeBed(${indexHash}{$key}.".fa", $key, ${indexHash}{$key}.".bed");
-                } elsif(-e ${indexHash}{$key}.".fasta"){
-                    makeBed(${indexHash}{$key}.".fasta", $key, ${indexHash}{$key}.".bed");
-                }
-        }
-	    
-		my $com =  "bedtools multicov $par -bams $bamFiles -bed ".${indexHash}{$key}.".bed >$key${dedup}${sense_antisense}.counts.tmp\n";
-        print $com;
-        `$com`;
-        my $iniResColumn = int(countColumn(${indexHash}{$key}.".bed")) + 1;
-	    `awk -F \\"\\\\t\\" \\'{a=\\"\\";for (i=$iniResColumn;i<=NF;i++){a=a\\"\\\\t\\"\\$i;} print \\$4\\"\\\\t\\"(\\$3-\\$2)\\"\\"a}\\' $key${dedup}${sense_antisense}.counts.tmp> $key${dedup}${sense_antisense}.counts.tsv`;
-	    `sort -k3,3nr $key${dedup}${sense_antisense}.counts.tsv>$key${dedup}${sense_antisense}.sorted.tsv`;
-        `cat header${sense_antisense}.tsv $key${dedup}${sense_antisense}.sorted.tsv> $key${dedup}${sense_antisense}.counts.tsv`;
-	}
-}
-
-sub countColumn {
-    my ( \$file) = @_;
-    open(IN, \$file);
-    my $line=<IN>;
-    chomp($line);
-    my @cols = split('\\t', $line);
-    my $n = @cols;
-    close OUT;
-    return $n;
-}
-
-sub makeBed {
-    my ( \$fasta, \$type, \$bed) = @_;
-    print "makeBed $fasta\\n";
-    print "makeBed $bed\\n";
-    open OUT, ">$bed";
-    open(IN, \$fasta);
-    my $name="";
-    my $seq="";
-    my $i=0;
-    while(my $line=<IN>){
-        chomp($line);
-        if($line=~/^>(.*)/){
-            $i++ if (length($seq)>0);
-            print OUT "$name\\t1\\t".length($seq)."\\t$name\\t0\\t+\\n" if (length($seq)>0); 
-            $name="$1";
-            $seq="";
-        } elsif($line=~/[ACGTNacgtn]+/){
-            $seq.=$line;
-        }
-    }
-    print OUT "$name\\t1\\t".length($seq)."\\t$name\\t0\\t+\\n" if (length($seq)>0); 
-    close OUT;
-}
-
-'''
-}
-
-
-process Sequential_Mapping_Module_Deduplication_Summary {
-
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /deduplication_summary.tsv$/) "sequential_mapping_summary/$filename"
-}
-
-input:
- file flagstat from g241_34_log_file_g241_30.collect()
- val mate from g_229_mate_g241_30
-
-output:
- file "deduplication_summary.tsv"  into g241_30_outputFileTSV
-
-errorStrategy 'retry'
-maxRetries 2
-
-shell:
-'''
-#!/usr/bin/env perl
-use List::Util qw[min max];
-use strict;
-use File::Basename;
-use Getopt::Long;
-use Pod::Usage;
-use Data::Dumper;
-
-my @header;
-my %all_files;
-my %tsv;
-my %headerHash;
-my %headerText;
-
-my $i=0;
-chomp(my $contents = `ls *_duplicates_stats.log`);
-my @files = split(/[\\n]+/, $contents);
-foreach my $file (@files){
-    $i++;
-    $file=~/(.*)@(.*)@(.*)_duplicates_stats\\.log/;
-    my $mapOrder = int($1); 
-    my $mapper = $2; #mapped element 
-    my $name = $3; ##sample name
-    push(@header, $mapper) unless grep{$_ eq $mapper} @header; 
-        
-    # my $duplicates;
-    my $aligned;
-    my $dedup; #aligned reads after dedup
-    my $percent=0;
-    if ("!{mate}" eq "pair" ){
-        #first flagstat belongs to first bam file
-        chomp($aligned = `cat $file | grep 'properly paired (' | sed -n 1p | awk '{sum+=\\$1+\\$3} END {print sum}'`);
-        #second flagstat belongs to dedup bam file
-        chomp($dedup = `cat $file | grep 'properly paired (' | sed -n 2p | awk '{sum+=\\$1+\\$3} END {print sum}'`);
-    } else {
-        chomp($aligned = `cat $file | grep 'mapped (' | sed -n 1p | awk '{sum+=\\$1+\\$3} END {print sum}'`);
-        chomp($dedup = `cat $file | grep 'mapped (' | sed -n 2p | awk '{sum+=\\$1+\\$3} END {print sum}'`);
-    }
-    # chomp($duplicates = `cat $file | grep 'duplicates' | awk '{sum+=\\$1+\\$3} END {print sum}'`);
-    # $dedup = int($aligned) - int($duplicates);
-    if ("!{mate}" eq "pair" ){
-       $dedup = int($dedup/2);
-       $aligned = int($aligned/2);
-    } 
-    $percent = "0.00";
-    if (int($aligned)  > 0 ){
-       $percent = sprintf("%.2f", ($aligned-$dedup)/$aligned*100); 
-    } 
-    $tsv{$name}{$mapper}=[$aligned,$dedup,"$percent%"];
-    $headerHash{$mapOrder}=$mapper;
-    $headerText{$mapOrder}=["$mapper (Before Dedup)", "$mapper (After Dedup)", "$mapper (Duplication Ratio %)"];
-}
-
-my @mapOrderArray = ( keys %headerHash );
-my @sortedOrderArray = sort { $a <=> $b } @mapOrderArray;
-
-my $summary = "deduplication_summary.tsv";
-open(OUT, ">$summary");
-print OUT "Sample\\t";
-my @headArr = ();
-for my $mapOrder (@sortedOrderArray) {
-    push (@headArr, @{$headerText{$mapOrder}});
-}
-my $headArrAll = join("\\t", @headArr);
-print OUT "$headArrAll\\n";
-
-foreach my $name (keys %tsv){
-    my @rowArr = ();
-    for my $mapOrder (@sortedOrderArray) {
-        push (@rowArr, @{$tsv{$name}{$headerHash{$mapOrder}}});
-    }
-    my $rowArrAll = join("\\t", @rowArr);
-    print OUT "$name\\t$rowArrAll\\n";
-}
-close(OUT);
-'''
-}
-
-//* autofill
-//* platform
-if ($HOSTNAME == "ghpcc06.umassrc.org"){
-    $TIME = 240
-    $CPU  = 1
-    $MEMORY = 8
-    $QUEUE = "short"
-}
-//* platform
-//* autofill
-
-process Sequential_Mapping_Module_Sequential_Mapping_Summary {
-
-input:
- set val(name), file(bowfile) from g241_34_bowfiles_g241_26
- val mate from g_229_mate_g241_26
- val filtersList from g241_34_filter_g241_26
-
-output:
- file '*.tsv'  into g241_26_outputFileTSV_g241_13
- val "sequential_mapping_sum"  into g241_26_name_g241_13
-
-errorStrategy 'retry'
-maxRetries 2
-
-shell:
-'''
-#!/usr/bin/env perl
-open(my \$fh, '>', "!{name}.tsv");
-print $fh "Sample\\tGroup\\tTotal Reads\\tReads After Sequential Mapping\\tUniquely Mapped\\tMultimapped\\tMapped\\n";
-my @bowArray = split(' ', "!{bowfile}");
-my $group= "\\t";
-my @filterArray = (!{filtersList});
-foreach my $bowitem(@bowArray) {
-    # get mapping id
-    my @bowAr = $bowitem.split("_");
-    $bowCount = $bowAr[0] + -1;
-    # if bowfiles ends with underscore (eg. bow_rRNA), parse rRNA as a group.
-    my ($RDS_In, $RDS_After, $RDS_Uniq, $RDS_Multi, $ALGN_T, $a, $b, $aPer, $bPer)=(0, 0, 0, 0, 0, 0, 0, 0, 0);
-    if ($bowitem =~ m/bow_([^\\.]+)$/){
-        $group = "$1\\t";
-        open(IN, $bowitem);
-        my $i = 0;
-        while(my $line=<IN>){
-            chomp($line);
-            $line=~s/^ +//;
-            my @arr=split(/ /, $line);
-            $RDS_In=$arr[0] if ($i=~/^1$/);
-            # Reads After Filtering column depends on filtering type
-            if ($i == 2){
-                if ($filterArray[$bowCount] eq "Yes"){
-                    $RDS_After=$arr[0];
-                } else {
-                    $RDS_After=$RDS_In;
-                }
-            }
-            if ($i == 3){
-                $a=$arr[0];
-                $aPer=$arr[1];
-                $aPer=~ s/([()])//g;
-                $RDS_Uniq=$arr[0];
-            }
-            if ($i == 4){
-                $b=$arr[0];
-                $bPer=$arr[1];
-                $bPer=~ s/([()])//g;
-                $RDS_Multi=$arr[0];
-            }
-            $ALGN_T=($a+$b);
-            $i++;
-        }
-        close(IN);
-    } elsif ($bowitem =~ m/star_([^\\.]+)$/){
-        $group = "$1\\t";
-        open(IN2, $bowitem);
-        my $multimapped;
-		my $aligned;
-		my $inputCount;
-		chomp($inputCount = `cat $bowitem | grep 'Number of input reads' | awk '{sum+=\\$6} END {print sum}'`);
-		chomp($uniqAligned = `cat $bowitem | grep 'Uniquely mapped reads number' | awk '{sum+=\\$6} END {print sum}'`);
-		chomp($multimapped = `cat $bowitem | grep 'Number of reads mapped to multiple loci' | awk '{sum+=\\$9} END {print sum}'`);
-		## Here we exclude "Number of reads mapped to too many loci" from multimapped reads since in bam file it called as unmapped.
-		## Besides, these "too many loci" reads exported as unmapped reads from STAR.
-		$RDS_In = int($inputCount);
-		$RDS_Multi = int($multimapped);
-        $RDS_Uniq = int($uniqAligned);
-        $ALGN_T = $RDS_Uniq+$RDS_Multi;
-		if ($filterArray[$bowCount] eq "Yes"){
-            $RDS_After=$RDS_In-$ALGN_T;
-        } else {
-            $RDS_After=$RDS_In;
-        }
-    } elsif ($bowitem =~ m/bow1_([^\\.]+)$/){
-        $group = "$1\\t";
-        open(IN2, $bowitem);
-        my $multimapped;
-		my $aligned;
-		my $inputCount;
-		my $uniqAligned;
-		chomp($inputCount = `cat $bowitem | grep '# reads processed:' | awk '{sum+=\\$4} END {print sum}'`);
-		chomp($aligned = `cat $bowitem | grep '# reads with at least one reported alignment:' | awk '{sum+=\\$9} END {print sum}'`);
-		chomp($uniqAligned = `cat $bowitem | grep '# unique mapped reads:' | awk '{sum+=\\$5} END {print sum}'`);
-		## Here we exclude "Number of reads mapped to too many loci" from multimapped reads since in bam file it called as unmapped.
-		## Besides, these "too many loci" reads exported as unmapped reads from STAR.
-		$RDS_In = int($inputCount);
-		$RDS_Multi = int($aligned) -int($uniqAligned);
-		if ($RDS_Multi < 0 ){
-		    $RDS_Multi = 0;
-		}
-        $RDS_Uniq = int($uniqAligned);
-        $ALGN_T = int($aligned);
-		if ($filterArray[$bowCount] eq "Yes"){
-            $RDS_After=$RDS_In-$ALGN_T;
-        } else {
-            $RDS_After=$RDS_In;
-        }
-    }
-    
-    print $fh "!{name}\\t$group$RDS_In\\t$RDS_After\\t$RDS_Uniq\\t$RDS_Multi\\t$ALGN_T\\n";
-}
-close($fh);
-
-
-
-'''
-
-}
-
-
-process Sequential_Mapping_Module_Merge_TSV_Files {
-
-input:
- file tsv from g241_26_outputFileTSV_g241_13.collect()
- val outputFileName from g241_26_name_g241_13.collect()
-
-output:
- file "${name}.tsv"  into g241_13_outputFileTSV_g241_14
-
-errorStrategy 'retry'
-maxRetries 3
-
-script:
-name = outputFileName[0]
-"""    
-awk 'FNR==1 && NR!=1 {  getline; } 1 {print} ' *.tsv > ${name}.tsv
-"""
-}
-
-
-process Sequential_Mapping_Module_Sequential_Mapping_Short_Summary {
-
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /sequential_mapping_short_sum.tsv$/) "sequential_mapping_summary/$filename"
-	else if (filename =~ /sequential_mapping_detailed_sum.tsv$/) "sequential_mapping_summary/$filename"
-}
-
-input:
- file mainSum from g241_13_outputFileTSV_g241_14
-
-output:
- file "sequential_mapping_short_sum.tsv"  into g241_14_outputFileTSV_g_198
- file "sequential_mapping_detailed_sum.tsv"  into g241_14_outputFile
-
-errorStrategy 'retry'
-maxRetries 2
-
-shell:
-'''
-#!/usr/bin/env perl
-use List::Util qw[min max];
-use File::Basename;
-use Getopt::Long;
-use Pod::Usage;
-use Data::Dumper;
-
-my @header;
-my %all_rows;
-my @seen_cols_short;
-my @seen_cols_detailed;
-my $ID_header;
-
-chomp(my $contents = `ls *.tsv`);
-my @files = split(/[\\n]+/, $contents);
-foreach my $file (@files){
-        open IN,"$file";
-        my $line1 = <IN>;
-        chomp($line1);
-        ( $ID_header, my @h) = ( split("\\t", $line1) );
-        my $totalHeader = $h[1];
-        my $afterFilteringHeader = $h[2];
-        my $uniqueHeader = $h[3];
-        my $multiHeader = $h[4];
-        my $mappedHeader = $h[5];
-        push(@seen_cols_short, $totalHeader) unless grep{$_ eq $totalHeader} @seen_cols_short; #Total reads Header
-        push(@seen_cols_detailed, $totalHeader) unless grep{$_ eq $totalHeader} @seen_cols_detailed; #Total reads Header
-
-        my $n=0;
-        while (my $line=<IN>) {
-                
-                chomp($line);
-                my ( $ID, @fields ) = ( split("\\t", $line) ); 
-                #SHORT
-                push(@seen_cols_short, $fields[0]) unless grep{$_ eq $fields[0]} @seen_cols_short; #mapped element header
-                $all_rows{$ID}{$fields[0]} = $fields[5];#Mapped Reads
-                #Grep first line $fields[1] as total reads.
-                if (!exists $all_rows{$ID}{$totalHeader}){    
-                        $all_rows{$ID}{$totalHeader} = $fields[1];
-                } 
-                $all_rows{$ID}{$afterFilteringHeader} = $fields[2]; #only use last entry
-                #DETAILED
-                $uniqueHeadEach = "$fields[0] (${uniqueHeader})";
-                $multiHeadEach = "$fields[0] (${multiHeader})";
-                $mappedHeadEach = "$fields[0] (${mappedHeader})";
-                push(@seen_cols_detailed, $mappedHeadEach) unless grep{$_ eq $mappedHeadEach} @seen_cols_detailed;
-                push(@seen_cols_detailed, $uniqueHeadEach) unless grep{$_ eq $uniqueHeadEach} @seen_cols_detailed;
-                push(@seen_cols_detailed, $multiHeadEach) unless grep{$_ eq $multiHeadEach} @seen_cols_detailed;
-                $all_rows{$ID}{$mappedHeadEach} = $fields[5];
-                $all_rows{$ID}{$uniqueHeadEach} = $fields[3];
-                $all_rows{$ID}{$multiHeadEach} = $fields[4];
-    }
-    close IN;
-    push(@seen_cols_short, $afterFilteringHeader) unless grep{$_ eq $afterFilteringHeader} @seen_cols_short; #After filtering Header
-}
-
-
-#print Dumper \\%all_rows;
-#print Dumper \\%seen_cols_short;
-
-printFiles("sequential_mapping_short_sum.tsv",@seen_cols_short,);
-printFiles("sequential_mapping_detailed_sum.tsv",@seen_cols_detailed);
-
-
-sub printFiles {
-    my($summary, @cols_to_print) = @_;
-    
-    open OUT, ">$summary";
-    print OUT join ("\\t", $ID_header,@cols_to_print),"\\n";
-    foreach my $key ( keys %all_rows ) { 
-        print OUT join ("\\t", $key, (map { $all_rows{$key}{$_} // '' } @cols_to_print)),"\\n";
-        }
-        close OUT;
-}
-
-'''
-
-
-}
-
-
-process Check_and_Build_Module_Check_Build_Kallisto_Index {
-
-input:
- file genome from g245_21_genome_g245_37
- file gtf from g245_21_gtfFile_g245_37
-
-output:
- val resultDir  into g245_37_genomeIndexPath_g216_11, g245_37_genomeIndexPath_g240_21, g245_37_genomeIndexPath_g242_22
-
-when:
-(params.use_Kallisto_Index == "yes") && (params.run_checkAndBuild == "yes")
-
-script:
-gtf_dir  = gtf.substring(0, gtf.lastIndexOf('/'))
-indexbasedir  = gtf_dir.substring(0, gtf_dir.lastIndexOf('/'))
-newDirName = "KallistoIndex"
-resultDir = indexbasedir +"/"+ newDirName 
-tmpResultDir = indexbasedir +"/_tmp_"+ newDirName
-
-"""
-if [ ! -e "${resultDir}/transcripts.idx" ] ; then
-    echo "${resultDir}/transcripts.idx Kallisto index not found"
-    rm -rf $tmpResultDir $resultDir && mkdir -p $tmpResultDir && cd $tmpResultDir
-    filter_gtf_for_genes_in_genome.py --gtf ${params.gtf} --fasta ${params.genome} -o genome_filtered_genes.gtf
-    gffread -F -w transcripts.fa -g ${params.genome} genome_filtered_genes.gtf
-    gzip transcripts.fa
-    kallisto index -i transcripts.idx transcripts.fa.gz
-    cd .. && mv $tmpResultDir $resultDir 
-fi
-"""
-
-
-
-}
-
-g245_37_genomeIndexPath_g242_22= g245_37_genomeIndexPath_g242_22.ifEmpty([""]) 
-
 //* params.rsem_ref_using_star_index =  ""  //* @input
 //* params.rsem_ref_using_bowtie2_index =  ""  //* @input
 //* params.rsem_ref_using_bowtie_index =  ""  //* @input
@@ -2372,7 +1744,6 @@ publishDir params.outdir, overwrite: true, mode: 'copy',
 input:
  val mate from g_229_mate_g242_22
  set val(name), file(reads) from g241_34_reads_g242_22
- val rsemIndex from g245_37_genomeIndexPath_g242_22.collect()
 
 output:
  file "pipe.rsem.${name}"  into g242_22_rsemOut_g242_17, g242_22_rsemOut_g242_21, g242_22_rsemOut_g_177
@@ -3404,8 +2775,6 @@ foreach my $key (@keys){
 '''
 }
 
-g245_37_genomeIndexPath_g240_21= g245_37_genomeIndexPath_g240_21.ifEmpty([""]) 
-
 //* params.kallisto_index =  ""  //* @input
 //* params.genome_sizes =  ""  //* @input
 //* params.gtf =  ""  //* @input
@@ -3438,7 +2807,6 @@ publishDir params.outdir, overwrite: true, mode: 'copy',
 input:
  val mate from g_229_mate_g240_21
  set val(name), file(reads) from g241_34_reads_g240_21
- val kallisto_index_path from g245_37_genomeIndexPath_g240_21
 
 output:
  file "kallisto_${name}"  into g240_21_outputDir_g240_22, g240_21_outputDir_g240_28, g240_21_outputDir_g_177
@@ -4444,7 +3812,72 @@ foreach my $key (@keys){
 '''
 }
 
-g245_37_genomeIndexPath_g216_11= g245_37_genomeIndexPath_g216_11.ifEmpty([""]) 
+//* params.run_Split_Fastq =  "no"  //* @dropdown @options:"yes","no" @show_settings:"SplitFastq" @description:"Splits Fastq files before aligning with Star, Hisat2 or Tophat2 to speed up the process. However, it will require more disk space."
+readsPerFile = params.SplitFastq.readsPerFile
+//Since splitFastq operator requires flat file structure, first convert grouped structure to flat, execute splitFastq, and then return back to original grouped structure
+//.map(flatPairsClosure).splitFastq(splitFastqParams).map(groupPairsClosure)
+
+//Mapping grouped read structure to flat structure
+flatPairsClosure = {row -> if(row[1] instanceof Collection) {
+        if (row[1][1]){
+            tuple(row[0], file(row[1][0]), file(row[1][1]))
+        } else {
+            tuple(row[0], file(row[1][0]))
+        }
+    } else {
+        tuple(row[0], file(row[1]))
+    }
+}
+
+//Mapping flat read structure to grouped read structure
+groupPairsClosure = {row -> tuple(row[0], (row[2]) ? [file(row[1]), file(row[2])] : [file(row[1])])}
+
+// if mate of split process different than rest of the pipeline, use "mate_split" as input parameter. Otherwise use default "mate" as input parameter
+mateParamName = (params.mate_split) ? "mate_split" : "mate"
+splitFastqParams = ""
+if (params[mateParamName] != "pair"){
+    splitFastqParams = [by: readsPerFile, file:true]
+}else {
+    splitFastqParams = [by: readsPerFile, pe:true, file:true]
+}
+
+//* autofill
+//* platform
+if ($HOSTNAME == "ghpcc06.umassrc.org"){
+    $TIME = 240
+    $CPU  = 1
+    $MEMORY = 8
+    $QUEUE = "short"
+}
+//* platform
+//* autofill
+if (!(params.run_Split_Fastq == "yes")){
+g241_34_reads_g_127.into{g_127_reads_g216_11; g_127_reads_g246_20; g_127_reads_g247_14}
+} else {
+
+
+process SplitFastq {
+
+input:
+ set val(name), file(reads) from g241_34_reads_g_127.map(flatPairsClosure).splitFastq(splitFastqParams).map(groupPairsClosure)
+
+output:
+ set val(name), file("split/*q")  into g_127_reads_g216_11, g_127_reads_g246_20, g_127_reads_g247_14
+
+errorStrategy 'retry'
+maxRetries 3
+
+when:
+params.run_Split_Fastq == "yes"
+
+script:
+"""    
+mkdir -p split
+mv ${reads} split/.
+"""
+}
+}
+
 
 //* params.hisat2_index =  ""  //* @input
 
@@ -4469,7 +3902,6 @@ process HISAT2_Module_Map_HISAT2 {
 input:
  val mate from g_229_mate_g216_11
  set val(name), file(reads) from g_127_reads_g216_11
- val hisat2index from g245_37_genomeIndexPath_g216_11
 
 output:
  set val(name), file("${newName}.bam")  into g216_11_mapped_reads_g216_13
@@ -5214,6 +4646,627 @@ awk 'FNR==1 && NR!=1 {  getline; } 1 {print} ' *.tsv > ${name}.tsv
 """
 }
 
+mappingListQuoteSep = mapList.collect{ '"' + it + '"'}.join(",") 
+rawIndexList = indexList.collect{ '"' + it + '"'}.join(",") 
+process Sequential_Mapping_Module_Sequential_Mapping_Bam_dedup_count {
+
+publishDir params.outdir, overwrite: true, mode: 'copy',
+	saveAs: {filename ->
+	if (filename =~ /.*.counts.tsv$/) "Sequential_Mapping_Bam_dedup_count/$filename"
+}
+
+input:
+ file bam from g241_34_bam_file_g241_36.collect()
+ file index from g241_34_bam_index_g241_36.collect()
+
+output:
+ file "*.counts.tsv"  into g241_36_outputFileTSV
+
+shell:
+'''
+#!/usr/bin/env perl
+use List::Util qw[min max];
+use File::Basename;
+use Getopt::Long;
+use Pod::Usage;
+use Data::Dumper;
+
+my @header;
+my @header_antisense;
+my @header_sense;
+my %all_files;
+my %sense_files;
+my %antisense_files;
+
+my @mappingList = (!{mappingListQuoteSep});
+my @rawIndexList = (!{rawIndexList});
+my %indexHash;
+my $dedup = "";
+@indexHash{@mappingList} = @rawIndexList;
+
+chomp(my $contents = `ls *.bam`);
+my @files = split(/[\\n]+/, $contents);
+foreach my $file (@files){
+        $file=~/(.*)@(.*)_sorted(.*)\\.bam/;
+        my $mapper = $1; 
+        my $name = $2; ##header
+        #print $3;
+        if ($3 eq ".dedup"){
+            $dedup = ".dedup";
+        }
+        if ($name=~/_antisense$/){
+        	push(@header_antisense, $name) unless grep{$_ eq $name} @header_antisense; #mapped element header
+        	$antisense_files{$mapper} .= $file." ";
+        }
+        elsif ($name=~/_sense$/){
+        	push(@header_sense, $name) unless grep{$_ eq $name} @header_sense; #mapped element header
+        	$sense_files{$mapper} .= $file." ";
+        }
+        else{
+			push(@header, $name) unless grep{$_ eq $name} @header; #mapped element header
+	        $all_files{$mapper} .= $file." ";
+        }
+}
+
+runCov(\\%all_files, \\@header, \\@indexHash, "", $dedup);
+runCov(\\%sense_files, \\@header_sense, \\@indexHash, "sense", $dedup);
+runCov(\\%antisense_files, \\@header_antisense, \\@indexHash, "antisense", $dedup);
+
+sub runCov {
+	my ( \$files, \$header, \$indexHash, \$sense_antisense, \$dedup) = @_;
+	open OUT, ">header".\$sense_antisense.".tsv";
+	print OUT join ("\\t", "id","len",@{\$header}),"\\n";
+	close OUT;
+	my $par = "";
+	if ($sense_antisense=~/^sense\$/){
+      $par = "-s";
+    }elsif($sense_antisense=~/^antisense\$/){
+      $par = "-S";
+    }
+	
+	foreach my $key (sort keys %{\$files}) {  
+	   my $bamFiles = ${\$files}{$key};
+		unless (-e ${indexHash}{$key}.".bed") {
+            print "2: bed not found run makeBed\n";
+                if (-e ${indexHash}{$key}.".fa") {
+                    makeBed(${indexHash}{$key}.".fa", $key, ${indexHash}{$key}.".bed");
+                } elsif(-e ${indexHash}{$key}.".fasta"){
+                    makeBed(${indexHash}{$key}.".fasta", $key, ${indexHash}{$key}.".bed");
+                }
+        }
+	    
+		my $com =  "bedtools multicov $par -bams $bamFiles -bed ".${indexHash}{$key}.".bed >$key${dedup}${sense_antisense}.counts.tmp\n";
+        print $com;
+        `$com`;
+        my $iniResColumn = int(countColumn(${indexHash}{$key}.".bed")) + 1;
+	    `awk -F \\"\\\\t\\" \\'{a=\\"\\";for (i=$iniResColumn;i<=NF;i++){a=a\\"\\\\t\\"\\$i;} print \\$4\\"\\\\t\\"(\\$3-\\$2)\\"\\"a}\\' $key${dedup}${sense_antisense}.counts.tmp> $key${dedup}${sense_antisense}.counts.tsv`;
+	    `sort -k3,3nr $key${dedup}${sense_antisense}.counts.tsv>$key${dedup}${sense_antisense}.sorted.tsv`;
+        `cat header${sense_antisense}.tsv $key${dedup}${sense_antisense}.sorted.tsv> $key${dedup}${sense_antisense}.counts.tsv`;
+	}
+}
+
+sub countColumn {
+    my ( \$file) = @_;
+    open(IN, \$file);
+    my $line=<IN>;
+    chomp($line);
+    my @cols = split('\\t', $line);
+    my $n = @cols;
+    close OUT;
+    return $n;
+}
+
+sub makeBed {
+    my ( \$fasta, \$type, \$bed) = @_;
+    print "makeBed $fasta\\n";
+    print "makeBed $bed\\n";
+    open OUT, ">$bed";
+    open(IN, \$fasta);
+    my $name="";
+    my $seq="";
+    my $i=0;
+    while(my $line=<IN>){
+        chomp($line);
+        if($line=~/^>(.*)/){
+            $i++ if (length($seq)>0);
+            print OUT "$name\\t1\\t".length($seq)."\\t$name\\t0\\t+\\n" if (length($seq)>0); 
+            $name="$1";
+            $seq="";
+        } elsif($line=~/[ACGTNacgtn]+/){
+            $seq.=$line;
+        }
+    }
+    print OUT "$name\\t1\\t".length($seq)."\\t$name\\t0\\t+\\n" if (length($seq)>0); 
+    close OUT;
+}
+
+'''
+}
+
+mappingListQuoteSep = mapList.collect{ '"' + it + '"'}.join(",") 
+rawIndexList = indexList.collect{ '"' + it + '"'}.join(",") 
+process Sequential_Mapping_Module_Sequential_Mapping_Bam_count {
+
+publishDir params.outdir, overwrite: true, mode: 'copy',
+	saveAs: {filename ->
+	if (filename =~ /.*.counts.tsv$/) "Sequential_Mapping_Bam_count/$filename"
+}
+
+input:
+ file bam from g241_34_bam_file_g241_35.collect()
+ file index from g241_34_bam_index_g241_35.collect()
+
+output:
+ file "*.counts.tsv"  into g241_35_outputFileTSV
+
+shell:
+'''
+#!/usr/bin/env perl
+use List::Util qw[min max];
+use File::Basename;
+use Getopt::Long;
+use Pod::Usage;
+use Data::Dumper;
+
+my @header;
+my @header_antisense;
+my @header_sense;
+my %all_files;
+my %sense_files;
+my %antisense_files;
+
+my @mappingList = (!{mappingListQuoteSep});
+my @rawIndexList = (!{rawIndexList});
+my %indexHash;
+my $dedup = "";
+@indexHash{@mappingList} = @rawIndexList;
+
+chomp(my $contents = `ls *.bam`);
+my @files = split(/[\\n]+/, $contents);
+foreach my $file (@files){
+        $file=~/(.*)@(.*)_sorted(.*)\\.bam/;
+        my $mapper = $1; 
+        my $name = $2; ##header
+        #print $3;
+        if ($3 eq ".dedup"){
+            $dedup = ".dedup";
+        }
+        if ($name=~/_antisense$/){
+        	push(@header_antisense, $name) unless grep{$_ eq $name} @header_antisense; #mapped element header
+        	$antisense_files{$mapper} .= $file." ";
+        }
+        elsif ($name=~/_sense$/){
+        	push(@header_sense, $name) unless grep{$_ eq $name} @header_sense; #mapped element header
+        	$sense_files{$mapper} .= $file." ";
+        }
+        else{
+			push(@header, $name) unless grep{$_ eq $name} @header; #mapped element header
+	        $all_files{$mapper} .= $file." ";
+        }
+}
+
+runCov(\\%all_files, \\@header, \\@indexHash, "", $dedup);
+runCov(\\%sense_files, \\@header_sense, \\@indexHash, "sense", $dedup);
+runCov(\\%antisense_files, \\@header_antisense, \\@indexHash, "antisense", $dedup);
+
+sub runCov {
+	my ( \$files, \$header, \$indexHash, \$sense_antisense, \$dedup) = @_;
+	open OUT, ">header".\$sense_antisense.".tsv";
+	print OUT join ("\\t", "id","len",@{\$header}),"\\n";
+	close OUT;
+	my $par = "";
+	if ($sense_antisense=~/^sense\$/){
+      $par = "-s";
+    }elsif($sense_antisense=~/^antisense\$/){
+      $par = "-S";
+    }
+	
+	foreach my $key (sort keys %{\$files}) {  
+	   my $bamFiles = ${\$files}{$key};
+		unless (-e ${indexHash}{$key}.".bed") {
+            print "2: bed not found run makeBed\n";
+                if (-e ${indexHash}{$key}.".fa") {
+                    makeBed(${indexHash}{$key}.".fa", $key, ${indexHash}{$key}.".bed");
+                } elsif(-e ${indexHash}{$key}.".fasta"){
+                    makeBed(${indexHash}{$key}.".fasta", $key, ${indexHash}{$key}.".bed");
+                }
+        }
+	    
+		my $com =  "bedtools multicov $par -bams $bamFiles -bed ".${indexHash}{$key}.".bed >$key${dedup}${sense_antisense}.counts.tmp\n";
+        print $com;
+        `$com`;
+        my $iniResColumn = int(countColumn(${indexHash}{$key}.".bed")) + 1;
+	    `awk -F \\"\\\\t\\" \\'{a=\\"\\";for (i=$iniResColumn;i<=NF;i++){a=a\\"\\\\t\\"\\$i;} print \\$4\\"\\\\t\\"(\\$3-\\$2)\\"\\"a}\\' $key${dedup}${sense_antisense}.counts.tmp> $key${dedup}${sense_antisense}.counts.tsv`;
+	    `sort -k3,3nr $key${dedup}${sense_antisense}.counts.tsv>$key${dedup}${sense_antisense}.sorted.tsv`;
+        `cat header${sense_antisense}.tsv $key${dedup}${sense_antisense}.sorted.tsv> $key${dedup}${sense_antisense}.counts.tsv`;
+	}
+}
+
+sub countColumn {
+    my ( \$file) = @_;
+    open(IN, \$file);
+    my $line=<IN>;
+    chomp($line);
+    my @cols = split('\\t', $line);
+    my $n = @cols;
+    close OUT;
+    return $n;
+}
+
+sub makeBed {
+    my ( \$fasta, \$type, \$bed) = @_;
+    print "makeBed $fasta\\n";
+    print "makeBed $bed\\n";
+    open OUT, ">$bed";
+    open(IN, \$fasta);
+    my $name="";
+    my $seq="";
+    my $i=0;
+    while(my $line=<IN>){
+        chomp($line);
+        if($line=~/^>(.*)/){
+            $i++ if (length($seq)>0);
+            print OUT "$name\\t1\\t".length($seq)."\\t$name\\t0\\t+\\n" if (length($seq)>0); 
+            $name="$1";
+            $seq="";
+        } elsif($line=~/[ACGTNacgtn]+/){
+            $seq.=$line;
+        }
+    }
+    print OUT "$name\\t1\\t".length($seq)."\\t$name\\t0\\t+\\n" if (length($seq)>0); 
+    close OUT;
+}
+
+'''
+}
+
+
+process Sequential_Mapping_Module_Deduplication_Summary {
+
+publishDir params.outdir, overwrite: true, mode: 'copy',
+	saveAs: {filename ->
+	if (filename =~ /deduplication_summary.tsv$/) "sequential_mapping_summary/$filename"
+}
+
+input:
+ file flagstat from g241_34_log_file_g241_30.collect()
+ val mate from g_229_mate_g241_30
+
+output:
+ file "deduplication_summary.tsv"  into g241_30_outputFileTSV
+
+errorStrategy 'retry'
+maxRetries 2
+
+shell:
+'''
+#!/usr/bin/env perl
+use List::Util qw[min max];
+use strict;
+use File::Basename;
+use Getopt::Long;
+use Pod::Usage;
+use Data::Dumper;
+
+my @header;
+my %all_files;
+my %tsv;
+my %headerHash;
+my %headerText;
+
+my $i=0;
+chomp(my $contents = `ls *_duplicates_stats.log`);
+my @files = split(/[\\n]+/, $contents);
+foreach my $file (@files){
+    $i++;
+    $file=~/(.*)@(.*)@(.*)_duplicates_stats\\.log/;
+    my $mapOrder = int($1); 
+    my $mapper = $2; #mapped element 
+    my $name = $3; ##sample name
+    push(@header, $mapper) unless grep{$_ eq $mapper} @header; 
+        
+    # my $duplicates;
+    my $aligned;
+    my $dedup; #aligned reads after dedup
+    my $percent=0;
+    if ("!{mate}" eq "pair" ){
+        #first flagstat belongs to first bam file
+        chomp($aligned = `cat $file | grep 'properly paired (' | sed -n 1p | awk '{sum+=\\$1+\\$3} END {print sum}'`);
+        #second flagstat belongs to dedup bam file
+        chomp($dedup = `cat $file | grep 'properly paired (' | sed -n 2p | awk '{sum+=\\$1+\\$3} END {print sum}'`);
+    } else {
+        chomp($aligned = `cat $file | grep 'mapped (' | sed -n 1p | awk '{sum+=\\$1+\\$3} END {print sum}'`);
+        chomp($dedup = `cat $file | grep 'mapped (' | sed -n 2p | awk '{sum+=\\$1+\\$3} END {print sum}'`);
+    }
+    # chomp($duplicates = `cat $file | grep 'duplicates' | awk '{sum+=\\$1+\\$3} END {print sum}'`);
+    # $dedup = int($aligned) - int($duplicates);
+    if ("!{mate}" eq "pair" ){
+       $dedup = int($dedup/2);
+       $aligned = int($aligned/2);
+    } 
+    $percent = "0.00";
+    if (int($aligned)  > 0 ){
+       $percent = sprintf("%.2f", ($aligned-$dedup)/$aligned*100); 
+    } 
+    $tsv{$name}{$mapper}=[$aligned,$dedup,"$percent%"];
+    $headerHash{$mapOrder}=$mapper;
+    $headerText{$mapOrder}=["$mapper (Before Dedup)", "$mapper (After Dedup)", "$mapper (Duplication Ratio %)"];
+}
+
+my @mapOrderArray = ( keys %headerHash );
+my @sortedOrderArray = sort { $a <=> $b } @mapOrderArray;
+
+my $summary = "deduplication_summary.tsv";
+open(OUT, ">$summary");
+print OUT "Sample\\t";
+my @headArr = ();
+for my $mapOrder (@sortedOrderArray) {
+    push (@headArr, @{$headerText{$mapOrder}});
+}
+my $headArrAll = join("\\t", @headArr);
+print OUT "$headArrAll\\n";
+
+foreach my $name (keys %tsv){
+    my @rowArr = ();
+    for my $mapOrder (@sortedOrderArray) {
+        push (@rowArr, @{$tsv{$name}{$headerHash{$mapOrder}}});
+    }
+    my $rowArrAll = join("\\t", @rowArr);
+    print OUT "$name\\t$rowArrAll\\n";
+}
+close(OUT);
+'''
+}
+
+//* autofill
+//* platform
+if ($HOSTNAME == "ghpcc06.umassrc.org"){
+    $TIME = 240
+    $CPU  = 1
+    $MEMORY = 8
+    $QUEUE = "short"
+}
+//* platform
+//* autofill
+
+process Sequential_Mapping_Module_Sequential_Mapping_Summary {
+
+input:
+ set val(name), file(bowfile) from g241_34_bowfiles_g241_26
+ val mate from g_229_mate_g241_26
+ val filtersList from g241_34_filter_g241_26
+
+output:
+ file '*.tsv'  into g241_26_outputFileTSV_g241_13
+ val "sequential_mapping_sum"  into g241_26_name_g241_13
+
+errorStrategy 'retry'
+maxRetries 2
+
+shell:
+'''
+#!/usr/bin/env perl
+open(my \$fh, '>', "!{name}.tsv");
+print $fh "Sample\\tGroup\\tTotal Reads\\tReads After Sequential Mapping\\tUniquely Mapped\\tMultimapped\\tMapped\\n";
+my @bowArray = split(' ', "!{bowfile}");
+my $group= "\\t";
+my @filterArray = (!{filtersList});
+foreach my $bowitem(@bowArray) {
+    # get mapping id
+    my @bowAr = $bowitem.split("_");
+    $bowCount = $bowAr[0] + -1;
+    # if bowfiles ends with underscore (eg. bow_rRNA), parse rRNA as a group.
+    my ($RDS_In, $RDS_After, $RDS_Uniq, $RDS_Multi, $ALGN_T, $a, $b, $aPer, $bPer)=(0, 0, 0, 0, 0, 0, 0, 0, 0);
+    if ($bowitem =~ m/bow_([^\\.]+)$/){
+        $group = "$1\\t";
+        open(IN, $bowitem);
+        my $i = 0;
+        while(my $line=<IN>){
+            chomp($line);
+            $line=~s/^ +//;
+            my @arr=split(/ /, $line);
+            $RDS_In=$arr[0] if ($i=~/^1$/);
+            # Reads After Filtering column depends on filtering type
+            if ($i == 2){
+                if ($filterArray[$bowCount] eq "Yes"){
+                    $RDS_After=$arr[0];
+                } else {
+                    $RDS_After=$RDS_In;
+                }
+            }
+            if ($i == 3){
+                $a=$arr[0];
+                $aPer=$arr[1];
+                $aPer=~ s/([()])//g;
+                $RDS_Uniq=$arr[0];
+            }
+            if ($i == 4){
+                $b=$arr[0];
+                $bPer=$arr[1];
+                $bPer=~ s/([()])//g;
+                $RDS_Multi=$arr[0];
+            }
+            $ALGN_T=($a+$b);
+            $i++;
+        }
+        close(IN);
+    } elsif ($bowitem =~ m/star_([^\\.]+)$/){
+        $group = "$1\\t";
+        open(IN2, $bowitem);
+        my $multimapped;
+		my $aligned;
+		my $inputCount;
+		chomp($inputCount = `cat $bowitem | grep 'Number of input reads' | awk '{sum+=\\$6} END {print sum}'`);
+		chomp($uniqAligned = `cat $bowitem | grep 'Uniquely mapped reads number' | awk '{sum+=\\$6} END {print sum}'`);
+		chomp($multimapped = `cat $bowitem | grep 'Number of reads mapped to multiple loci' | awk '{sum+=\\$9} END {print sum}'`);
+		## Here we exclude "Number of reads mapped to too many loci" from multimapped reads since in bam file it called as unmapped.
+		## Besides, these "too many loci" reads exported as unmapped reads from STAR.
+		$RDS_In = int($inputCount);
+		$RDS_Multi = int($multimapped);
+        $RDS_Uniq = int($uniqAligned);
+        $ALGN_T = $RDS_Uniq+$RDS_Multi;
+		if ($filterArray[$bowCount] eq "Yes"){
+            $RDS_After=$RDS_In-$ALGN_T;
+        } else {
+            $RDS_After=$RDS_In;
+        }
+    } elsif ($bowitem =~ m/bow1_([^\\.]+)$/){
+        $group = "$1\\t";
+        open(IN2, $bowitem);
+        my $multimapped;
+		my $aligned;
+		my $inputCount;
+		my $uniqAligned;
+		chomp($inputCount = `cat $bowitem | grep '# reads processed:' | awk '{sum+=\\$4} END {print sum}'`);
+		chomp($aligned = `cat $bowitem | grep '# reads with at least one reported alignment:' | awk '{sum+=\\$9} END {print sum}'`);
+		chomp($uniqAligned = `cat $bowitem | grep '# unique mapped reads:' | awk '{sum+=\\$5} END {print sum}'`);
+		## Here we exclude "Number of reads mapped to too many loci" from multimapped reads since in bam file it called as unmapped.
+		## Besides, these "too many loci" reads exported as unmapped reads from STAR.
+		$RDS_In = int($inputCount);
+		$RDS_Multi = int($aligned) -int($uniqAligned);
+		if ($RDS_Multi < 0 ){
+		    $RDS_Multi = 0;
+		}
+        $RDS_Uniq = int($uniqAligned);
+        $ALGN_T = int($aligned);
+		if ($filterArray[$bowCount] eq "Yes"){
+            $RDS_After=$RDS_In-$ALGN_T;
+        } else {
+            $RDS_After=$RDS_In;
+        }
+    }
+    
+    print $fh "!{name}\\t$group$RDS_In\\t$RDS_After\\t$RDS_Uniq\\t$RDS_Multi\\t$ALGN_T\\n";
+}
+close($fh);
+
+
+
+'''
+
+}
+
+
+process Sequential_Mapping_Module_Merge_TSV_Files {
+
+input:
+ file tsv from g241_26_outputFileTSV_g241_13.collect()
+ val outputFileName from g241_26_name_g241_13.collect()
+
+output:
+ file "${name}.tsv"  into g241_13_outputFileTSV_g241_14
+
+errorStrategy 'retry'
+maxRetries 3
+
+script:
+name = outputFileName[0]
+"""    
+awk 'FNR==1 && NR!=1 {  getline; } 1 {print} ' *.tsv > ${name}.tsv
+"""
+}
+
+
+process Sequential_Mapping_Module_Sequential_Mapping_Short_Summary {
+
+publishDir params.outdir, overwrite: true, mode: 'copy',
+	saveAs: {filename ->
+	if (filename =~ /sequential_mapping_short_sum.tsv$/) "sequential_mapping_summary/$filename"
+	else if (filename =~ /sequential_mapping_detailed_sum.tsv$/) "sequential_mapping_summary/$filename"
+}
+
+input:
+ file mainSum from g241_13_outputFileTSV_g241_14
+
+output:
+ file "sequential_mapping_short_sum.tsv"  into g241_14_outputFileTSV_g_198
+ file "sequential_mapping_detailed_sum.tsv"  into g241_14_outputFile
+
+errorStrategy 'retry'
+maxRetries 2
+
+shell:
+'''
+#!/usr/bin/env perl
+use List::Util qw[min max];
+use File::Basename;
+use Getopt::Long;
+use Pod::Usage;
+use Data::Dumper;
+
+my @header;
+my %all_rows;
+my @seen_cols_short;
+my @seen_cols_detailed;
+my $ID_header;
+
+chomp(my $contents = `ls *.tsv`);
+my @files = split(/[\\n]+/, $contents);
+foreach my $file (@files){
+        open IN,"$file";
+        my $line1 = <IN>;
+        chomp($line1);
+        ( $ID_header, my @h) = ( split("\\t", $line1) );
+        my $totalHeader = $h[1];
+        my $afterFilteringHeader = $h[2];
+        my $uniqueHeader = $h[3];
+        my $multiHeader = $h[4];
+        my $mappedHeader = $h[5];
+        push(@seen_cols_short, $totalHeader) unless grep{$_ eq $totalHeader} @seen_cols_short; #Total reads Header
+        push(@seen_cols_detailed, $totalHeader) unless grep{$_ eq $totalHeader} @seen_cols_detailed; #Total reads Header
+
+        my $n=0;
+        while (my $line=<IN>) {
+                
+                chomp($line);
+                my ( $ID, @fields ) = ( split("\\t", $line) ); 
+                #SHORT
+                push(@seen_cols_short, $fields[0]) unless grep{$_ eq $fields[0]} @seen_cols_short; #mapped element header
+                $all_rows{$ID}{$fields[0]} = $fields[5];#Mapped Reads
+                #Grep first line $fields[1] as total reads.
+                if (!exists $all_rows{$ID}{$totalHeader}){    
+                        $all_rows{$ID}{$totalHeader} = $fields[1];
+                } 
+                $all_rows{$ID}{$afterFilteringHeader} = $fields[2]; #only use last entry
+                #DETAILED
+                $uniqueHeadEach = "$fields[0] (${uniqueHeader})";
+                $multiHeadEach = "$fields[0] (${multiHeader})";
+                $mappedHeadEach = "$fields[0] (${mappedHeader})";
+                push(@seen_cols_detailed, $mappedHeadEach) unless grep{$_ eq $mappedHeadEach} @seen_cols_detailed;
+                push(@seen_cols_detailed, $uniqueHeadEach) unless grep{$_ eq $uniqueHeadEach} @seen_cols_detailed;
+                push(@seen_cols_detailed, $multiHeadEach) unless grep{$_ eq $multiHeadEach} @seen_cols_detailed;
+                $all_rows{$ID}{$mappedHeadEach} = $fields[5];
+                $all_rows{$ID}{$uniqueHeadEach} = $fields[3];
+                $all_rows{$ID}{$multiHeadEach} = $fields[4];
+    }
+    close IN;
+    push(@seen_cols_short, $afterFilteringHeader) unless grep{$_ eq $afterFilteringHeader} @seen_cols_short; #After filtering Header
+}
+
+
+#print Dumper \\%all_rows;
+#print Dumper \\%seen_cols_short;
+
+printFiles("sequential_mapping_short_sum.tsv",@seen_cols_short,);
+printFiles("sequential_mapping_detailed_sum.tsv",@seen_cols_detailed);
+
+
+sub printFiles {
+    my($summary, @cols_to_print) = @_;
+    
+    open OUT, ">$summary";
+    print OUT join ("\\t", $ID_header,@cols_to_print),"\\n";
+    foreach my $key ( keys %all_rows ) { 
+        print OUT join ("\\t", $key, (map { $all_rows{$key}{$_} // '' } @cols_to_print)),"\\n";
+        }
+        close OUT;
+}
+
+'''
+
+
+}
+
 //* params.gtf2bed_path =  ""  //* @input
 
 process Check_and_Build_Module_Check_BED12 {
@@ -5352,48 +5405,6 @@ for (i = 0; i < newDirNameAr.size(); i++) {
 
 }
 
-
-process Check_and_Build_Module_Check_Build_Hisat2_Index {
-
-input:
- file genome from g245_21_genome_g245_33
- file gtf from g245_21_gtfFile_g245_33
-
-output:
- file resultDir  into g245_33_hisat2Index
-
-when:
-(params.use_Hisat2_Index == "yes") && (params.run_checkAndBuild == "yes")
-
-script:
-hisat2_build_parameters = params.Check_and_Build_Module_Check_Build_Hisat2_Index.hisat2_build_parameters
-genome_dir  = genome.substring(0, genome.lastIndexOf('/'))
-gtf_dir  = gtf.substring(0, gtf.lastIndexOf('/')) 
-basenameGenome = genome.substring(genome.lastIndexOf('/')+1,genome.lastIndexOf('.'))
-basenameGTF = gtf.substring(gtf.lastIndexOf('/')+1,gtf.lastIndexOf('.'))
-filename = genome.substring(genome.lastIndexOf('/')+1,genome.length())
-newDirName = "Hisat2Index"
-resultDir = gtf_dir.substring(0, gtf_dir.lastIndexOf('/')) +"/"+ newDirName 
-tmpResultDir = gtf_dir.substring(0, gtf_dir.lastIndexOf('/')) +"/_tmp_"+ newDirName 
-
-extract_splice_sites = "hisat2_extract_splice_sites.py ${gtf} > ${tmpResultDir}/${basenameGTF}.hisat2_splice_sites.txt"
-extract_exons = "hisat2_extract_exons.py ${gtf}> ${tmpResultDir}/${basenameGTF}.hisat2_exons.txt"
-ss = "--ss ${basenameGTF}.hisat2_splice_sites.txt"
-exon = "--exon ${basenameGTF}.hisat2_exons.txt"
-
-"""
-if [ ! -e "${resultDir}/${basenameGenome}.8.ht2" ] ; then
-    echo "${resultDir}/${basenameGenome}.8.ht2 Hisat2 index not found"
-    rm -rf $tmpResultDir $resultDir && mkdir -p $tmpResultDir && cd $tmpResultDir 
-    $extract_splice_sites
-    $extract_exons
-    hisat2-build ${hisat2_build_parameters} $ss $exon ${genome} ${basenameGenome}
-    cd .. && mv $tmpResultDir $resultDir 
-fi
-"""
-
-}
-
 bowtie2_build_parameters = params.Check_and_Build_Module_Check_Build_Bowtie2_Index.bowtie2_build_parameters
 
 process Check_and_Build_Module_Check_Build_Bowtie2_Index {
@@ -5403,7 +5414,7 @@ input:
  file gtf from g245_21_gtfFile_g245_32
 
 output:
- file "$index"  into g245_32_bowtie2index_g245_40
+ file "$index"  into g245_32_bowtie2index_g245_51
 
 when:
 (params.use_Bowtie2_Index == "yes") && (params.run_checkAndBuild == "yes")
@@ -5444,7 +5455,7 @@ input:
  file gtf from g245_21_gtfFile_g245_31
 
 output:
- file "STARIndex"  into g245_31_starIndex_g245_40
+ file "STARIndex"  into g245_31_starIndex_g245_51
 
 when:
 (params.use_STAR_Index == "yes") && (params.run_checkAndBuild == "yes")
@@ -5477,11 +5488,13 @@ fi
 
 }
 
-g245_21_gtfFile_g245_40= g245_21_gtfFile_g245_40.ifEmpty([""]) 
-g245_21_genome_g245_40= g245_21_genome_g245_40.ifEmpty([""]) 
-g245_31_starIndex_g245_40= g245_31_starIndex_g245_40.ifEmpty([""]) 
-g245_41_bowtieIndex_g245_40= g245_41_bowtieIndex_g245_40.ifEmpty([""]) 
-g245_32_bowtie2index_g245_40= g245_32_bowtie2index_g245_40.ifEmpty([""]) 
+g245_21_gtfFile_g245_51= g245_21_gtfFile_g245_51.ifEmpty([""]) 
+g245_21_genome_g245_51= g245_21_genome_g245_51.ifEmpty([""]) 
+g245_31_starIndex_g245_51= g245_31_starIndex_g245_51.ifEmpty([""]) 
+g245_47_bowtieIndex_g245_51= g245_47_bowtieIndex_g245_51.ifEmpty([""]) 
+g245_32_bowtie2index_g245_51= g245_32_bowtie2index_g245_51.ifEmpty([""]) 
+g245_48_hisat2Index_g245_51= g245_48_hisat2Index_g245_51.ifEmpty([""]) 
+g245_50_kallisto_index_g245_51= g245_50_kallisto_index_g245_51.ifEmpty([""]) 
 
 def pathChecker(input, path, type){
 	recursive = (type == "folder") ? "--recursive" : ""
@@ -5498,30 +5511,37 @@ def pathChecker(input, path, type){
 process Check_and_Build_Module_check_files {
 
 input:
- file gtf from g245_21_gtfFile_g245_40
- file genome from g245_21_genome_g245_40
- file star from g245_31_starIndex_g245_40
- file bowtie from g245_41_bowtieIndex_g245_40
- file bowtie2 from g245_32_bowtie2index_g245_40
+ file gtf from g245_21_gtfFile_g245_51
+ file genome from g245_21_genome_g245_51
+ file star from g245_31_starIndex_g245_51
+ file bowtie from g245_47_bowtieIndex_g245_51
+ file bowtie2 from g245_32_bowtie2index_g245_51
+ file hisat2 from g245_48_hisat2Index_g245_51
+ file kallisto from g245_50_kallisto_index_g245_51
 
 output:
- file "_${gtf}" optional true  into g245_40_gtfFile_g247_14
- file "_${genome}" optional true  into g245_40_genome
- file "_${star}" optional true  into g245_40_starIndex_g246_20
- file "_${bowtie}" optional true  into g245_40_bowtieIndex
- file "_${bowtie2}" optional true  into g245_40_bowtie2index_g247_14
+ file "_${gtf}" optional true  into g245_51_gtfFile_g247_14
+ file "_${genome}" optional true  into g245_51_genome
+ file "_${star}" optional true  into g245_51_starIndex_g246_20
+ file "_${bowtie}" optional true  into g245_51_bowtieIndex
+ file "_${bowtie2}" optional true  into g245_51_bowtie2index_g247_14
+ file "_${hisat2}" optional true  into g245_51_hisat2Index
+ file "_${kallisto}" optional true  into g245_51_kallisto_index
 
 script:
 (cmd1, gtf) = pathChecker(gtf, params.gtf, "file")
 (cmd2, bowtie2) = pathChecker(bowtie2, params.bowtie2_index, "folder")
 (cmd3, star) = pathChecker(star, params.star_index, "folder")
 (cmd4, genome) = pathChecker(genome, params.genome, "file")
-
+(cmd5, hisat2) = pathChecker(hisat2, params.hisat2_index, "folder")
+(cmd6, kallisto) = pathChecker(kallisto, params.kallisto_index, "folder")
 """
 $cmd1
 $cmd2
 $cmd3
 $cmd4
+$cmd5
+$cmd6
 """
 }
 
@@ -5549,8 +5569,8 @@ process Tophat2_Module_Map_Tophat2 {
 input:
  val mate from g_229_mate_g247_14
  set val(name), file(reads) from g_127_reads_g247_14
- file bowtie2_index from g245_40_bowtie2index_g247_14
- file gtf from g245_40_gtfFile_g247_14
+ file bowtie2_index from g245_51_bowtie2index_g247_14
+ file gtf from g245_51_gtfFile_g247_14
 
 output:
  set val(name), file("${newName}.bam")  into g247_14_mapped_reads_g247_13
@@ -6234,7 +6254,7 @@ process STAR_Module_Map_STAR {
 input:
  val mate from g_229_mate_g246_20
  set val(name), file(reads) from g_127_reads_g246_20
- file star_index from g245_40_starIndex_g246_20
+ file star_index from g245_51_starIndex_g246_20
 
 output:
  set val(name), file("${newName}Log.final.out")  into g246_20_outputFileOut_g246_18
