@@ -42,3 +42,4 @@ RUN mkdir -p /project /nl /mnt /share
 ENV PATH /opt/conda/envs/dolphinnext-rnaseq-3.0/bin:/usr/local/bin/dolphin-tools/:$PATH
 
 RUN pip install "multiqc==1.7"
+RUN cd /bin && wget https://github.com/ChristopherWilks/megadepth/releases/download/1.1.0/megadepth
