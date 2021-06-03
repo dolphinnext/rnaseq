@@ -43,3 +43,4 @@ ENV PATH /opt/conda/envs/dolphinnext-rnaseq-3.0/bin:/usr/local/bin/dolphin-tools
 
 RUN pip install "multiqc==1.7"
 RUN cd /bin && wget https://github.com/ChristopherWilks/megadepth/releases/download/1.1.0/megadepth && chmod 777 megadepth
+RUN conda create -n umi_tools_env -c bioconda umi_tools==1.0.1

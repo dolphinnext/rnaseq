@@ -37,7 +37,7 @@ Channel.value(params.run_FeatureCounts_after_Hisat2).set{g_188_run_featureCounts
 Channel.value(params.run_FeatureCounts_after_Tophat2).set{g_189_run_featureCounts_g254_125}
 Channel.value(params.run_FeatureCounts_after_RSEM).set{g_203_run_featureCounts_g251_125}
 Channel.value(params.run_FeatureCounts_after_Kallisto).set{g_225_run_featureCounts_g255_125}
-Channel.value(params.mate).into{g_229_mate_g246_20;g_229_mate_g247_3;g_229_mate_g247_14;g_229_mate_g248_36;g_229_mate_g249_14;g_229_mate_g250_26;g_229_mate_g251_82;g_229_mate_g251_95;g_229_mate_g251_131;g_229_mate_g251_133;g_229_mate_g252_82;g_229_mate_g252_95;g_229_mate_g252_131;g_229_mate_g252_133;g_229_mate_g253_82;g_229_mate_g253_95;g_229_mate_g253_131;g_229_mate_g253_133;g_229_mate_g254_82;g_229_mate_g254_95;g_229_mate_g254_131;g_229_mate_g254_133;g_229_mate_g255_82;g_229_mate_g255_95;g_229_mate_g255_131;g_229_mate_g255_133;g_229_mate_g256_26;g_229_mate_g256_30;g_229_mate_g256_46;g_229_mate_g257_11;g_229_mate_g257_16;g_229_mate_g257_18;g_229_mate_g257_19;g_229_mate_g257_20;g_229_mate_g257_21;g_229_mate_g257_24;g_229_mate_g257_23;g_229_mate_g257_28}
+Channel.value(params.mate).into{g_229_mate_g_127;g_229_mate_g246_20;g_229_mate_g247_3;g_229_mate_g247_14;g_229_mate_g248_36;g_229_mate_g249_14;g_229_mate_g250_26;g_229_mate_g251_82;g_229_mate_g251_95;g_229_mate_g251_131;g_229_mate_g251_133;g_229_mate_g252_82;g_229_mate_g252_95;g_229_mate_g252_131;g_229_mate_g252_133;g_229_mate_g253_82;g_229_mate_g253_95;g_229_mate_g253_131;g_229_mate_g253_133;g_229_mate_g254_82;g_229_mate_g254_95;g_229_mate_g254_131;g_229_mate_g254_133;g_229_mate_g255_82;g_229_mate_g255_95;g_229_mate_g255_131;g_229_mate_g255_133;g_229_mate_g256_26;g_229_mate_g256_30;g_229_mate_g256_46;g_229_mate_g257_11;g_229_mate_g257_16;g_229_mate_g257_18;g_229_mate_g257_19;g_229_mate_g257_20;g_229_mate_g257_21;g_229_mate_g257_24;g_229_mate_g257_23;g_229_mate_g257_28}
 Channel
 	.fromFilePairs( params.reads , size: params.mate == "single" ? 1 : params.mate == "pair" ? 2 : params.mate == "triple" ? 3 : params.mate == "quadruple" ? 4 : -1 )
 	.ifEmpty { error "Cannot find any reads matching: ${params.reads}" }
@@ -1000,15 +1000,15 @@ when:
 
 script:
 RSEM_reference_type = params.RSEM_module_RSEM.RSEM_reference_type
-if (systemInput.isEmpty()){
-	if (RSEM_reference_type == 'bowtie'){
-		systemInput = params.rsem_ref_using_bowtie_index
-	} else if (RSEM_reference_type == 'bowtie2'){
-		systemInput = params.rsem_ref_using_bowtie2_index
-	} else if (RSEM_reference_type == 'star'){
-		systemInput = params.rsem_ref_using_star_index
-	}	
-}
+
+if (RSEM_reference_type == 'bowtie'){
+	systemInput = params.rsem_ref_using_bowtie_index
+} else if (RSEM_reference_type == 'bowtie2'){
+	systemInput = params.rsem_ref_using_bowtie2_index
+} else if (RSEM_reference_type == 'star'){
+	systemInput = params.rsem_ref_using_star_index
+}	
+
 	
 (cmd, rsem) = pathChecker(rsem, systemInput, "folder")
 """
@@ -1027,10 +1027,10 @@ g256_47_starIndex_g256_43= g256_47_starIndex_g256_43.ifEmpty([""])
 //* params.genome =  ""  //* @input
 //* params.commondb =  ""  //* @input
 if (!(params.run_Sequential_Mapping  == "yes")){
-g256_47_commondb_g256_43.into{g256_43_commondb_g256_46}
-g256_47_bowtieIndex_g256_43.into{g256_43_bowtieIndex_g256_46}
-g256_47_bowtie2index_g256_43.into{g256_43_bowtie2index_g256_46}
-g256_47_starIndex_g256_43.into{g256_43_starIndex_g256_46}
+g256_47_commondb_g256_43.into{g256_43_commondb_g256_46; g256_43_commondb_g256_44; g256_43_commondb_g256_45}
+g256_47_bowtieIndex_g256_43.into{g256_43_bowtieIndex_g256_46; g256_43_bowtieIndex_g256_44; g256_43_bowtieIndex_g256_45}
+g256_47_bowtie2index_g256_43.into{g256_43_bowtie2index_g256_46; g256_43_bowtie2index_g256_44; g256_43_bowtie2index_g256_45}
+g256_47_starIndex_g256_43.into{g256_43_starIndex_g256_46; g256_43_starIndex_g256_44; g256_43_starIndex_g256_45}
 } else {
 
 
@@ -1043,10 +1043,10 @@ input:
  file starIndex from g256_47_starIndex_g256_43
 
 output:
- file "*/${commondb}"  into g256_43_commondb_g256_46
- file "*/${bowtieIndex}" optional true  into g256_43_bowtieIndex_g256_46
- file "*/${bowtie2Index}" optional true  into g256_43_bowtie2index_g256_46
- file "*/${starIndex}" optional true  into g256_43_starIndex_g256_46
+ file "*/${commondb}"  into g256_43_commondb_g256_46, g256_43_commondb_g256_44, g256_43_commondb_g256_45
+ file "*/${bowtieIndex}" optional true  into g256_43_bowtieIndex_g256_46, g256_43_bowtieIndex_g256_44, g256_43_bowtieIndex_g256_45
+ file "*/${bowtie2Index}" optional true  into g256_43_bowtie2index_g256_46, g256_43_bowtie2index_g256_44, g256_43_bowtie2index_g256_45
+ file "*/${starIndex}" optional true  into g256_43_starIndex_g256_46, g256_43_starIndex_g256_44, g256_43_starIndex_g256_45
 
 when:
 params.run_Sequential_Mapping  == "yes"
@@ -1416,6 +1416,7 @@ phred = params.Adapter_Trimmer_Quality_Module_UMIextract.phred
 remove_duplicates_based_on_UMI = params.Adapter_Trimmer_Quality_Module_UMIextract.remove_duplicates_based_on_UMI
 
 """
+source activate umi_tools_env  2>/dev/null
 mkdir result
 if [ "${mate}" == "pair" ]; then
 umi_tools extract --bc-pattern='${barcode_pattern1}' \
@@ -4405,6 +4406,7 @@ g256_46_reads_g_127.into{g_127_reads_g246_20; g_127_reads_g247_14; g_127_reads_g
 process SplitFastq {
 
 input:
+ val mate from g_229_mate_g_127
  set val(name), file(reads) from g256_46_reads_g_127.map(flatPairsClosure).splitFastq(splitFastqParams).map(groupPairsClosure)
 
 output:
@@ -6874,6 +6876,10 @@ publishDir params.outdir, overwrite: true, mode: 'copy',
 input:
  file bam from g256_46_bam_file_g256_45.collect()
  file index from g256_46_bam_index_g256_45.collect()
+ file bowtie_index from g256_43_bowtieIndex_g256_45
+ file bowtie2_index from g256_43_bowtie2index_g256_45
+ file star_index from g256_43_starIndex_g256_45
+ file commondb from g256_43_commondb_g256_45
 
 output:
  file "*.counts.tsv"  into g256_45_outputFileTSV
@@ -6881,6 +6887,8 @@ output:
 shell:
 mappingListQuoteSep = mapList.collect{ '"' + it + '"'}.join(",")
 rawIndexList = indexList.collect{ '"' + it + '"'}.join(",")
+selectSeqListQuote = selectSequenceList.collect{ '"' + it + '"'}.join(",")
+alignerListQuote = alignerList.collect{ '"' + it + '"'}.join(",")
 '''
 #!/usr/bin/env perl
 use List::Util qw[min max];
@@ -6898,9 +6906,16 @@ my %antisense_files;
 
 my @mappingList = (!{mappingListQuoteSep});
 my @rawIndexList = (!{rawIndexList});
+my @selectSeqList = (!{selectSeqListQuote});
+my @alignerList = (!{alignerListQuote});
+
 my %indexHash;
+my %selectSeqHash;
+my %alignerHash;
 my $dedup = "";
 @indexHash{@mappingList} = @rawIndexList;
+@selectSeqHash{@mappingList} = @selectSeqList;
+@alignerHash{@mappingList} = @alignerList;
 
 chomp(my $contents = `ls *.bam`);
 my @files = split(/[\\n]+/, $contents);
@@ -6944,19 +6959,35 @@ sub runCov {
 	
 	foreach my $key (sort keys %{\$files}) {  
 	   my $bamFiles = ${\$files}{$key};
-		unless (-e ${indexHash}{$key}.".bed") {
-            print "2: bed not found run makeBed\n";
-                if (-e ${indexHash}{$key}.".fa") {
-                    makeBed(${indexHash}{$key}.".fa", $key, ${indexHash}{$key}.".bed");
-                } elsif(-e ${indexHash}{$key}.".fasta"){
-                    makeBed(${indexHash}{$key}.".fasta", $key, ${indexHash}{$key}.".bed");
+	   
+	   my $prefix = ${indexHash}{$key};
+	   my $selectedSeq = ${selectSeqHash}{$key};
+	   my $aligner = ${alignerHash}{$key};
+	   if ($selectedSeq eq "genome"){
+	   	  if ($aligner eq "bowtie"){
+	   		$basename = `basename $prefix/*.rev.1.ebwt | cut -d. -f1`;
+	   	  } elsif ($aligner eq "bowtie2"){
+	   		$basename = `basename $prefix/*.rev.1.bt2 | cut -d. -f1`;
+	   	  } elsif ($aligner eq "STAR"){
+	   	    $basename = `basename $prefix/*.gtf | cut -d. -f1`;
+	   	  }
+	   	  $basename =~ s|\\s*$||;
+	   	  $prefix = $prefix."/".$basename;
+	   }
+	   
+		unless (-e $prefix.".bed") {
+            print "2: bed not found run makeBed\\n";
+                if (-e $prefix.".fa") {
+                    makeBed($prefix.".fa", $key, $prefix.".bed");
+                } elsif(-e $prefix.".fasta"){
+                    makeBed($prefix.".fasta", $key, $prefix.".bed");
                 }
         }
 	    
-		my $com =  "bedtools multicov $par -bams $bamFiles -bed ".${indexHash}{$key}.".bed >$key${dedup}${sense_antisense}.counts.tmp\n";
+		my $com =  "bedtools multicov $par -bams $bamFiles -bed ".$prefix.".bed > $key${dedup}${sense_antisense}.counts.tmp\\n";
         print $com;
         `$com`;
-        my $iniResColumn = int(countColumn(${indexHash}{$key}.".bed")) + 1;
+        my $iniResColumn = int(countColumn($prefix.".bed")) + 1;
 	    `awk -F \\"\\\\t\\" \\'{a=\\"\\";for (i=$iniResColumn;i<=NF;i++){a=a\\"\\\\t\\"\\$i;} print \\$4\\"\\\\t\\"(\\$3-\\$2)\\"\\"a}\\' $key${dedup}${sense_antisense}.counts.tmp> $key${dedup}${sense_antisense}.counts.tsv`;
 	    `sort -k3,3nr $key${dedup}${sense_antisense}.counts.tsv>$key${dedup}${sense_antisense}.sorted.tsv`;
         `cat header${sense_antisense}.tsv $key${dedup}${sense_antisense}.sorted.tsv> $key${dedup}${sense_antisense}.counts.tsv`;
@@ -7012,6 +7043,10 @@ publishDir params.outdir, overwrite: true, mode: 'copy',
 input:
  file bam from g256_46_bam_file_g256_44.collect()
  file index from g256_46_bam_index_g256_44.collect()
+ file bowtie_index from g256_43_bowtieIndex_g256_44
+ file bowtie2_index from g256_43_bowtie2index_g256_44
+ file star_index from g256_43_starIndex_g256_44
+ file commondb from g256_43_commondb_g256_44
 
 output:
  file "*.counts.tsv"  into g256_44_outputFileTSV
@@ -7019,6 +7054,8 @@ output:
 shell:
 mappingListQuoteSep = mapList.collect{ '"' + it + '"'}.join(",")
 rawIndexList = indexList.collect{ '"' + it + '"'}.join(",")
+selectSeqListQuote = selectSequenceList.collect{ '"' + it + '"'}.join(",")
+alignerListQuote = alignerList.collect{ '"' + it + '"'}.join(",")
 '''
 #!/usr/bin/env perl
 use List::Util qw[min max];
@@ -7036,9 +7073,16 @@ my %antisense_files;
 
 my @mappingList = (!{mappingListQuoteSep});
 my @rawIndexList = (!{rawIndexList});
+my @selectSeqList = (!{selectSeqListQuote});
+my @alignerList = (!{alignerListQuote});
+
 my %indexHash;
+my %selectSeqHash;
+my %alignerHash;
 my $dedup = "";
 @indexHash{@mappingList} = @rawIndexList;
+@selectSeqHash{@mappingList} = @selectSeqList;
+@alignerHash{@mappingList} = @alignerList;
 
 chomp(my $contents = `ls *.bam`);
 my @files = split(/[\\n]+/, $contents);
@@ -7082,19 +7126,35 @@ sub runCov {
 	
 	foreach my $key (sort keys %{\$files}) {  
 	   my $bamFiles = ${\$files}{$key};
-		unless (-e ${indexHash}{$key}.".bed") {
-            print "2: bed not found run makeBed\n";
-                if (-e ${indexHash}{$key}.".fa") {
-                    makeBed(${indexHash}{$key}.".fa", $key, ${indexHash}{$key}.".bed");
-                } elsif(-e ${indexHash}{$key}.".fasta"){
-                    makeBed(${indexHash}{$key}.".fasta", $key, ${indexHash}{$key}.".bed");
+	   
+	   my $prefix = ${indexHash}{$key};
+	   my $selectedSeq = ${selectSeqHash}{$key};
+	   my $aligner = ${alignerHash}{$key};
+	   if ($selectedSeq eq "genome"){
+	   	  if ($aligner eq "bowtie"){
+	   		$basename = `basename $prefix/*.rev.1.ebwt | cut -d. -f1`;
+	   	  } elsif ($aligner eq "bowtie2"){
+	   		$basename = `basename $prefix/*.rev.1.bt2 | cut -d. -f1`;
+	   	  } elsif ($aligner eq "STAR"){
+	   	    $basename = `basename $prefix/*.gtf | cut -d. -f1`;
+	   	  }
+	   	  $basename =~ s|\\s*$||;
+	   	  $prefix = $prefix."/".$basename;
+	   }
+	   
+		unless (-e $prefix.".bed") {
+            print "2: bed not found run makeBed\\n";
+                if (-e $prefix.".fa") {
+                    makeBed($prefix.".fa", $key, $prefix.".bed");
+                } elsif(-e $prefix.".fasta"){
+                    makeBed($prefix.".fasta", $key, $prefix.".bed");
                 }
         }
 	    
-		my $com =  "bedtools multicov $par -bams $bamFiles -bed ".${indexHash}{$key}.".bed >$key${dedup}${sense_antisense}.counts.tmp\n";
+		my $com =  "bedtools multicov $par -bams $bamFiles -bed ".$prefix.".bed > $key${dedup}${sense_antisense}.counts.tmp\\n";
         print $com;
         `$com`;
-        my $iniResColumn = int(countColumn(${indexHash}{$key}.".bed")) + 1;
+        my $iniResColumn = int(countColumn($prefix.".bed")) + 1;
 	    `awk -F \\"\\\\t\\" \\'{a=\\"\\";for (i=$iniResColumn;i<=NF;i++){a=a\\"\\\\t\\"\\$i;} print \\$4\\"\\\\t\\"(\\$3-\\$2)\\"\\"a}\\' $key${dedup}${sense_antisense}.counts.tmp> $key${dedup}${sense_antisense}.counts.tsv`;
 	    `sort -k3,3nr $key${dedup}${sense_antisense}.counts.tsv>$key${dedup}${sense_antisense}.sorted.tsv`;
         `cat header${sense_antisense}.tsv $key${dedup}${sense_antisense}.sorted.tsv> $key${dedup}${sense_antisense}.counts.tsv`;
