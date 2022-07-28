@@ -31,17 +31,33 @@ if (!params.run_FeatureCounts_after_RSEM){params.run_FeatureCounts_after_RSEM = 
 if (!params.run_FeatureCounts_after_Kallisto){params.run_FeatureCounts_after_Kallisto = ""} 
 if (!params.mate){params.mate = ""} 
 if (!params.reads){params.reads = ""} 
+// Stage empty file to be used as an optional input where required
+ch_empty_file_1 = file("$baseDir/.emptyfiles/NO_FILE_1", hidden:true)
+ch_empty_file_2 = file("$baseDir/.emptyfiles/NO_FILE_2", hidden:true)
+ch_empty_file_3 = file("$baseDir/.emptyfiles/NO_FILE_3", hidden:true)
+ch_empty_file_4 = file("$baseDir/.emptyfiles/NO_FILE_4", hidden:true)
+ch_empty_file_5 = file("$baseDir/.emptyfiles/NO_FILE_5", hidden:true)
+ch_empty_file_6 = file("$baseDir/.emptyfiles/NO_FILE_6", hidden:true)
+ch_empty_file_7 = file("$baseDir/.emptyfiles/NO_FILE_7", hidden:true)
+ch_empty_file_8 = file("$baseDir/.emptyfiles/NO_FILE_8", hidden:true)
+ch_empty_file_9 = file("$baseDir/.emptyfiles/NO_FILE_9", hidden:true)
+ch_empty_file_10 = file("$baseDir/.emptyfiles/NO_FILE_10", hidden:true)
+ch_empty_file_11 = file("$baseDir/.emptyfiles/NO_FILE_11", hidden:true)
 
-Channel.value(params.run_FeatureCounts_after_STAR).set{g_179_run_featureCounts_g253_125}
-Channel.value(params.run_FeatureCounts_after_Hisat2).set{g_188_run_featureCounts_g252_125}
-Channel.value(params.run_FeatureCounts_after_Tophat2).set{g_189_run_featureCounts_g254_125}
-Channel.value(params.run_FeatureCounts_after_RSEM).set{g_203_run_featureCounts_g251_125}
-Channel.value(params.run_FeatureCounts_after_Kallisto).set{g_225_run_featureCounts_g255_125}
-Channel.value(params.mate).into{g_229_mate_g_127;g_229_mate_g247_3;g_229_mate_g247_14;g_229_mate_g248_36;g_229_mate_g249_14;g_229_mate_g250_26;g_229_mate_g251_82;g_229_mate_g251_95;g_229_mate_g251_131;g_229_mate_g251_133;g_229_mate_g252_82;g_229_mate_g252_95;g_229_mate_g252_131;g_229_mate_g252_133;g_229_mate_g253_82;g_229_mate_g253_95;g_229_mate_g253_131;g_229_mate_g253_133;g_229_mate_g254_82;g_229_mate_g254_95;g_229_mate_g254_131;g_229_mate_g254_133;g_229_mate_g255_82;g_229_mate_g255_95;g_229_mate_g255_131;g_229_mate_g255_133;g_229_mate_g256_26;g_229_mate_g256_30;g_229_mate_g256_46;g_229_mate_g257_11;g_229_mate_g257_16;g_229_mate_g257_18;g_229_mate_g257_19;g_229_mate_g257_20;g_229_mate_g257_21;g_229_mate_g257_24;g_229_mate_g257_23;g_229_mate_g257_28;g_229_mate_g257_29;g_229_mate_g264_31;g_229_mate_g264_30}
+Channel.value(params.run_FeatureCounts_after_STAR).set{g_179_run_featureCounts0_g253_125}
+Channel.value(params.run_FeatureCounts_after_Hisat2).set{g_188_run_featureCounts0_g252_125}
+Channel.value(params.run_FeatureCounts_after_Tophat2).set{g_189_run_featureCounts0_g254_125}
+Channel.value(params.run_FeatureCounts_after_RSEM).set{g_203_run_featureCounts0_g251_125}
+Channel.value(params.run_FeatureCounts_after_Kallisto).set{g_225_run_featureCounts0_g255_125}
+Channel.value(params.mate).into{g_229_mate0_g_127;g_229_mate1_g247_3;g_229_mate0_g247_14;g_229_mate0_g248_36;g_229_mate0_g249_14;g_229_mate0_g250_26;g_229_mate1_g251_82;g_229_mate1_g251_95;g_229_mate0_g251_131;g_229_mate1_g251_133;g_229_mate1_g252_82;g_229_mate1_g252_95;g_229_mate0_g252_131;g_229_mate1_g252_133;g_229_mate1_g253_82;g_229_mate1_g253_95;g_229_mate0_g253_131;g_229_mate1_g253_133;g_229_mate1_g254_82;g_229_mate1_g254_95;g_229_mate0_g254_131;g_229_mate1_g254_133;g_229_mate1_g255_82;g_229_mate1_g255_95;g_229_mate0_g255_131;g_229_mate1_g255_133;g_229_mate1_g256_26;g_229_mate1_g256_30;g_229_mate1_g256_46;g_229_mate1_g257_11;g_229_mate1_g257_16;g_229_mate1_g257_18;g_229_mate1_g257_19;g_229_mate1_g257_20;g_229_mate1_g257_21;g_229_mate1_g257_24;g_229_mate1_g257_23;g_229_mate0_g257_28;g_229_mate0_g257_31;g_229_mate0_g264_31;g_229_mate2_g264_30}
+if (params.reads){
 Channel
 	.fromFilePairs( params.reads , size: params.mate == "single" ? 1 : params.mate == "pair" ? 2 : params.mate == "triple" ? 3 : params.mate == "quadruple" ? 4 : -1 )
 	.ifEmpty { error "Cannot find any reads matching: ${params.reads}" }
-	.set{g_230_reads_g257_28}
+	.set{g_230_reads1_g257_28}
+ } else {  
+	g_230_reads1_g257_28 = Channel.empty()
+ }
 
 
 //* params.gtf =  ""  //* @input
@@ -84,8 +100,8 @@ process Check_and_Build_Module_Check_Genome_GTF {
 
 
 output:
- file "${genomeName}"  into g245_21_genome_g245_52, g245_21_genome_g245_54
- file "${gtfName}"  into g245_21_gtfFile_g245_53, g245_21_gtfFile_g245_54
+ file "${genomeName}"  into g245_21_genome00_g245_52, g245_21_genome01_g245_54
+ file "${gtfName}"  into g245_21_gtfFile10_g245_53, g245_21_gtfFile10_g245_54
 
 when:
 params.run_Download_Genomic_Sources == "yes"
@@ -161,10 +177,10 @@ fi
 process Check_and_Build_Module_Check_BED12 {
 
 input:
- file gtf from g245_21_gtfFile_g245_53
+ file gtf from g245_21_gtfFile10_g245_53
 
 output:
- file "${gtfName}.bed"  into g245_53_bed_g245_54
+ file "${gtfName}.bed"  into g245_53_bed03_g245_54
 
 when:
 params.run_Download_Genomic_Sources == "yes"
@@ -195,14 +211,15 @@ fi
 }
 
 //* params.gtf2bed_path =  ""  //* @input
+//* params.genome_sizes =  ""  //* @input
 
 process Check_and_Build_Module_Check_chrom_sizes_and_index {
 
 input:
- file genome from g245_21_genome_g245_52
+ file genome from g245_21_genome00_g245_52
 
 output:
- file "${genomeName}.chrom.sizes"  into g245_52_genomeSizes_g245_54
+ file "${genomeName}.chrom.sizes"  into g245_52_genomeSizes02_g245_54
 
 when:
 params.run_Download_Genomic_Sources == "yes"
@@ -217,7 +234,7 @@ if (params.genome_sizes.indexOf('/') > -1){
 """
 if [ ! -e "${params.genome_sizes}" ] ; then
     echo "${params.genome_sizes} not found"
-    cat ${genome} | awk '\$0 ~ ">" {print c; c=0;printf substr(\$0,2,100) "\\t"; } \$0 !~ ">" {c+=length(\$0);} END { print c; }' > ${genomeName}.chrom.sizes
+    cat ${genome} | awk '\$0 ~ ">" {print c; c=0;printf substr(\$1,2,100) "\\t"; } \$0 !~ ">" {c+=length(\$0);} END { print c; }' > ${genomeName}.chrom.sizes
     ##clean first empty line
     sed -i '1{/^\$/d}' ${genomeName}.chrom.sizes
     if [ "${genome_sizes_dir}" != "" ] ; then
@@ -235,25 +252,25 @@ fi
 
 }
 
-g245_21_gtfFile_g245_54= g245_21_gtfFile_g245_54.ifEmpty([""]) 
-g245_21_genome_g245_54= g245_21_genome_g245_54.ifEmpty([""]) 
-g245_52_genomeSizes_g245_54= g245_52_genomeSizes_g245_54.ifEmpty([""]) 
-g245_53_bed_g245_54= g245_53_bed_g245_54.ifEmpty([""]) 
+g245_21_gtfFile10_g245_54= g245_21_gtfFile10_g245_54.ifEmpty([""]) 
+g245_21_genome01_g245_54= g245_21_genome01_g245_54.ifEmpty([""]) 
+g245_52_genomeSizes02_g245_54= g245_52_genomeSizes02_g245_54.ifEmpty([""]) 
+g245_53_bed03_g245_54= g245_53_bed03_g245_54.ifEmpty([""]) 
 
 
 process Check_and_Build_Module_check_files {
 
 input:
- file gtf from g245_21_gtfFile_g245_54
- file genome from g245_21_genome_g245_54
- file genomeSizes from g245_52_genomeSizes_g245_54
- file bed from g245_53_bed_g245_54
+ file gtf from g245_21_gtfFile10_g245_54
+ file genome from g245_21_genome01_g245_54
+ file genomeSizes from g245_52_genomeSizes02_g245_54
+ file bed from g245_53_bed03_g245_54
 
 output:
- file "*/${gtf}" optional true  into g245_54_gtfFile_g247_16, g245_54_gtfFile_g247_14, g245_54_gtfFile_g250_31, g245_54_gtfFile_g249_16, g245_54_gtfFile_g248_36, g245_54_gtfFile_g248_38, g245_54_gtfFile_g248_39, g245_54_gtfFile_g248_32, g245_54_gtfFile_g251_133, g245_54_gtfFile_g252_133, g245_54_gtfFile_g253_133, g245_54_gtfFile_g254_133, g245_54_gtfFile_g255_133, g245_54_gtfFile_g256_47, g245_54_gtfFile_g264_21
- file "*/${genome}" optional true  into g245_54_genome_g247_16, g245_54_genome_g250_31, g245_54_genome_g249_16, g245_54_genome_g248_32, g245_54_genome_g256_47, g245_54_genome_g264_21
- file "*/${genomeSizes}" optional true  into g245_54_genomeSizes_g248_36, g245_54_genomeSizes_g251_131, g245_54_genomeSizes_g251_142, g245_54_genomeSizes_g252_131, g245_54_genomeSizes_g252_142, g245_54_genomeSizes_g253_131, g245_54_genomeSizes_g253_142, g245_54_genomeSizes_g255_131, g245_54_genomeSizes_g255_142, g245_54_genomeSizes_g254_131, g245_54_genomeSizes_g254_142
- file "*/${bed}" optional true  into g245_54_bed_g251_134, g245_54_bed_g252_134, g245_54_bed_g253_134, g245_54_bed_g254_134, g245_54_bed_g255_134
+ file "*/${gtf}" optional true  into g245_54_gtfFile01_g247_16, g245_54_gtfFile03_g247_14, g245_54_gtfFile01_g250_31, g245_54_gtfFile01_g249_16, g245_54_gtfFile03_g248_36, g245_54_gtfFile01_g248_38, g245_54_gtfFile01_g248_39, g245_54_gtfFile01_g248_32, g245_54_gtfFile03_g251_133, g245_54_gtfFile03_g252_133, g245_54_gtfFile03_g253_133, g245_54_gtfFile03_g254_133, g245_54_gtfFile03_g255_133, g245_54_gtfFile01_g256_47, g245_54_gtfFile01_g264_21
+ file "*/${genome}" optional true  into g245_54_genome10_g247_16, g245_54_genome10_g250_31, g245_54_genome10_g249_16, g245_54_genome10_g248_32, g245_54_genome10_g256_47, g245_54_genome10_g264_21
+ file "*/${genomeSizes}" optional true  into g245_54_genomeSizes24_g248_36, g245_54_genomeSizes22_g251_131, g245_54_genomeSizes21_g251_142, g245_54_genomeSizes22_g252_131, g245_54_genomeSizes21_g252_142, g245_54_genomeSizes22_g253_131, g245_54_genomeSizes21_g253_142, g245_54_genomeSizes22_g255_131, g245_54_genomeSizes21_g255_142, g245_54_genomeSizes22_g254_131, g245_54_genomeSizes21_g254_142
+ file "*/${bed}" optional true  into g245_54_bed31_g251_134, g245_54_bed31_g252_134, g245_54_bed31_g253_134, g245_54_bed31_g254_134, g245_54_bed31_g255_134
 
 script:
 (cmd1, gtf) = pathChecker(gtf, params.gtf, "file")
@@ -287,17 +304,13 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process STAR_Module_Check_Build_STAR_Index {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /STARIndex$/) "star_index/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /STARIndex$/) "star_index/$filename"}
 input:
- file genome from g245_54_genome_g264_21
- file gtf from g245_54_gtfFile_g264_21
+ file genome from g245_54_genome10_g264_21
+ file gtf from g245_54_gtfFile01_g264_21
 
 output:
- file "STARIndex"  into g264_21_starIndex_g264_26
+ file "STARIndex"  into g264_21_starIndex00_g264_26
 
 when:
 build_STAR_index == true && ((params.run_STAR && (params.run_STAR == "yes")) || !params.run_STAR)
@@ -330,20 +343,20 @@ fi
 
 }
 
-g264_21_starIndex_g264_26= g264_21_starIndex_g264_26.ifEmpty([""]) 
+g264_21_starIndex00_g264_26= g264_21_starIndex00_g264_26.ifEmpty([""]) 
 
 
 if (!((params.run_STAR && (params.run_STAR == "yes")) || !params.run_STAR)){
-g264_21_starIndex_g264_26.set{g264_26_starIndex_g264_31}
+g264_21_starIndex00_g264_26.set{g264_26_starIndex02_g264_31}
 } else {
 
 process STAR_Module_check_STAR_files {
 
 input:
- file star from g264_21_starIndex_g264_26
+ file star from g264_21_starIndex00_g264_26
 
 output:
- file "*/${star}" optional true  into g264_26_starIndex_g264_31
+ file "*/${star}" optional true  into g264_26_starIndex02_g264_31
 
 when:
 (params.run_STAR && (params.run_STAR == "yes")) || !params.run_STAR
@@ -376,15 +389,16 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process Sequential_Mapping_Module_Download_build_sequential_mapping_indexes {
 
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /${commondbName}$/) "commondb/$filename"}
 input:
- file genome from g245_54_genome_g256_47
- file gtf from g245_54_gtfFile_g256_47
+ file genome from g245_54_genome10_g256_47
+ file gtf from g245_54_gtfFile01_g256_47
 
 output:
- file "${commondbName}"  into g256_47_commondb_g256_43
- file "${bowtieIndex}" optional true  into g256_47_bowtieIndex_g256_43
- file "${bowtie2Index}" optional true  into g256_47_bowtie2index_g256_43
- file "${starIndex}" optional true  into g256_47_starIndex_g256_43
+ file "${commondbName}"  into g256_47_commondb00_g256_43
+ file "${bowtieIndex}" optional true  into g256_47_bowtieIndex11_g256_43
+ file "${bowtie2Index}" optional true  into g256_47_bowtie2index22_g256_43
+ file "${starIndex}" optional true  into g256_47_starIndex33_g256_43
 
 when:
 download_build_sequential_mapping_indexes == true
@@ -394,6 +408,7 @@ slashCount = params.commondb_source.count("/")
 cutDir = slashCount - 3;
 commondbSource = !file("${params.commondb}").exists() ? params.commondb_source : params.commondb
 commondbName = "commondb"
+inputName = file("${params.commondb}").getName().toString()
 
 selectedSeqList = params.Sequential_Mapping_Module_Sequential_Mapping._select_sequence
 alignerList = params.Sequential_Mapping_Module_Sequential_Mapping._aligner
@@ -422,7 +437,14 @@ if (params.star_index.indexOf('/') > -1){
 """
 if [ ! -e "${params.commondb}" ] ; then
     echo "${params.commondb} not found"
-    wget -l inf -nc -nH --cut-dirs=$cutDir -R 'index.html*' -r --no-parent --directory-prefix=\$PWD/${commondbName} ${params.commondb_source}
+	if [[ "${params.commondb_source}" =~ "s3" ]]; then
+		echo "Downloading s3 path from ${params.commondb_source}"
+		aws s3 cp --recursive ${params.commondb_source} ${workDir}/${commondbName} && ln -s ${workDir}/${commondbName} ${commondbName}
+	else
+		echo "Downloading commondb with wget"
+		wget -l inf -nc -nH --cut-dirs=$cutDir -R 'index.html*' -r --no-parent --directory-prefix=\$PWD/${commondbName} ${params.commondb_source}
+	fi
+
 else 
 	ln -s ${params.commondb} ${commondbName}
 fi
@@ -483,10 +505,10 @@ fi
 process BAM_Analysis_Module_Kallisto_featureCounts_Prep {
 
 input:
- val run_featureCounts from g_225_run_featureCounts_g255_125
+ val run_featureCounts from g_225_run_featureCounts0_g255_125
 
 output:
- val run_params  into g255_125_run_parameters_g255_133
+ val run_params  into g255_125_run_parameters02_g255_133
 
 when:
 run_featureCounts == "yes"
@@ -533,10 +555,10 @@ if (sense_antisense == "Yes"){
 process BAM_Analysis_Module_Tophat2_featureCounts_Prep {
 
 input:
- val run_featureCounts from g_189_run_featureCounts_g254_125
+ val run_featureCounts from g_189_run_featureCounts0_g254_125
 
 output:
- val run_params  into g254_125_run_parameters_g254_133
+ val run_params  into g254_125_run_parameters02_g254_133
 
 when:
 run_featureCounts == "yes"
@@ -583,10 +605,10 @@ if (sense_antisense == "Yes"){
 process BAM_Analysis_Module_STAR_featureCounts_Prep {
 
 input:
- val run_featureCounts from g_179_run_featureCounts_g253_125
+ val run_featureCounts from g_179_run_featureCounts0_g253_125
 
 output:
- val run_params  into g253_125_run_parameters_g253_133
+ val run_params  into g253_125_run_parameters02_g253_133
 
 when:
 run_featureCounts == "yes"
@@ -633,10 +655,10 @@ if (sense_antisense == "Yes"){
 process BAM_Analysis_Module_HISAT2_featureCounts_Prep {
 
 input:
- val run_featureCounts from g_188_run_featureCounts_g252_125
+ val run_featureCounts from g_188_run_featureCounts0_g252_125
 
 output:
- val run_params  into g252_125_run_parameters_g252_133
+ val run_params  into g252_125_run_parameters02_g252_133
 
 when:
 run_featureCounts == "yes"
@@ -683,10 +705,10 @@ if (sense_antisense == "Yes"){
 process BAM_Analysis_Module_RSEM_featureCounts_Prep {
 
 input:
- val run_featureCounts from g_203_run_featureCounts_g251_125
+ val run_featureCounts from g_203_run_featureCounts0_g251_125
 
 output:
- val run_params  into g251_125_run_parameters_g251_133
+ val run_params  into g251_125_run_parameters02_g251_133
 
 when:
 run_featureCounts == "yes"
@@ -732,17 +754,13 @@ build_Kallisto_index = params.Kallisto_module_Check_Build_Kallisto_Index.build_K
 
 process Kallisto_module_Check_Build_Kallisto_Index {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /$index\/.*.idx$/) "kallisto_index/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /$index\/.*.idx$/) "kallisto_index/$filename"}
 input:
- file genome from g245_54_genome_g248_32
- file gtf from g245_54_gtfFile_g248_32
+ file genome from g245_54_genome10_g248_32
+ file gtf from g245_54_gtfFile01_g248_32
 
 output:
- file "$index/*.idx"  into g248_32_kallisto_index_g248_31
+ file "$index/*.idx"  into g248_32_kallisto_index00_g248_31
 
 when:
 build_Kallisto_index == true && ((params.run_Kallisto && (params.run_Kallisto == "yes")) || !params.run_Kallisto)
@@ -760,9 +778,11 @@ if [ ! -e "${index_dir}/transcripts.idx" ] ; then
     
     mkdir -p $index && mv $genome $gtf $index/. && cd $index
     filter_gtf_for_genes_in_genome.py --gtf ${gtf} --fasta ${genome} -o genome_filtered_genes.gtf
-    gffread -F -w transcripts.fa -g ${genome} genome_filtered_genes.gtf
+    gffread -F -w transcripts_raw.fa -g ${genome} genome_filtered_genes.gtf
+    cut -d ' ' -f1 transcripts_raw.fa > transcripts.fa
     gzip transcripts.fa
     kallisto index -i transcripts.idx transcripts.fa.gz
+    
     if [ "${index_dir}" != "" ] ; then
     	cd ..
 		mkdir -p ${index_dir}
@@ -777,20 +797,20 @@ fi
 
 }
 
-g248_32_kallisto_index_g248_31= g248_32_kallisto_index_g248_31.ifEmpty([""]) 
+g248_32_kallisto_index00_g248_31= g248_32_kallisto_index00_g248_31.ifEmpty([""]) 
 
 
 if (!((params.run_Kallisto && (params.run_Kallisto == "yes")) || !params.run_Kallisto)){
-g248_32_kallisto_index_g248_31.set{g248_31_kallisto_index_g248_36}
+g248_32_kallisto_index00_g248_31.set{g248_31_kallisto_index02_g248_36}
 } else {
 
 process Kallisto_module_check_kallisto_files {
 
 input:
- file kallisto from g248_32_kallisto_index_g248_31
+ file kallisto from g248_32_kallisto_index00_g248_31
 
 output:
- file "*/${kallisto}" optional true  into g248_31_kallisto_index_g248_36
+ file "*/${kallisto}" optional true  into g248_31_kallisto_index02_g248_36
 
 when:
 (params.run_Kallisto && (params.run_Kallisto == "yes")) || !params.run_Kallisto
@@ -822,17 +842,13 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process HISAT2_Module_Check_Build_Hisat2_Index {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /$index$/) "hisat2_index/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /$index$/) "hisat2_index/$filename"}
 input:
- file genome from g245_54_genome_g249_16
- file gtf from g245_54_gtfFile_g249_16
+ file genome from g245_54_genome10_g249_16
+ file gtf from g245_54_gtfFile01_g249_16
 
 output:
- file "$index"  into g249_16_hisat2Index_g249_15
+ file "$index"  into g249_16_hisat2Index00_g249_15
 
 when:
 build_Hisat2_index == true && ((params.run_HISAT2 && (params.run_HISAT2 == "yes")) || !params.run_HISAT2)
@@ -875,20 +891,20 @@ fi
 
 }
 
-g249_16_hisat2Index_g249_15= g249_16_hisat2Index_g249_15.ifEmpty([""]) 
+g249_16_hisat2Index00_g249_15= g249_16_hisat2Index00_g249_15.ifEmpty([""]) 
 
 
 if (!((params.run_HISAT2 && (params.run_HISAT2 == "yes")) || !params.run_HISAT2)){
-g249_16_hisat2Index_g249_15.set{g249_15_hisat2Index_g249_14}
+g249_16_hisat2Index00_g249_15.set{g249_15_hisat2Index02_g249_14}
 } else {
 
 process HISAT2_Module_check_Hisat2_files {
 
 input:
- file hisat2 from g249_16_hisat2Index_g249_15
+ file hisat2 from g249_16_hisat2Index00_g249_15
 
 output:
- file "*/${hisat2}" optional true  into g249_15_hisat2Index_g249_14
+ file "*/${hisat2}" optional true  into g249_15_hisat2Index02_g249_14
 
 when:
 (params.run_HISAT2 && (params.run_HISAT2 == "yes")) || !params.run_HISAT2
@@ -921,17 +937,13 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process RSEM_module_Check_Build_Rsem_Index {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /${index}$/) "rsem_index/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /${index}$/) "rsem_index/$filename"}
 input:
- file genome from g245_54_genome_g250_31
- file gtf from g245_54_gtfFile_g250_31
+ file genome from g245_54_genome10_g250_31
+ file gtf from g245_54_gtfFile01_g250_31
 
 output:
- file "${index}"  into g250_31_rsemIndex_g250_32
+ file "${index}"  into g250_31_rsemIndex00_g250_32
 
 when:
 build_RSEM_index == true && ((params.run_RSEM && (params.run_RSEM == "yes")) || !params.run_RSEM)
@@ -1008,17 +1020,13 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process Tophat2_Module_Check_Build_Bowtie2_Index {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /$index$/) "tophat2_index/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /$index$/) "tophat2_index/$filename"}
 input:
- file genome from g245_54_genome_g247_16
- file gtf from g245_54_gtfFile_g247_16
+ file genome from g245_54_genome10_g247_16
+ file gtf from g245_54_gtfFile01_g247_16
 
 output:
- file "$index"  into g247_16_bowtie2index_g247_18
+ file "$index"  into g247_16_bowtie2index00_g247_18
 
 when:
 build_Bowtie2_index == true && ((params.run_Tophat && (params.run_Tophat == "yes")) || !params.run_Tophat)
@@ -1051,20 +1059,20 @@ fi
 
 }
 
-g247_16_bowtie2index_g247_18= g247_16_bowtie2index_g247_18.ifEmpty([""]) 
+g247_16_bowtie2index00_g247_18= g247_16_bowtie2index00_g247_18.ifEmpty([""]) 
 
 
 if (!((params.run_Tophat && (params.run_Tophat == "yes")) || !params.run_Tophat)){
-g247_16_bowtie2index_g247_18.set{g247_18_bowtie2index_g247_14}
+g247_16_bowtie2index00_g247_18.set{g247_18_bowtie2index02_g247_14}
 } else {
 
 process Tophat2_Module_check_Tophat2_files {
 
 input:
- file bowtie2 from g247_16_bowtie2index_g247_18
+ file bowtie2 from g247_16_bowtie2index00_g247_18
 
 output:
- file "*/${bowtie2}" optional true  into g247_18_bowtie2index_g247_14
+ file "*/${bowtie2}" optional true  into g247_18_bowtie2index02_g247_14
 
 when:
 (params.run_Tophat && (params.run_Tophat == "yes")) || !params.run_Tophat
@@ -1078,26 +1086,31 @@ $cmd
 }
 
 
-g250_31_rsemIndex_g250_32= g250_31_rsemIndex_g250_32.ifEmpty([""]) 
+g250_31_rsemIndex00_g250_32= g250_31_rsemIndex00_g250_32.ifEmpty([""]) 
 
 
 if (!((params.run_RSEM && (params.run_RSEM == "yes")) || !params.run_RSEM)){
-g250_31_rsemIndex_g250_32.set{g250_32_rsemIndex_g250_26}
+g250_31_rsemIndex00_g250_32.set{g250_32_rsemIndex02_g250_26}
 } else {
 
 process RSEM_module_check_RSEM_files {
 
 input:
- file rsem from g250_31_rsemIndex_g250_32
+ file rsem from g250_31_rsemIndex00_g250_32
 
 output:
- file "*/${rsem}" optional true  into g250_32_rsemIndex_g250_26
+ file "*/${rsem}" optional true  into g250_32_rsemIndex02_g250_26
 
 when:
 (params.run_RSEM && (params.run_RSEM == "yes")) || !params.run_RSEM
 
 script:
-RSEM_reference_type = params.RSEM_module_RSEM.RSEM_reference_type
+RSEM_reference_type = ''
+if (params.RSEM && params.RSEM.RSEM_reference_type){
+	RSEM_reference_type = params.RSEM.RSEM_reference_type		
+} else if (params.RSEM_module_RSEM && params.RSEM_module_RSEM.RSEM_reference_type){
+	RSEM_reference_type = params.RSEM_module_RSEM.RSEM_reference_type
+}
 
 if (RSEM_reference_type == 'bowtie'){
 	systemInput = params.rsem_ref_using_bowtie_index
@@ -1116,35 +1129,35 @@ $cmd
 }
 
 
-g256_47_commondb_g256_43= g256_47_commondb_g256_43.ifEmpty([""]) 
-g256_47_bowtieIndex_g256_43= g256_47_bowtieIndex_g256_43.ifEmpty([""]) 
-g256_47_bowtie2index_g256_43= g256_47_bowtie2index_g256_43.ifEmpty([""]) 
-g256_47_starIndex_g256_43= g256_47_starIndex_g256_43.ifEmpty([""]) 
+g256_47_commondb00_g256_43= g256_47_commondb00_g256_43.ifEmpty([""]) 
+g256_47_bowtieIndex11_g256_43= g256_47_bowtieIndex11_g256_43.ifEmpty([""]) 
+g256_47_bowtie2index22_g256_43= g256_47_bowtie2index22_g256_43.ifEmpty([""]) 
+g256_47_starIndex33_g256_43= g256_47_starIndex33_g256_43.ifEmpty([""]) 
 
 //* params.gtf =  ""  //* @input
 //* params.genome =  ""  //* @input
 //* params.commondb =  ""  //* @input
 if (!(params.run_Sequential_Mapping  == "yes")){
-g256_47_commondb_g256_43.into{g256_43_commondb_g256_46; g256_43_commondb_g256_44; g256_43_commondb_g256_45}
-g256_47_bowtieIndex_g256_43.into{g256_43_bowtieIndex_g256_46; g256_43_bowtieIndex_g256_44; g256_43_bowtieIndex_g256_45}
-g256_47_bowtie2index_g256_43.into{g256_43_bowtie2index_g256_46; g256_43_bowtie2index_g256_44; g256_43_bowtie2index_g256_45}
-g256_47_starIndex_g256_43.into{g256_43_starIndex_g256_46; g256_43_starIndex_g256_44; g256_43_starIndex_g256_45}
+g256_47_commondb00_g256_43.into{g256_43_commondb02_g256_46; g256_43_commondb05_g256_44; g256_43_commondb05_g256_45}
+g256_47_bowtieIndex11_g256_43.into{g256_43_bowtieIndex13_g256_46; g256_43_bowtieIndex12_g256_44; g256_43_bowtieIndex12_g256_45}
+g256_47_bowtie2index22_g256_43.into{g256_43_bowtie2index24_g256_46; g256_43_bowtie2index23_g256_44; g256_43_bowtie2index23_g256_45}
+g256_47_starIndex33_g256_43.into{g256_43_starIndex35_g256_46; g256_43_starIndex34_g256_44; g256_43_starIndex34_g256_45}
 } else {
 
 
 process Sequential_Mapping_Module_Check_Sequential_Mapping_Indexes {
 
 input:
- file commondb from g256_47_commondb_g256_43
- file bowtieIndex from g256_47_bowtieIndex_g256_43
- file bowtie2Index from g256_47_bowtie2index_g256_43
- file starIndex from g256_47_starIndex_g256_43
+ file commondb from g256_47_commondb00_g256_43
+ file bowtieIndex from g256_47_bowtieIndex11_g256_43
+ file bowtie2Index from g256_47_bowtie2index22_g256_43
+ file starIndex from g256_47_starIndex33_g256_43
 
 output:
- file "*/${commondb}" optional true  into g256_43_commondb_g256_46, g256_43_commondb_g256_44, g256_43_commondb_g256_45
- file "*/${bowtieIndex}" optional true  into g256_43_bowtieIndex_g256_46, g256_43_bowtieIndex_g256_44, g256_43_bowtieIndex_g256_45
- file "*/${bowtie2Index}" optional true  into g256_43_bowtie2index_g256_46, g256_43_bowtie2index_g256_44, g256_43_bowtie2index_g256_45
- file "*/${starIndex}" optional true  into g256_43_starIndex_g256_46, g256_43_starIndex_g256_44, g256_43_starIndex_g256_45
+ file "*/${commondb}" optional true  into g256_43_commondb02_g256_46, g256_43_commondb05_g256_44, g256_43_commondb05_g256_45
+ file "*/${bowtieIndex}" optional true  into g256_43_bowtieIndex13_g256_46, g256_43_bowtieIndex12_g256_44, g256_43_bowtieIndex12_g256_45
+ file "*/${bowtie2Index}" optional true  into g256_43_bowtie2index24_g256_46, g256_43_bowtie2index23_g256_44, g256_43_bowtie2index23_g256_45
+ file "*/${starIndex}" optional true  into g256_43_starIndex35_g256_46, g256_43_starIndex34_g256_44, g256_43_starIndex34_g256_45
 
 when:
 params.run_Sequential_Mapping  == "yes"
@@ -1164,29 +1177,23 @@ $cmd4
 }
 
 
-//* params.run_FastQC =  "no"  //* @dropdown @options:"yes","no" @description:"FastQC provides quality control checks on raw sequence data."
 
 
 if (!((params.run_FastQC && (params.run_FastQC == "yes")))){
-g_230_reads_g257_28.set{g257_28_reads_g257_18}
-g257_28_FastQCout_g_177 = Channel.empty()
+g_230_reads1_g257_28.set{g257_28_reads10_g257_18}
+g257_28_FastQCout04_g_177 = Channel.empty()
 } else {
-
 
 process Adapter_Trimmer_Quality_Module_FastQC {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.(html|zip)$/) "fastqc/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.(html|zip)$/) "fastqc/$filename"}
 input:
- val mate from g_229_mate_g257_28
- set val(name), file(reads) from g_230_reads_g257_28
+ val mate from g_229_mate0_g257_28
+ set val(name), file(reads) from g_230_reads1_g257_28
 
 output:
- file '*.{html,zip}'  into g257_28_FastQCout_g_177
- set val(name), file("reads/*")  into g257_28_reads_g257_18
+ file '*.{html,zip}'  into g257_28_FastQCout04_g_177
+ set val(name), file("reads/*")  into g257_28_reads10_g257_18
 
 errorStrategy 'retry'
 maxRetries 3
@@ -1227,20 +1234,20 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 //* platform
 //* autofill
 if (!((params.run_Adapter_Removal && (params.run_Adapter_Removal == "yes")) || !params.run_Adapter_Removal)){
-g257_28_reads_g257_18.into{g257_18_reads_g257_23; g257_18_reads_g257_29}
-g257_18_log_file_g257_11 = Channel.empty()
+g257_28_reads10_g257_18.into{g257_18_reads00_g257_23; g257_18_reads01_g257_31}
+g257_18_log_file10_g257_11 = Channel.empty()
 } else {
 
 
 process Adapter_Trimmer_Quality_Module_Adapter_Removal {
 
 input:
- set val(name), file(reads) from g257_28_reads_g257_18
- val mate from g_229_mate_g257_18
+ set val(name), file(reads) from g257_28_reads10_g257_18
+ val mate from g_229_mate1_g257_18
 
 output:
- set val(name), file("reads/*.fastq")  into g257_18_reads_g257_23, g257_18_reads_g257_29
- file "*.{fastx,trimmomatic}.log"  into g257_18_log_file_g257_11
+ set val(name), file("reads/*.fastq")  into g257_18_reads00_g257_23, g257_18_reads01_g257_31
+ file "*.{fastx,trimmomatic}.log"  into g257_18_log_file10_g257_11
 
 errorStrategy 'retry'
 
@@ -1298,7 +1305,7 @@ foreach my $adap (@adaps)
 }
 close(OUT);
 
-system("!{runGzip}");
+runCmd("!{runGzip}");
 my $quality="!{phred}";
 print "fastq quality: $quality\\n";
 print "tool: !{Tool_for_Adapter_Removal}\\n";
@@ -1328,7 +1335,7 @@ if ("!{remove_previous_reads}" eq "true") {
     my @listOfFiles = `readlink -e !{file1} !{file2}`;
     foreach my $targetFile (@listOfFiles){
         if (index($targetFile, $workdir) != -1 || index($targetFile, $inputsdir) != -1) {
-            system("rm -f $targetFile");
+            runCmd("rm -f $targetFile");
             print "INFO: $targetFile deleted.\\n";
         }
     }
@@ -1338,7 +1345,10 @@ if ("!{remove_previous_reads}" eq "true") {
 ##Subroutines
 sub runCmd {
     my ($com) = @_;
-    my $error = system($com);
+    if ($com eq ""){
+		return "";
+    }
+    my $error = system(@_);
     if   ($error) { die "Command failed: $error $com\\n"; }
     else          { print "Command successful: $com\\n"; }
 }
@@ -1348,30 +1358,27 @@ sub runCmd {
 }
 
 
-//* params.run_FastQC =  "no"  //* @dropdown @options:"yes","no" @description:"FastQC provides quality control checks on raw sequence data."
 
-
-if (!((params.run_FastQC && (params.run_FastQC == "yes")))){
-g257_18_reads_g257_29.set{g257_29_reads}
-g257_29_FastQCout_g_177 = Channel.empty()
+if (!((params.run_FastQC && params.run_FastQC == "yes" && params.run_Adapter_Removal && params.run_Adapter_Removal == "yes"))){
+g257_18_reads01_g257_31.set{g257_31_reads11}
+g257_31_FastQCout015_g_177 = Channel.empty()
 } else {
-
 
 process Adapter_Trimmer_Quality_Module_FastQC_after_Adapter_Removal {
 
 input:
- val mate from g_229_mate_g257_29
- set val(name), file(reads) from g257_18_reads_g257_29
+ val mate from g_229_mate0_g257_31
+ set val(name), file(reads) from g257_18_reads01_g257_31
 
 output:
- file '*.{html,zip}'  into g257_29_FastQCout_g_177
- set val(name), file("reads/*")  into g257_29_reads
+ file '*.{html,zip}'  into g257_31_FastQCout015_g_177
+ set val(name), file("reads/*")  into g257_31_reads11
 
 errorStrategy 'retry'
 maxRetries 3
 
 when:
-(params.run_FastQC && (params.run_FastQC == "yes"))
+(params.run_FastQC && params.run_FastQC == "yes" && params.run_Adapter_Removal && params.run_Adapter_Removal == "yes")
 
 script:
 nameAll = reads.toString()
@@ -1395,18 +1402,14 @@ mv ${file} reads/.
 
 process Adapter_Trimmer_Quality_Module_Adapter_Removal_Summary {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /adapter_removal_detailed_summary.tsv$/) "adapter_removal_detailed_summary/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /adapter_removal_detailed_summary.tsv$/) "adapter_removal_detailed_summary/$filename"}
 input:
- file logfile from g257_18_log_file_g257_11.collect()
- val mate from g_229_mate_g257_11
+ file logfile from g257_18_log_file10_g257_11.collect()
+ val mate from g_229_mate1_g257_11
 
 output:
- file "adapter_removal_summary.tsv"  into g257_11_outputFileTSV_g_198
- file "adapter_removal_detailed_summary.tsv" optional true  into g257_11_outputFile
+ file "adapter_removal_summary.tsv"  into g257_11_outputFileTSV05_g_198
+ file "adapter_removal_detailed_summary.tsv" optional true  into g257_11_outputFile11
 
 shell:
 '''
@@ -1525,20 +1528,20 @@ sub writeFile {
 //* @style @condition:{single_or_paired_end_reads="single", barcode_pattern1,remove_duplicates_based_on_UMI}, {single_or_paired_end_reads="pair", barcode_pattern1,barcode_pattern2}
 
 if (!(params.run_UMIextract == "yes" || !params.run_UMIextract)){
-g257_18_reads_g257_23.set{g257_23_reads_g257_19}
-g257_23_log_file_g257_24 = Channel.empty()
+g257_18_reads00_g257_23.set{g257_23_reads00_g257_19}
+g257_23_log_file10_g257_24 = Channel.empty()
 } else {
 
 
 process Adapter_Trimmer_Quality_Module_UMIextract {
 
 input:
- set val(name), file(reads) from g257_18_reads_g257_23
- val mate from g_229_mate_g257_23
+ set val(name), file(reads) from g257_18_reads00_g257_23
+ val mate from g_229_mate1_g257_23
 
 output:
- set val(name), file("result/*.fastq")  into g257_23_reads_g257_19
- file "${name}.*.log"  into g257_23_log_file_g257_24
+ set val(name), file("result/*.fastq")  into g257_23_reads00_g257_19
+ file "${name}.*.log"  into g257_23_log_file10_g257_24
 
 when:
 params.run_UMIextract == "yes" || !params.run_UMIextract
@@ -1609,20 +1612,20 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 //* platform
 //* autofill
 if (!((params.run_Trimmer && (params.run_Trimmer == "yes")) || !params.run_Trimmer)){
-g257_23_reads_g257_19.set{g257_19_reads_g257_20}
-g257_19_log_file_g257_21 = Channel.empty()
+g257_23_reads00_g257_19.set{g257_19_reads00_g257_20}
+g257_19_log_file10_g257_21 = Channel.empty()
 } else {
 
 
 process Adapter_Trimmer_Quality_Module_Trimmer {
 
 input:
- set val(name), file(reads) from g257_23_reads_g257_19
- val mate from g_229_mate_g257_19
+ set val(name), file(reads) from g257_23_reads00_g257_19
+ val mate from g_229_mate1_g257_19
 
 output:
- set val(name), file("reads/*q")  into g257_19_reads_g257_20
- file "*.log" optional true  into g257_19_log_file_g257_21
+ set val(name), file("reads/*q")  into g257_19_reads00_g257_20
+ file "*.log" optional true  into g257_19_log_file10_g257_21
 
 errorStrategy 'retry'
 
@@ -1663,8 +1666,8 @@ if (nameAll.contains('.gz')) {
  use Pod::Usage; 
  use Cwd qw();
  
-system("mkdir reads");
-system("!{runGzip}");
+runCmd("mkdir reads");
+runCmd("!{runGzip}");
 my $file1 = "";
 my $file2 = "";
 if ("!{mate}" eq "pair") {
@@ -1697,7 +1700,7 @@ if ("!{remove_previous_reads}" eq "true") {
     my @listOfFiles = `readlink -e !{file1} !{file2}`;
     foreach my $targetFile (@listOfFiles){
         if (index($targetFile, $workdir) != -1 || index($targetFile, $inputsdir) != -1) {
-            system("rm -f $targetFile");
+            runCmd("rm -f $targetFile");
             print "INFO: $targetFile deleted.\\n";
         }
     }
@@ -1725,7 +1728,7 @@ sub trimFiles
       print "INFO: $com\\n";
       if ($com eq ""){
           print "INFO: Trimmer skipped for $file \\n";
-          system("mv $file reads/.");
+          runCmd("mv $file reads/.");
       } else {
           runCmd("$com");
           print "INFO: Trimmer executed for $file \\n";
@@ -1758,7 +1761,10 @@ sub getLength
 
 sub runCmd {
     my ($com) = @_;
-    my $error = system($com);
+    if ($com eq ""){
+		return "";
+    }
+    my $error = system(@_);
     if   ($error) { die "Command failed: $error $com\\n"; }
     else          { print "Command successful: $com\\n"; }
 }
@@ -1773,11 +1779,11 @@ sub runCmd {
 process Adapter_Trimmer_Quality_Module_Trimmer_Removal_Summary {
 
 input:
- file logfile from g257_19_log_file_g257_21.collect()
- val mate from g_229_mate_g257_21
+ file logfile from g257_19_log_file10_g257_21.collect()
+ val mate from g_229_mate1_g257_21
 
 output:
- file "trimmer_summary.tsv"  into g257_21_outputFileTSV_g_198
+ file "trimmer_summary.tsv"  into g257_21_outputFileTSV06_g_198
 
 shell:
 '''
@@ -1867,20 +1873,20 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 //* platform
 //* autofill
 if (!((params.run_Quality_Filtering && (params.run_Quality_Filtering == "yes")) || !params.run_Quality_Filtering)){
-g257_19_reads_g257_20.set{g257_20_reads_g256_46}
-g257_20_log_file_g257_16 = Channel.empty()
+g257_19_reads00_g257_20.set{g257_20_reads00_g256_46}
+g257_20_log_file10_g257_16 = Channel.empty()
 } else {
 
 
 process Adapter_Trimmer_Quality_Module_Quality_Filtering {
 
 input:
- set val(name), file(reads) from g257_19_reads_g257_20
- val mate from g_229_mate_g257_20
+ set val(name), file(reads) from g257_19_reads00_g257_20
+ val mate from g_229_mate1_g257_20
 
 output:
- set val(name), file("reads/*q")  into g257_20_reads_g256_46
- file "*.{fastx,trimmomatic}_quality.log" optional true  into g257_20_log_file_g257_16
+ set val(name), file("reads/*q")  into g257_20_reads00_g256_46
+ file "*.{fastx,trimmomatic}_quality.log" optional true  into g257_20_log_file10_g257_16
 
 errorStrategy 'retry'
 
@@ -1926,8 +1932,8 @@ if (nameAll.contains('.gz')) {
  use Pod::Usage; 
  use Cwd qw();
  
-system("mkdir reads unpaired");
-system("!{runGzip}");
+runCmd("mkdir reads unpaired");
+runCmd("!{runGzip}");
 my $param = "SLIDINGWINDOW:"."!{window_size}".":"."!{required_quality_for_window_trimming}";
 $param.=" LEADING:"."!{leading}";
 $param.=" TRAILING:"."!{trailing}";
@@ -1946,7 +1952,7 @@ if ("!{tool}" eq "trimmomatic") {
 } elsif ("!{tool}" eq "fastx") {
     if ("!{mate}" eq "pair") {
         print("WARNING: Fastx option is not suitable for paired reads. This step will be skipped.");
-        system("mv !{file1} !{file2} reads/.");
+        runCmd("mv !{file1} !{file2} reads/.");
     } else {
         runCmd("fastq_quality_filter  -Q $quality -q !{minQuality} -p !{minPercent} -v -i !{file1} -o reads/!{name}.fastq > !{name}.fastx_quality.log");
     }
@@ -1963,7 +1969,7 @@ if ("!{remove_previous_reads}" eq "true") {
     my @listOfFiles = `readlink -e !{file1} !{file2}`;
     foreach my $targetFile (@listOfFiles){
         if (index($targetFile, $workdir) != -1 || index($targetFile, $inputsdir) != -1) {
-            system("rm -f $targetFile");
+            runCmd("rm -f $targetFile");
             print "INFO: $targetFile deleted.\\n";
         }
     }
@@ -1972,7 +1978,10 @@ if ("!{remove_previous_reads}" eq "true") {
 ##Subroutines
 sub runCmd {
     my ($com) = @_;
-    my $error = system($com);
+    if ($com eq ""){
+		return "";
+    }
+    my $error = system(@_);
     if   ($error) { die "Command failed: $error $com\\n"; }
     else          { print "Command successful: $com\\n"; }
 }
@@ -1984,10 +1993,10 @@ sub runCmd {
 }
 
 
-g256_43_commondb_g256_46= g256_43_commondb_g256_46.ifEmpty([""]) 
-g256_43_bowtieIndex_g256_46= g256_43_bowtieIndex_g256_46.ifEmpty([""]) 
-g256_43_bowtie2index_g256_46= g256_43_bowtie2index_g256_46.ifEmpty([""]) 
-g256_43_starIndex_g256_46= g256_43_starIndex_g256_46.ifEmpty([""]) 
+g256_43_commondb02_g256_46= g256_43_commondb02_g256_46.ifEmpty([""]) 
+g256_43_bowtieIndex13_g256_46= g256_43_bowtieIndex13_g256_46.ifEmpty([""]) 
+g256_43_bowtie2index24_g256_46= g256_43_bowtie2index24_g256_46.ifEmpty([""]) 
+g256_43_starIndex35_g256_46= g256_43_starIndex35_g256_46.ifEmpty([""]) 
 
 //* params.bowtie_index =  ""  //* @input
 //* params.bowtie2_index =  ""  //* @input
@@ -2070,47 +2079,43 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 //* platform
 //* autofill
 if (!(params.run_Sequential_Mapping == "yes")){
-g257_20_reads_g256_46.into{g256_46_reads_g_127; g256_46_reads_g248_36; g256_46_reads_g250_26}
-g256_46_bowfiles_g256_26 = Channel.empty()
-g256_46_bowfiles_g_177 = Channel.empty()
-g256_46_bam_file_g256_44 = Channel.empty()
-g256_46_bam_file_g256_45 = Channel.empty()
-g256_46_bam_index_g256_44 = Channel.empty()
-g256_46_bam_index_g256_45 = Channel.empty()
-g256_46_filter_g256_26 = Channel.empty()
-g256_46_log_file_g256_30 = Channel.empty()
-g256_46_bigWig_file = Channel.empty()
+g257_20_reads00_g256_46.into{g256_46_reads01_g_127; g256_46_reads01_g248_36; g256_46_reads01_g250_26}
+g256_46_bowfiles10_g256_26 = Channel.empty()
+g256_46_bowfiles15_g_177 = Channel.empty()
+g256_46_bam_file20_g256_44 = Channel.empty()
+g256_46_bam_file50_g256_45 = Channel.empty()
+g256_46_bam_index31_g256_44 = Channel.empty()
+g256_46_bam_index61_g256_45 = Channel.empty()
+g256_46_filter42_g256_26 = Channel.empty()
+g256_46_log_file70_g256_30 = Channel.empty()
+g256_46_bigWig_file88 = Channel.empty()
 } else {
 
 
 process Sequential_Mapping_Module_Sequential_Mapping {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*\/.*_sorted.bam$/) "sequential_mapping/$filename"
-	else if (filename =~ /.*\/.*_sorted.bam.bai$/) "sequential_mapping/$filename"
-	else if (filename =~ /.*\/.*_duplicates_stats.log$/) "sequential_mapping/$filename"
-	else if (filename =~ /.*\/.*.bw$/) "sequential_mapping/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*\/.*_sorted.bam$/) "sequential_mapping/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*\/.*_sorted.bam.bai$/) "sequential_mapping/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*\/.*_duplicates_stats.log$/) "sequential_mapping/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*\/.*.bw$/) "sequential_mapping/$filename"}
 input:
- set val(name), file(reads) from g257_20_reads_g256_46
- val mate from g_229_mate_g256_46
- file commondb from g256_43_commondb_g256_46
- file bowtie_index from g256_43_bowtieIndex_g256_46
- file bowtie2_index from g256_43_bowtie2index_g256_46
- file star_index from g256_43_starIndex_g256_46
+ set val(name), file(reads) from g257_20_reads00_g256_46
+ val mate from g_229_mate1_g256_46
+ file commondb from g256_43_commondb02_g256_46
+ file bowtie_index from g256_43_bowtieIndex13_g256_46
+ file bowtie2_index from g256_43_bowtie2index24_g256_46
+ file star_index from g256_43_starIndex35_g256_46
 
 output:
- set val(name), file("final_reads/*q")  into g256_46_reads_g_127, g256_46_reads_g248_36, g256_46_reads_g250_26
- set val(name), file("bowfiles/?*") optional true  into g256_46_bowfiles_g256_26, g256_46_bowfiles_g_177
- file "*/*_sorted.bam" optional true  into g256_46_bam_file_g256_44
- file "*/*_sorted.bam.bai" optional true  into g256_46_bam_index_g256_44
- val filtersList  into g256_46_filter_g256_26
- file "*/*_sorted.dedup.bam" optional true  into g256_46_bam_file_g256_45
- file "*/*_sorted.dedup.bam.bai" optional true  into g256_46_bam_index_g256_45
- file "*/*_duplicates_stats.log" optional true  into g256_46_log_file_g256_30
- file "*/*.bw" optional true  into g256_46_bigWig_file
+ set val(name), file("final_reads/*q")  into g256_46_reads01_g_127, g256_46_reads01_g248_36, g256_46_reads01_g250_26
+ set val(name), file("bowfiles/?*") optional true  into g256_46_bowfiles10_g256_26, g256_46_bowfiles15_g_177
+ file "*/*_sorted.bam" optional true  into g256_46_bam_file20_g256_44
+ file "*/*_sorted.bam.bai" optional true  into g256_46_bam_index31_g256_44
+ val filtersList  into g256_46_filter42_g256_26
+ file "*/*_sorted.dedup.bam" optional true  into g256_46_bam_file50_g256_45
+ file "*/*_sorted.dedup.bam.bai" optional true  into g256_46_bam_index61_g256_45
+ file "*/*_duplicates_stats.log" optional true  into g256_46_log_file70_g256_30
+ file "*/*.bw" optional true  into g256_46_bigWig_file88
 
 errorStrategy 'retry'
 
@@ -2447,21 +2452,17 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process RSEM_module_RSEM {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /pipe.rsem.${name}$/) "rsem/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /pipe.rsem.${name}$/) "rsem/$filename"}
 input:
- val mate from g_229_mate_g250_26
- set val(name), file(reads) from g256_46_reads_g250_26
- file rsemIndex from g250_32_rsemIndex_g250_26
+ val mate from g_229_mate0_g250_26
+ set val(name), file(reads) from g256_46_reads01_g250_26
+ file rsemIndex from g250_32_rsemIndex02_g250_26
 
 output:
- file "pipe.rsem.${name}"  into g250_26_rsemOut_g250_17, g250_26_rsemOut_g250_21, g250_26_rsemOut_g_177
- set val(name), file("pipe.rsem.*/*.genome.bam") optional true  into g250_26_bam_file
- set val(name), file("pipe.rsem.*/*.bam") optional true  into g250_26_mapped_reads
- file "pipe.rsem.*/*.genome.bam" optional true  into g250_26_genome_bam_g250_23
+ file "pipe.rsem.${name}"  into g250_26_rsemOut00_g250_17, g250_26_rsemOut00_g250_21, g250_26_rsemOut01_g_177
+ set val(name), file("pipe.rsem.*/*.genome.bam") optional true  into g250_26_bam_file11
+ set val(name), file("pipe.rsem.*/*.bam") optional true  into g250_26_mapped_reads22
+ file "pipe.rsem.*/*.genome.bam" optional true  into g250_26_genome_bam30_g250_23
 
 errorStrategy 'retry'
 maxRetries 1
@@ -2529,6 +2530,12 @@ else
     	rsem-calculate-expression ${refType} ${RSEM_parameters} ${genome_BamText} ${noBamText} --forward-prob 0 --calc-ci ${file1} \${rsemRef} pipe.rsem.${name}/rsem.out.reverse.${name}
 	fi
 fi
+
+if [ -e "pipe.rsem.${name}/rsem.out.${name}.genome.bam" ] ; then
+    mv pipe.rsem.${name}/rsem.out.${name}.genome.bam pipe.rsem.${name}/rsem.out.${name}.genome.unsorted.bam
+    samtools sort -o pipe.rsem.${name}/rsem.out.${name}.genome.bam pipe.rsem.${name}/rsem.out.${name}.genome.unsorted.bam
+    rm pipe.rsem.${name}/rsem.out.${name}.genome.unsorted.bam
+fi
 """
 
 }
@@ -2537,10 +2544,10 @@ fi
 process RSEM_module_file_to_set_conversion_for_bam {
 
 input:
- file bam from g250_26_genome_bam_g250_23.flatten()
+ file bam from g250_26_genome_bam30_g250_23.flatten()
 
 output:
- set val(name),file(bam)  into g250_23_bam_file_g251_121, g250_23_bam_file_g251_131, g250_23_bam_file_g251_133, g250_23_bam_file_g251_134, g250_23_bam_file_g251_142
+ set val(name),file(bam)  into g250_23_bam_file00_g251_121, g250_23_bam_file01_g251_131, g250_23_bam_file00_g251_133, g250_23_bam_file00_g251_134, g250_23_bam_file00_g251_142
 
 script:
 name = bam.baseName
@@ -2568,17 +2575,13 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process BAM_Analysis_Module_RSEM_UCSC_BAM2BigWig_converter {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.bw$/) "bigwig_rsem/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.bw$/) "bigwig_rsem/$filename"}
 input:
- set val(name), file(bam) from g250_23_bam_file_g251_142
- file genomeSizes from g245_54_genomeSizes_g251_142
+ set val(name), file(bam) from g250_23_bam_file00_g251_142
+ file genomeSizes from g245_54_genomeSizes21_g251_142
 
 output:
- file "*.bw"  into g251_142_outputFileBw
+ file "*.bw"  into g251_142_outputFileBw00
 
 when:
 (params.run_BigWig_Conversion && (params.run_BigWig_Conversion == "yes")) || !params.run_BigWig_Conversion
@@ -2604,17 +2607,13 @@ wigToBigWig -clip -itemsPerSlot=1 ${name}.bg ${genomeSizes} ${name}.bw
 
 process BAM_Analysis_Module_RSEM_RSeQC {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /result\/.*.out$/) "rseqc_rsem/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /result\/.*.out$/) "rseqc_rsem/$filename"}
 input:
- set val(name), file(bam) from g250_23_bam_file_g251_134
- file bed from g245_54_bed_g251_134
+ set val(name), file(bam) from g250_23_bam_file00_g251_134
+ file bed from g245_54_bed31_g251_134
 
 output:
- file "result/*.out"  into g251_134_outputFileOut_g251_95, g251_134_outputFileOut_g_177
+ file "result/*.out"  into g251_134_outputFileOut00_g251_95, g251_134_outputFileOut07_g_177
 
 when:
 (params.run_RSeQC && (params.run_RSeQC == "yes")) || !params.run_RSeQC
@@ -2629,17 +2628,13 @@ read_distribution.py  -i ${bam} -r ${bed}> result/RSeQC.${name}.out
 
 process BAM_Analysis_Module_RSEM_RSeQC_Summary {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.tsv$/) "rseqc_summary_rsem/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.tsv$/) "rseqc_summary_rsem/$filename"}
 input:
- file rseqcOut from g251_134_outputFileOut_g251_95.collect()
- val mate from g_229_mate_g251_95
+ file rseqcOut from g251_134_outputFileOut00_g251_95.collect()
+ val mate from g_229_mate1_g251_95
 
 output:
- file "*.tsv"  into g251_95_outputFileTSV
+ file "*.tsv"  into g251_95_outputFileTSV00
 
 shell:
 '''
@@ -2752,19 +2747,15 @@ sub getVals{
 
 process BAM_Analysis_Module_RSEM_featureCounts {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*$/) "featureCounts_after_rsem/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*$/) "featureCounts_after_rsem/$filename"}
 input:
- set val(name), file(bam) from g250_23_bam_file_g251_133
- val paired from g_229_mate_g251_133
- each run_params from g251_125_run_parameters_g251_133
- file gtf from g245_54_gtfFile_g251_133
+ set val(name), file(bam) from g250_23_bam_file00_g251_133
+ val paired from g_229_mate1_g251_133
+ each run_params from g251_125_run_parameters02_g251_133
+ file gtf from g245_54_gtfFile03_g251_133
 
 output:
- file "*"  into g251_133_outputFileTSV_g251_117
+ file "*"  into g251_133_outputFileTSV00_g251_117
 
 script:
 pairText = ""
@@ -2796,18 +2787,14 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process BAM_Analysis_Module_RSEM_summary_featureCounts {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*_featureCounts.tsv$/) "featureCounts_after_rsem_summary/$filename"
-	else if (filename =~ /.*_featureCounts.sum.tsv$/) "featureCounts_after_rsem_details/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_featureCounts.tsv$/) "featureCounts_after_rsem_summary/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_featureCounts.sum.tsv$/) "featureCounts_after_rsem_details/$filename"}
 input:
- file featureCountsOut from g251_133_outputFileTSV_g251_117.collect()
+ file featureCountsOut from g251_133_outputFileTSV00_g251_117.collect()
 
 output:
- file "*_featureCounts.tsv"  into g251_117_outputFile
- file "*_featureCounts.sum.tsv"  into g251_117_outFileTSV
+ file "*_featureCounts.tsv"  into g251_117_outputFile00
+ file "*_featureCounts.sum.tsv"  into g251_117_outFileTSV11
 
 shell:
 '''
@@ -2941,18 +2928,14 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process BAM_Analysis_Module_RSEM_IGV_BAM2TDF_converter {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.tdf$/) "igvtools_rsem/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.tdf$/) "igvtools_rsem/$filename"}
 input:
- val mate from g_229_mate_g251_131
- set val(name), file(bam) from g250_23_bam_file_g251_131
- file genomeSizes from g245_54_genomeSizes_g251_131
+ val mate from g_229_mate0_g251_131
+ set val(name), file(bam) from g250_23_bam_file01_g251_131
+ file genomeSizes from g245_54_genomeSizes22_g251_131
 
 output:
- file "*.tdf"  into g251_131_outputFileOut
+ file "*.tdf"  into g251_131_outputFileOut00
 
 when:
 (params.run_IGV_TDF_Conversion && (params.run_IGV_TDF_Conversion == "yes")) || !params.run_IGV_TDF_Conversion
@@ -2992,11 +2975,11 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 process BAM_Analysis_Module_RSEM_Picard {
 
 input:
- set val(name), file(bam) from g250_23_bam_file_g251_121
+ set val(name), file(bam) from g250_23_bam_file00_g251_121
 
 output:
- file "*_metrics"  into g251_121_outputFileOut_g251_82
- file "results/*.pdf"  into g251_121_outputFilePdf_g251_82
+ file "*_metrics"  into g251_121_outputFileOut00_g251_82
+ file "results/*.pdf"  into g251_121_outputFilePdf12_g251_82
 
 when:
 (params.run_Picard_CollectMultipleMetrics && (params.run_Picard_CollectMultipleMetrics == "yes")) || !params.run_Picard_CollectMultipleMetrics
@@ -3011,20 +2994,16 @@ mkdir results && java -jar ${params.pdfbox_path} PDFMerger *.pdf results/${name}
 
 process BAM_Analysis_Module_RSEM_Picard_Summary {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.tsv$/) "picard_summary_rsem/$filename"
-	else if (filename =~ /results\/.*.pdf$/) "picard_summary_pdf_rsem/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.tsv$/) "picard_summary_rsem/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /results\/.*.pdf$/) "picard_summary_pdf_rsem/$filename"}
 input:
- file picardOut from g251_121_outputFileOut_g251_82.collect()
- val mate from g_229_mate_g251_82
- file picardPdf from g251_121_outputFilePdf_g251_82.collect()
+ file picardOut from g251_121_outputFileOut00_g251_82.collect()
+ val mate from g_229_mate1_g251_82
+ file picardPdf from g251_121_outputFilePdf12_g251_82.collect()
 
 output:
- file "*.tsv"  into g251_82_outputFileTSV
- file "results/*.pdf"  into g251_82_outputFilePdf
+ file "*.tsv"  into g251_82_outputFileTSV00
+ file "results/*.pdf"  into g251_82_outputFilePdf11
 
 shell:
 '''
@@ -3036,7 +3015,7 @@ use Getopt::Long;
 use Pod::Usage; 
 use Data::Dumper;
 
-system("mkdir results && mv *.pdf results/. ");
+runCommand("mkdir results && mv *.pdf results/. ");
 
 my $indir = $ENV{'PWD'};
 my $outd = $ENV{'PWD'};
@@ -3118,6 +3097,17 @@ sub getMetricVals{
   }
   
 }
+
+
+sub runCommand {
+	my ($com) = @_;
+	if ($com eq ""){
+		return "";
+    }
+    my $error = system(@_);
+	if   ($error) { die "Command failed: $error $com\\n"; }
+    else          { print "Command successful: $com\\n"; }
+}
 '''
 
 }
@@ -3135,17 +3125,13 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process RSEM_module_RSEM_Count {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.tsv$/) "rsem_summary/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.tsv$/) "rsem_summary/$filename"}
 input:
- file rsemOut from g250_26_rsemOut_g250_21.collect()
+ file rsemOut from g250_26_rsemOut00_g250_21.collect()
 
 output:
- file "*.tsv"  into g250_21_outputFile
- val wdir  into g250_21_wdir_g250_14
+ file "*.tsv"  into g250_21_outputFile00
+ val wdir  into g250_21_wdir10_g250_14
 
 shell:
 wdir="rsem_summary/genes_expression_expected_count.tsv"
@@ -3243,10 +3229,7 @@ for($m = 0; $m <= $#sense_antisense; $m++) {
 '''
 }
 
-cols = params.RSEM_module_CountData_DE.cols
-conds = params.RSEM_module_CountData_DE.conds
-cols = convertCommaSepString(cols)
-conds = convertCommaSepString(conds)
+
 
 // convert comma separated string into comma quote and comma separated string
 //eg. "a, b, c" -> "a","b","c"
@@ -3270,18 +3253,18 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process RSEM_module_CountData_DE {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.rmd$/) "rsem_rmarkdown/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.rmd$/) "rsem_rmarkdown/$filename"}
 input:
- val wdir from g250_21_wdir_g250_14
+ val wdir from g250_21_wdir10_g250_14
 
 output:
- file "*.rmd"  into g250_14_rMarkdown
+ file "*.rmd" optional true  into g250_14_rMarkdown00
 
 shell:
+cols = params.RSEM_module_CountData_DE.cols
+conds = params.RSEM_module_CountData_DE.conds
+colsC = convertCommaSepString(cols)
+condsC = convertCommaSepString(conds)
 '''
 #!/usr/bin/env perl
 
@@ -3311,7 +3294,7 @@ file <- textConnection(getURL(url))
 rsem <- read.table(file,sep="\\t", header=TRUE, row.names=1) 
 data <- data.frame(rsem[,sapply(rsem, is.numeric)]) 
 
-cols<- c(!{cols})
+cols<- c(!{colsC})
 
 data <- data[, cols]
 
@@ -3346,7 +3329,7 @@ from non-expressed genes. You can change this value and padj value and
 log2FoldChange cutoffs according to your data
 
 ```{r, echo=FALSE, message=FALSE}
-conds <- factor( c(!{conds}) )
+conds <- factor( c(!{condsC}) )
 avgall<-cbind(rowSums(data[cols[conds == levels(conds)[1]]])/3, 
               rowSums(data[cols[conds == levels(conds)[2]]])/3)
 colnames(avgall)<-c(levels(conds)[1], levels(conds)[2])
@@ -3404,10 +3387,15 @@ heatmap.2(cld, Rowv=TRUE,dendrogram="column",
 ```
 EOF
 
-open OUT, ">rmark.rmd";
-print OUT $script;
-close OUT;
+if ("!{cols}" !~ /^ *$/) {
+  open OUT, ">rmark.rmd";
+  print OUT $script;
+  close OUT;
+}
+
+
 '''
+
 
 
 }
@@ -3426,10 +3414,10 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 process RSEM_module_RSEM_Alignment_Summary {
 
 input:
- file rsemDir from g250_26_rsemOut_g250_17.collect()
+ file rsemDir from g250_26_rsemOut00_g250_17.collect()
 
 output:
- file "rsem_alignment_sum.tsv"  into g250_17_outputFileTSV_g_198
+ file "rsem_alignment_sum.tsv"  into g250_17_outputFileTSV03_g_198
 
 shell:
 '''
@@ -3511,22 +3499,18 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process Kallisto_module_kallisto_quant {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /kallisto_${name}$/) "kallisto/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /kallisto_${name}$/) "kallisto/$filename"}
 input:
- val mate from g_229_mate_g248_36
- set val(name), file(reads) from g256_46_reads_g248_36
- file kallisto_index from g248_31_kallisto_index_g248_36
- file gtf from g245_54_gtfFile_g248_36
- file genome_sizes from g245_54_genomeSizes_g248_36
+ val mate from g_229_mate0_g248_36
+ set val(name), file(reads) from g256_46_reads01_g248_36
+ file kallisto_index from g248_31_kallisto_index02_g248_36
+ file gtf from g245_54_gtfFile03_g248_36
+ file genome_sizes from g245_54_genomeSizes24_g248_36
 
 output:
- file "kallisto_${name}"  into g248_36_outputDir_g248_22, g248_36_outputDir_g248_38, g248_36_outputDir_g_177
- set val(name), file("*.bam") optional true  into g248_36_bam_file_g255_121, g248_36_bam_file_g255_131, g248_36_bam_file_g255_133, g248_36_bam_file_g255_134, g248_36_bam_file_g255_142
- file "*.bam.bai" optional true  into g248_36_bam_bai
+ file "kallisto_${name}"  into g248_36_outputDir00_g248_22, g248_36_outputDir00_g248_38, g248_36_outputDir013_g_177
+ set val(name), file("*.bam") optional true  into g248_36_bam_file10_g255_121, g248_36_bam_file11_g255_131, g248_36_bam_file10_g255_133, g248_36_bam_file10_g255_134, g248_36_bam_file10_g255_142
+ file "*.bam.bai" optional true  into g248_36_bam_bai22
 
 when:
 (params.run_Kallisto && (params.run_Kallisto == "yes")) || !params.run_Kallisto
@@ -3611,17 +3595,13 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process BAM_Analysis_Module_Kallisto_UCSC_BAM2BigWig_converter {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.bw$/) "bigwig_kallisto/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.bw$/) "bigwig_kallisto/$filename"}
 input:
- set val(name), file(bam) from g248_36_bam_file_g255_142
- file genomeSizes from g245_54_genomeSizes_g255_142
+ set val(name), file(bam) from g248_36_bam_file10_g255_142
+ file genomeSizes from g245_54_genomeSizes21_g255_142
 
 output:
- file "*.bw"  into g255_142_outputFileBw
+ file "*.bw"  into g255_142_outputFileBw00
 
 when:
 (params.run_BigWig_Conversion && (params.run_BigWig_Conversion == "yes")) || !params.run_BigWig_Conversion
@@ -3647,17 +3627,13 @@ wigToBigWig -clip -itemsPerSlot=1 ${name}.bg ${genomeSizes} ${name}.bw
 
 process BAM_Analysis_Module_Kallisto_RSeQC {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /result\/.*.out$/) "rseqc_kallisto/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /result\/.*.out$/) "rseqc_kallisto/$filename"}
 input:
- set val(name), file(bam) from g248_36_bam_file_g255_134
- file bed from g245_54_bed_g255_134
+ set val(name), file(bam) from g248_36_bam_file10_g255_134
+ file bed from g245_54_bed31_g255_134
 
 output:
- file "result/*.out"  into g255_134_outputFileOut_g255_95, g255_134_outputFileOut_g_177
+ file "result/*.out"  into g255_134_outputFileOut00_g255_95, g255_134_outputFileOut014_g_177
 
 when:
 (params.run_RSeQC && (params.run_RSeQC == "yes")) || !params.run_RSeQC
@@ -3672,17 +3648,13 @@ read_distribution.py  -i ${bam} -r ${bed}> result/RSeQC.${name}.out
 
 process BAM_Analysis_Module_Kallisto_RSeQC_Summary {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.tsv$/) "rseqc_summary_kallisto/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.tsv$/) "rseqc_summary_kallisto/$filename"}
 input:
- file rseqcOut from g255_134_outputFileOut_g255_95.collect()
- val mate from g_229_mate_g255_95
+ file rseqcOut from g255_134_outputFileOut00_g255_95.collect()
+ val mate from g_229_mate1_g255_95
 
 output:
- file "*.tsv"  into g255_95_outputFileTSV
+ file "*.tsv"  into g255_95_outputFileTSV00
 
 shell:
 '''
@@ -3795,19 +3767,15 @@ sub getVals{
 
 process BAM_Analysis_Module_Kallisto_featureCounts {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*$/) "featureCounts_after_kallisto/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*$/) "featureCounts_after_kallisto/$filename"}
 input:
- set val(name), file(bam) from g248_36_bam_file_g255_133
- val paired from g_229_mate_g255_133
- each run_params from g255_125_run_parameters_g255_133
- file gtf from g245_54_gtfFile_g255_133
+ set val(name), file(bam) from g248_36_bam_file10_g255_133
+ val paired from g_229_mate1_g255_133
+ each run_params from g255_125_run_parameters02_g255_133
+ file gtf from g245_54_gtfFile03_g255_133
 
 output:
- file "*"  into g255_133_outputFileTSV_g255_117
+ file "*"  into g255_133_outputFileTSV00_g255_117
 
 script:
 pairText = ""
@@ -3839,18 +3807,14 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process BAM_Analysis_Module_Kallisto_summary_featureCounts {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*_featureCounts.tsv$/) "featureCounts_after_Kallisto_summary/$filename"
-	else if (filename =~ /.*_featureCounts.sum.tsv$/) "featureCounts_after_Kallisto_details/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_featureCounts.tsv$/) "featureCounts_after_Kallisto_summary/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_featureCounts.sum.tsv$/) "featureCounts_after_Kallisto_details/$filename"}
 input:
- file featureCountsOut from g255_133_outputFileTSV_g255_117.collect()
+ file featureCountsOut from g255_133_outputFileTSV00_g255_117.collect()
 
 output:
- file "*_featureCounts.tsv"  into g255_117_outputFile
- file "*_featureCounts.sum.tsv"  into g255_117_outFileTSV
+ file "*_featureCounts.tsv"  into g255_117_outputFile00
+ file "*_featureCounts.sum.tsv"  into g255_117_outFileTSV11
 
 shell:
 '''
@@ -3984,18 +3948,14 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process BAM_Analysis_Module_Kallisto_IGV_BAM2TDF_converter {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.tdf$/) "igvtools_kallisto/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.tdf$/) "igvtools_kallisto/$filename"}
 input:
- val mate from g_229_mate_g255_131
- set val(name), file(bam) from g248_36_bam_file_g255_131
- file genomeSizes from g245_54_genomeSizes_g255_131
+ val mate from g_229_mate0_g255_131
+ set val(name), file(bam) from g248_36_bam_file11_g255_131
+ file genomeSizes from g245_54_genomeSizes22_g255_131
 
 output:
- file "*.tdf"  into g255_131_outputFileOut
+ file "*.tdf"  into g255_131_outputFileOut00
 
 when:
 (params.run_IGV_TDF_Conversion && (params.run_IGV_TDF_Conversion == "yes")) || !params.run_IGV_TDF_Conversion
@@ -4035,11 +3995,11 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 process BAM_Analysis_Module_Kallisto_Picard {
 
 input:
- set val(name), file(bam) from g248_36_bam_file_g255_121
+ set val(name), file(bam) from g248_36_bam_file10_g255_121
 
 output:
- file "*_metrics"  into g255_121_outputFileOut_g255_82
- file "results/*.pdf"  into g255_121_outputFilePdf_g255_82
+ file "*_metrics"  into g255_121_outputFileOut00_g255_82
+ file "results/*.pdf"  into g255_121_outputFilePdf12_g255_82
 
 when:
 (params.run_Picard_CollectMultipleMetrics && (params.run_Picard_CollectMultipleMetrics == "yes")) || !params.run_Picard_CollectMultipleMetrics
@@ -4054,20 +4014,16 @@ mkdir results && java -jar ${params.pdfbox_path} PDFMerger *.pdf results/${name}
 
 process BAM_Analysis_Module_Kallisto_Picard_Summary {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.tsv$/) "picard_summary_kallisto/$filename"
-	else if (filename =~ /results\/.*.pdf$/) "picard_summary_pdf_kallisto/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.tsv$/) "picard_summary_kallisto/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /results\/.*.pdf$/) "picard_summary_pdf_kallisto/$filename"}
 input:
- file picardOut from g255_121_outputFileOut_g255_82.collect()
- val mate from g_229_mate_g255_82
- file picardPdf from g255_121_outputFilePdf_g255_82.collect()
+ file picardOut from g255_121_outputFileOut00_g255_82.collect()
+ val mate from g_229_mate1_g255_82
+ file picardPdf from g255_121_outputFilePdf12_g255_82.collect()
 
 output:
- file "*.tsv"  into g255_82_outputFileTSV
- file "results/*.pdf"  into g255_82_outputFilePdf
+ file "*.tsv"  into g255_82_outputFileTSV00
+ file "results/*.pdf"  into g255_82_outputFilePdf11
 
 shell:
 '''
@@ -4079,7 +4035,7 @@ use Getopt::Long;
 use Pod::Usage; 
 use Data::Dumper;
 
-system("mkdir results && mv *.pdf results/. ");
+runCommand("mkdir results && mv *.pdf results/. ");
 
 my $indir = $ENV{'PWD'};
 my $outd = $ENV{'PWD'};
@@ -4161,6 +4117,17 @@ sub getMetricVals{
   }
   
 }
+
+
+sub runCommand {
+	my ($com) = @_;
+	if ($com eq ""){
+		return "";
+    }
+    my $error = system(@_);
+	if   ($error) { die "Command failed: $error $com\\n"; }
+    else          { print "Command successful: $com\\n"; }
+}
 '''
 
 }
@@ -4181,11 +4148,11 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 process Kallisto_module_Kallisto_transcript_to_gene_count {
 
 input:
- file outDir from g248_36_outputDir_g248_38
- file gtf from g245_54_gtfFile_g248_38
+ file outDir from g248_36_outputDir00_g248_38
+ file gtf from g245_54_gtfFile01_g248_38
 
 output:
- file newoutDir  into g248_38_outputDir_g248_39
+ file newoutDir  into g248_38_outputDir00_g248_39
 
 shell:
 newoutDir = "genes_" + outDir
@@ -4324,17 +4291,13 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process Kallisto_module_Kallisto_Summary {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.tsv$/) "kallisto_count/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.tsv$/) "kallisto_count/$filename"}
 input:
- file kallistoOut from g248_38_outputDir_g248_39.collect()
- file gtf from g245_54_gtfFile_g248_39
+ file kallistoOut from g248_38_outputDir00_g248_39.collect()
+ file gtf from g245_54_gtfFile01_g248_39
 
 output:
- file "*.tsv"  into g248_39_outputFile
+ file "*.tsv"  into g248_39_outputFile00
 
 shell:
 '''
@@ -4478,10 +4441,10 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 process Kallisto_module_Kallisto_Alignment_Summary {
 
 input:
- file kallistoDir from g248_36_outputDir_g248_22.collect()
+ file kallistoDir from g248_36_outputDir00_g248_22.collect()
 
 output:
- file "kallisto_alignment_sum.tsv"  into g248_22_outFileTSV_g_198
+ file "kallisto_alignment_sum.tsv"  into g248_22_outFileTSV09_g_198
 
 shell:
 '''
@@ -4511,18 +4474,21 @@ foreach my $d (@alndirs){
     my $multimapped;
     my $aligned;
     my $total;
+    my $unique;
     
     # eg. [quant] processed 24,788 reads, 19,238 reads pseudoaligned
 	chomp($total   = `cat ${dir}/kallisto.log | grep 'pseudoaligned' | sed 's/,//g' | awk '{sum+=\\$3} END {print sum}'`);
 	chomp($aligned = `cat ${dir}/kallisto.log | grep 'pseudoaligned' | sed 's/,//g' | awk '{sum+=\\$5} END {print sum}'`);
+	chomp($unique = `cat ${dir}/run_info.json | grep 'n_unique' | sed 's/,//g' | sed 's/"//g' | sed 's/://g' | awk '{sum+=\\$2} END {print sum}'`);
     $tsv{$libname}=[$libname, $total];
     push(@{$tsv{$libname}}, $aligned);
+    push(@{$tsv{$libname}}, $unique);
 }
 
 push(@headers, "Sample");
 push(@headers, "Total Reads");
 push(@headers, "Pseudoaligned Reads (Kallisto)");
-
+push(@headers, "Uniquely Mapped Reads (Kallisto)");
 
 my @keys = keys %tsv;
 my $summary = "kallisto_alignment_sum.tsv";
@@ -4575,18 +4541,18 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 //* platform
 //* autofill
 if (!(params.run_Split_Fastq == "yes")){
-g256_46_reads_g_127.into{g_127_reads_g247_14; g_127_reads_g249_14; g_127_reads_g264_31}
+g256_46_reads01_g_127.into{g_127_reads01_g247_14; g_127_reads01_g249_14; g_127_reads01_g264_31}
 } else {
 
 
 process SplitFastq {
 
 input:
- val mate from g_229_mate_g_127
- set val(name), file(reads) from g256_46_reads_g_127.map(flatPairsClosure).splitFastq(splitFastqParams).map(groupPairsClosure)
+ val mate from g_229_mate0_g_127
+ set val(name), file(reads) from g256_46_reads01_g_127.map(flatPairsClosure).splitFastq(splitFastqParams).map(groupPairsClosure)
 
 output:
- set val(name), file("split/*q")  into g_127_reads_g247_14, g_127_reads_g249_14, g_127_reads_g264_31
+ set val(name), file("split/*q")  into g_127_reads01_g247_14, g_127_reads01_g249_14, g_127_reads01_g264_31
 
 errorStrategy 'retry'
 maxRetries 3
@@ -4624,14 +4590,14 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 process HISAT2_Module_Map_HISAT2 {
 
 input:
- val mate from g_229_mate_g249_14
- set val(name), file(reads) from g_127_reads_g249_14
- file hisat2index from g249_15_hisat2Index_g249_14
+ val mate from g_229_mate0_g249_14
+ set val(name), file(reads) from g_127_reads01_g249_14
+ file hisat2index from g249_15_hisat2Index02_g249_14
 
 output:
- set val(name), file("${newName}.bam")  into g249_14_mapped_reads_g249_13
- set val(name), file("${newName}.align_summary.txt")  into g249_14_outputFileTxt_g249_2
- set val(name), file("${newName}.flagstat.txt")  into g249_14_outputFileOut
+ set val(name), file("${newName}.bam")  into g249_14_mapped_reads00_g249_13
+ set val(name), file("${newName}.align_summary.txt")  into g249_14_outputFileTxt10_g249_2
+ set val(name), file("${newName}.flagstat.txt")  into g249_14_outputFileOut22
 
 when:
 (params.run_HISAT2 && (params.run_HISAT2 == "yes")) || !params.run_HISAT2
@@ -4682,18 +4648,14 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process HISAT2_Module_Merge_Bam {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*_sorted.*bam$/) "hisat2/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_sorted.*bam$/) "hisat2/$filename"}
 input:
- set val(oldname), file(bamfiles) from g249_14_mapped_reads_g249_13.groupTuple()
+ set val(oldname), file(bamfiles) from g249_14_mapped_reads00_g249_13.groupTuple()
 
 output:
- set val(oldname), file("${oldname}.bam")  into g249_13_merged_bams
- set val(oldname), file("*_sorted*bai")  into g249_13_bam_index
- set val(oldname), file("*_sorted*bam")  into g249_13_sorted_bam_g252_121, g249_13_sorted_bam_g252_131, g249_13_sorted_bam_g252_133, g249_13_sorted_bam_g252_134, g249_13_sorted_bam_g252_142
+ set val(oldname), file("${oldname}.bam")  into g249_13_merged_bams00
+ set val(oldname), file("*_sorted*bai")  into g249_13_bam_index11
+ set val(oldname), file("*_sorted*bam")  into g249_13_sorted_bam20_g252_121, g249_13_sorted_bam21_g252_131, g249_13_sorted_bam20_g252_133, g249_13_sorted_bam20_g252_134, g249_13_sorted_bam20_g252_142
 
 errorStrategy 'retry'
 maxRetries 2
@@ -4729,17 +4691,13 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process BAM_Analysis_Module_HISAT2_UCSC_BAM2BigWig_converter {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.bw$/) "bigwig_hisat2/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.bw$/) "bigwig_hisat2/$filename"}
 input:
- set val(name), file(bam) from g249_13_sorted_bam_g252_142
- file genomeSizes from g245_54_genomeSizes_g252_142
+ set val(name), file(bam) from g249_13_sorted_bam20_g252_142
+ file genomeSizes from g245_54_genomeSizes21_g252_142
 
 output:
- file "*.bw"  into g252_142_outputFileBw
+ file "*.bw"  into g252_142_outputFileBw00
 
 when:
 (params.run_BigWig_Conversion && (params.run_BigWig_Conversion == "yes")) || !params.run_BigWig_Conversion
@@ -4765,17 +4723,13 @@ wigToBigWig -clip -itemsPerSlot=1 ${name}.bg ${genomeSizes} ${name}.bw
 
 process BAM_Analysis_Module_HISAT2_RSeQC {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /result\/.*.out$/) "rseqc_hisat2/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /result\/.*.out$/) "rseqc_hisat2/$filename"}
 input:
- set val(name), file(bam) from g249_13_sorted_bam_g252_134
- file bed from g245_54_bed_g252_134
+ set val(name), file(bam) from g249_13_sorted_bam20_g252_134
+ file bed from g245_54_bed31_g252_134
 
 output:
- file "result/*.out"  into g252_134_outputFileOut_g252_95, g252_134_outputFileOut_g_177
+ file "result/*.out"  into g252_134_outputFileOut00_g252_95, g252_134_outputFileOut09_g_177
 
 when:
 (params.run_RSeQC && (params.run_RSeQC == "yes")) || !params.run_RSeQC
@@ -4790,17 +4744,13 @@ read_distribution.py  -i ${bam} -r ${bed}> result/RSeQC.${name}.out
 
 process BAM_Analysis_Module_HISAT2_RSeQC_Summary {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.tsv$/) "rseqc_summary_hisat2/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.tsv$/) "rseqc_summary_hisat2/$filename"}
 input:
- file rseqcOut from g252_134_outputFileOut_g252_95.collect()
- val mate from g_229_mate_g252_95
+ file rseqcOut from g252_134_outputFileOut00_g252_95.collect()
+ val mate from g_229_mate1_g252_95
 
 output:
- file "*.tsv"  into g252_95_outputFileTSV
+ file "*.tsv"  into g252_95_outputFileTSV00
 
 shell:
 '''
@@ -4913,19 +4863,15 @@ sub getVals{
 
 process BAM_Analysis_Module_HISAT2_featureCounts {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*$/) "featureCounts_after_hisat2/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*$/) "featureCounts_after_hisat2/$filename"}
 input:
- set val(name), file(bam) from g249_13_sorted_bam_g252_133
- val paired from g_229_mate_g252_133
- each run_params from g252_125_run_parameters_g252_133
- file gtf from g245_54_gtfFile_g252_133
+ set val(name), file(bam) from g249_13_sorted_bam20_g252_133
+ val paired from g_229_mate1_g252_133
+ each run_params from g252_125_run_parameters02_g252_133
+ file gtf from g245_54_gtfFile03_g252_133
 
 output:
- file "*"  into g252_133_outputFileTSV_g252_117
+ file "*"  into g252_133_outputFileTSV00_g252_117
 
 script:
 pairText = ""
@@ -4957,18 +4903,14 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process BAM_Analysis_Module_HISAT2_summary_featureCounts {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*_featureCounts.tsv$/) "featureCounts_after_hisat2_summary/$filename"
-	else if (filename =~ /.*_featureCounts.sum.tsv$/) "featureCounts_after_hisat2_details/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_featureCounts.tsv$/) "featureCounts_after_hisat2_summary/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_featureCounts.sum.tsv$/) "featureCounts_after_hisat2_details/$filename"}
 input:
- file featureCountsOut from g252_133_outputFileTSV_g252_117.collect()
+ file featureCountsOut from g252_133_outputFileTSV00_g252_117.collect()
 
 output:
- file "*_featureCounts.tsv"  into g252_117_outputFile
- file "*_featureCounts.sum.tsv"  into g252_117_outFileTSV
+ file "*_featureCounts.tsv"  into g252_117_outputFile00
+ file "*_featureCounts.sum.tsv"  into g252_117_outFileTSV11
 
 shell:
 '''
@@ -5102,18 +5044,14 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process BAM_Analysis_Module_HISAT2_IGV_BAM2TDF_converter {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.tdf$/) "igvtools_hisat2/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.tdf$/) "igvtools_hisat2/$filename"}
 input:
- val mate from g_229_mate_g252_131
- set val(name), file(bam) from g249_13_sorted_bam_g252_131
- file genomeSizes from g245_54_genomeSizes_g252_131
+ val mate from g_229_mate0_g252_131
+ set val(name), file(bam) from g249_13_sorted_bam21_g252_131
+ file genomeSizes from g245_54_genomeSizes22_g252_131
 
 output:
- file "*.tdf"  into g252_131_outputFileOut
+ file "*.tdf"  into g252_131_outputFileOut00
 
 when:
 (params.run_IGV_TDF_Conversion && (params.run_IGV_TDF_Conversion == "yes")) || !params.run_IGV_TDF_Conversion
@@ -5153,11 +5091,11 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 process BAM_Analysis_Module_HISAT2_Picard {
 
 input:
- set val(name), file(bam) from g249_13_sorted_bam_g252_121
+ set val(name), file(bam) from g249_13_sorted_bam20_g252_121
 
 output:
- file "*_metrics"  into g252_121_outputFileOut_g252_82
- file "results/*.pdf"  into g252_121_outputFilePdf_g252_82
+ file "*_metrics"  into g252_121_outputFileOut00_g252_82
+ file "results/*.pdf"  into g252_121_outputFilePdf12_g252_82
 
 when:
 (params.run_Picard_CollectMultipleMetrics && (params.run_Picard_CollectMultipleMetrics == "yes")) || !params.run_Picard_CollectMultipleMetrics
@@ -5172,20 +5110,16 @@ mkdir results && java -jar ${params.pdfbox_path} PDFMerger *.pdf results/${name}
 
 process BAM_Analysis_Module_HISAT2_Picard_Summary {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.tsv$/) "picard_summary_hisat2/$filename"
-	else if (filename =~ /results\/.*.pdf$/) "picard_summary_pdf_hisat2/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.tsv$/) "picard_summary_hisat2/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /results\/.*.pdf$/) "picard_summary_pdf_hisat2/$filename"}
 input:
- file picardOut from g252_121_outputFileOut_g252_82.collect()
- val mate from g_229_mate_g252_82
- file picardPdf from g252_121_outputFilePdf_g252_82.collect()
+ file picardOut from g252_121_outputFileOut00_g252_82.collect()
+ val mate from g_229_mate1_g252_82
+ file picardPdf from g252_121_outputFilePdf12_g252_82.collect()
 
 output:
- file "*.tsv"  into g252_82_outputFileTSV
- file "results/*.pdf"  into g252_82_outputFilePdf
+ file "*.tsv"  into g252_82_outputFileTSV00
+ file "results/*.pdf"  into g252_82_outputFilePdf11
 
 shell:
 '''
@@ -5197,7 +5131,7 @@ use Getopt::Long;
 use Pod::Usage; 
 use Data::Dumper;
 
-system("mkdir results && mv *.pdf results/. ");
+runCommand("mkdir results && mv *.pdf results/. ");
 
 my $indir = $ENV{'PWD'};
 my $outd = $ENV{'PWD'};
@@ -5279,6 +5213,17 @@ sub getMetricVals{
   }
   
 }
+
+
+sub runCommand {
+	my ($com) = @_;
+	if ($com eq ""){
+		return "";
+    }
+    my $error = system(@_);
+	if   ($error) { die "Command failed: $error $com\\n"; }
+    else          { print "Command successful: $com\\n"; }
+}
 '''
 
 }
@@ -5287,11 +5232,11 @@ sub getMetricVals{
 process HISAT2_Module_HISAT2_Summary {
 
 input:
- set val(name), file(alignSum) from g249_14_outputFileTxt_g249_2.groupTuple()
+ set val(name), file(alignSum) from g249_14_outputFileTxt10_g249_2.groupTuple()
 
 output:
- file "*.tsv"  into g249_2_outputFile_g249_10
- val "hisat2_alignment_sum"  into g249_2_name_g249_10
+ file "*.tsv"  into g249_2_outputFile00_g249_10
+ val "hisat2_alignment_sum"  into g249_2_name11_g249_10
 
 shell:
 '''
@@ -5352,17 +5297,13 @@ sub alteredAligned
 
 process HISAT2_Module_Merge_TSV_Files {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /${name}.tsv$/) "hisat2_summary/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /${name}.tsv$/) "hisat2_summary/$filename"}
 input:
- file tsv from g249_2_outputFile_g249_10.collect()
- val outputFileName from g249_2_name_g249_10.collect()
+ file tsv from g249_2_outputFile00_g249_10.collect()
+ val outputFileName from g249_2_name11_g249_10.collect()
 
 output:
- file "${name}.tsv"  into g249_10_outputFileTSV_g_198
+ file "${name}.tsv"  into g249_10_outputFileTSV02_g_198
 
 errorStrategy 'retry'
 maxRetries 3
@@ -5396,15 +5337,15 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 process Tophat2_Module_Map_Tophat2 {
 
 input:
- val mate from g_229_mate_g247_14
- set val(name), file(reads) from g_127_reads_g247_14
- file bowtie2_index from g247_18_bowtie2index_g247_14
- file gtf from g245_54_gtfFile_g247_14
+ val mate from g_229_mate0_g247_14
+ set val(name), file(reads) from g_127_reads01_g247_14
+ file bowtie2_index from g247_18_bowtie2index02_g247_14
+ file gtf from g245_54_gtfFile03_g247_14
 
 output:
- set val(name), file("${newName}.bam")  into g247_14_mapped_reads_g247_13
- set val(name), file("${newName}_unmapped.bam")  into g247_14_unmapped_reads
- set val(name), file("${newName}_align_summary.txt")  into g247_14_summary_g247_3, g247_14_summary_g_177
+ set val(name), file("${newName}.bam")  into g247_14_mapped_reads00_g247_13
+ set val(name), file("${newName}_unmapped.bam")  into g247_14_unmapped_reads11
+ set val(name), file("${newName}_align_summary.txt")  into g247_14_summary20_g247_3, g247_14_summary20_g_177
 
 errorStrategy 'retry'
 
@@ -5461,19 +5402,15 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process Tophat2_Module_Merge_Bam {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*_sorted.*bai$/) "tophat2/$filename"
-	else if (filename =~ /.*_sorted.*bam$/) "tophat2/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_sorted.*bai$/) "tophat2/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_sorted.*bam$/) "tophat2/$filename"}
 input:
- set val(oldname), file(bamfiles) from g247_14_mapped_reads_g247_13.groupTuple()
+ set val(oldname), file(bamfiles) from g247_14_mapped_reads00_g247_13.groupTuple()
 
 output:
- set val(oldname), file("${oldname}.bam")  into g247_13_merged_bams
- set val(oldname), file("*_sorted*bai")  into g247_13_bam_index
- set val(oldname), file("*_sorted*bam")  into g247_13_sorted_bam_g254_121, g247_13_sorted_bam_g254_131, g247_13_sorted_bam_g254_133, g247_13_sorted_bam_g254_134, g247_13_sorted_bam_g254_142
+ set val(oldname), file("${oldname}.bam")  into g247_13_merged_bams00
+ set val(oldname), file("*_sorted*bai")  into g247_13_bam_index11
+ set val(oldname), file("*_sorted*bam")  into g247_13_sorted_bam20_g254_121, g247_13_sorted_bam21_g254_131, g247_13_sorted_bam20_g254_133, g247_13_sorted_bam20_g254_134, g247_13_sorted_bam20_g254_142
 
 errorStrategy 'retry'
 maxRetries 2
@@ -5509,17 +5446,13 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process BAM_Analysis_Module_Tophat2_UCSC_BAM2BigWig_converter {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.bw$/) "bigwig_tophat/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.bw$/) "bigwig_tophat/$filename"}
 input:
- set val(name), file(bam) from g247_13_sorted_bam_g254_142
- file genomeSizes from g245_54_genomeSizes_g254_142
+ set val(name), file(bam) from g247_13_sorted_bam20_g254_142
+ file genomeSizes from g245_54_genomeSizes21_g254_142
 
 output:
- file "*.bw"  into g254_142_outputFileBw
+ file "*.bw"  into g254_142_outputFileBw00
 
 when:
 (params.run_BigWig_Conversion && (params.run_BigWig_Conversion == "yes")) || !params.run_BigWig_Conversion
@@ -5545,17 +5478,13 @@ wigToBigWig -clip -itemsPerSlot=1 ${name}.bg ${genomeSizes} ${name}.bw
 
 process BAM_Analysis_Module_Tophat2_RSeQC {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /result\/.*.out$/) "rseqc_tophat2/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /result\/.*.out$/) "rseqc_tophat2/$filename"}
 input:
- set val(name), file(bam) from g247_13_sorted_bam_g254_134
- file bed from g245_54_bed_g254_134
+ set val(name), file(bam) from g247_13_sorted_bam20_g254_134
+ file bed from g245_54_bed31_g254_134
 
 output:
- file "result/*.out"  into g254_134_outputFileOut_g254_95, g254_134_outputFileOut_g_177
+ file "result/*.out"  into g254_134_outputFileOut00_g254_95, g254_134_outputFileOut06_g_177
 
 when:
 (params.run_RSeQC && (params.run_RSeQC == "yes")) || !params.run_RSeQC
@@ -5570,17 +5499,13 @@ read_distribution.py  -i ${bam} -r ${bed}> result/RSeQC.${name}.out
 
 process BAM_Analysis_Module_Tophat2_RSeQC_Summary {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.tsv$/) "rseqc_summary_tophat2/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.tsv$/) "rseqc_summary_tophat2/$filename"}
 input:
- file rseqcOut from g254_134_outputFileOut_g254_95.collect()
- val mate from g_229_mate_g254_95
+ file rseqcOut from g254_134_outputFileOut00_g254_95.collect()
+ val mate from g_229_mate1_g254_95
 
 output:
- file "*.tsv"  into g254_95_outputFileTSV
+ file "*.tsv"  into g254_95_outputFileTSV00
 
 shell:
 '''
@@ -5693,19 +5618,15 @@ sub getVals{
 
 process BAM_Analysis_Module_Tophat2_featureCounts {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*$/) "featureCounts_after_Tophat2/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*$/) "featureCounts_after_Tophat2/$filename"}
 input:
- set val(name), file(bam) from g247_13_sorted_bam_g254_133
- val paired from g_229_mate_g254_133
- each run_params from g254_125_run_parameters_g254_133
- file gtf from g245_54_gtfFile_g254_133
+ set val(name), file(bam) from g247_13_sorted_bam20_g254_133
+ val paired from g_229_mate1_g254_133
+ each run_params from g254_125_run_parameters02_g254_133
+ file gtf from g245_54_gtfFile03_g254_133
 
 output:
- file "*"  into g254_133_outputFileTSV_g254_117
+ file "*"  into g254_133_outputFileTSV00_g254_117
 
 script:
 pairText = ""
@@ -5737,18 +5658,14 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process BAM_Analysis_Module_Tophat2_summary_featureCounts {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*_featureCounts.tsv$/) "featureCounts_after_Tophat2_summary/$filename"
-	else if (filename =~ /.*_featureCounts.sum.tsv$/) "featureCounts_after_Tophat2_details/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_featureCounts.tsv$/) "featureCounts_after_Tophat2_summary/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_featureCounts.sum.tsv$/) "featureCounts_after_Tophat2_details/$filename"}
 input:
- file featureCountsOut from g254_133_outputFileTSV_g254_117.collect()
+ file featureCountsOut from g254_133_outputFileTSV00_g254_117.collect()
 
 output:
- file "*_featureCounts.tsv"  into g254_117_outputFile
- file "*_featureCounts.sum.tsv"  into g254_117_outFileTSV
+ file "*_featureCounts.tsv"  into g254_117_outputFile00
+ file "*_featureCounts.sum.tsv"  into g254_117_outFileTSV11
 
 shell:
 '''
@@ -5882,18 +5799,14 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process BAM_Analysis_Module_Tophat2_IGV_BAM2TDF_converter {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.tdf$/) "igvtools_tophat2/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.tdf$/) "igvtools_tophat2/$filename"}
 input:
- val mate from g_229_mate_g254_131
- set val(name), file(bam) from g247_13_sorted_bam_g254_131
- file genomeSizes from g245_54_genomeSizes_g254_131
+ val mate from g_229_mate0_g254_131
+ set val(name), file(bam) from g247_13_sorted_bam21_g254_131
+ file genomeSizes from g245_54_genomeSizes22_g254_131
 
 output:
- file "*.tdf"  into g254_131_outputFileOut
+ file "*.tdf"  into g254_131_outputFileOut00
 
 when:
 (params.run_IGV_TDF_Conversion && (params.run_IGV_TDF_Conversion == "yes")) || !params.run_IGV_TDF_Conversion
@@ -5933,11 +5846,11 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 process BAM_Analysis_Module_Tophat2_Picard {
 
 input:
- set val(name), file(bam) from g247_13_sorted_bam_g254_121
+ set val(name), file(bam) from g247_13_sorted_bam20_g254_121
 
 output:
- file "*_metrics"  into g254_121_outputFileOut_g254_82
- file "results/*.pdf"  into g254_121_outputFilePdf_g254_82
+ file "*_metrics"  into g254_121_outputFileOut00_g254_82
+ file "results/*.pdf"  into g254_121_outputFilePdf12_g254_82
 
 when:
 (params.run_Picard_CollectMultipleMetrics && (params.run_Picard_CollectMultipleMetrics == "yes")) || !params.run_Picard_CollectMultipleMetrics
@@ -5952,20 +5865,16 @@ mkdir results && java -jar ${params.pdfbox_path} PDFMerger *.pdf results/${name}
 
 process BAM_Analysis_Module_Tophat2_Picard_Summary {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.tsv$/) "picard_summary_tophat2/$filename"
-	else if (filename =~ /results\/.*.pdf$/) "picard_summary_pdf_tophat2/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.tsv$/) "picard_summary_tophat2/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /results\/.*.pdf$/) "picard_summary_pdf_tophat2/$filename"}
 input:
- file picardOut from g254_121_outputFileOut_g254_82.collect()
- val mate from g_229_mate_g254_82
- file picardPdf from g254_121_outputFilePdf_g254_82.collect()
+ file picardOut from g254_121_outputFileOut00_g254_82.collect()
+ val mate from g_229_mate1_g254_82
+ file picardPdf from g254_121_outputFilePdf12_g254_82.collect()
 
 output:
- file "*.tsv"  into g254_82_outputFileTSV
- file "results/*.pdf"  into g254_82_outputFilePdf
+ file "*.tsv"  into g254_82_outputFileTSV00
+ file "results/*.pdf"  into g254_82_outputFilePdf11
 
 shell:
 '''
@@ -5977,7 +5886,7 @@ use Getopt::Long;
 use Pod::Usage; 
 use Data::Dumper;
 
-system("mkdir results && mv *.pdf results/. ");
+runCommand("mkdir results && mv *.pdf results/. ");
 
 my $indir = $ENV{'PWD'};
 my $outd = $ENV{'PWD'};
@@ -6059,6 +5968,17 @@ sub getMetricVals{
   }
   
 }
+
+
+sub runCommand {
+	my ($com) = @_;
+	if ($com eq ""){
+		return "";
+    }
+    my $error = system(@_);
+	if   ($error) { die "Command failed: $error $com\\n"; }
+    else          { print "Command successful: $com\\n"; }
+}
 '''
 
 }
@@ -6077,12 +5997,12 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 process Tophat2_Module_Merge_Tophat_Summary {
 
 input:
- set val(name), file(alignSum) from g247_14_summary_g247_3.groupTuple()
- val mate from g_229_mate_g247_3
+ set val(name), file(alignSum) from g247_14_summary20_g247_3.groupTuple()
+ val mate from g_229_mate1_g247_3
 
 output:
- set val(name), file("${name}_tophat_sum.tsv")  into g247_3_report_g247_9
- val "tophat2_alignment_sum"  into g247_3_name_g247_9
+ set val(name), file("${name}_tophat_sum.tsv")  into g247_3_report00_g247_9
+ val "tophat2_alignment_sum"  into g247_3_name11_g247_9
 
 errorStrategy 'retry'
 maxRetries 3
@@ -6155,11 +6075,11 @@ sub alteredAligned
 process Tophat2_Module_Merge_TSV_Files {
 
 input:
- file tsv from g247_3_report_g247_9.collect()
- val outputFileName from g247_3_name_g247_9.collect()
+ file tsv from g247_3_report00_g247_9.collect()
+ val outputFileName from g247_3_name11_g247_9.collect()
 
 output:
- file "${name}.tsv"  into g247_9_outputFileTSV_g_198
+ file "${name}.tsv"  into g247_9_outputFileTSV04_g_198
 
 errorStrategy 'retry'
 maxRetries 3
@@ -6191,19 +6111,19 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 process STAR_Module_Map_STAR {
 
 input:
- val mate from g_229_mate_g264_31
- set val(name), file(reads) from g_127_reads_g264_31
- file star_index from g264_26_starIndex_g264_31
+ val mate from g_229_mate0_g264_31
+ set val(name), file(reads) from g_127_reads01_g264_31
+ file star_index from g264_26_starIndex02_g264_31
 
 output:
- set val(name), file("${newName}Log.final.out")  into g264_31_outputFileOut_g264_18
- set val(name), file("${newName}.flagstat.txt")  into g264_31_outputFileTxt
- set val(name), file("${newName}Log.out")  into g264_31_logOut_g264_18
- set val(name), file("${newName}.bam")  into g264_31_mapped_reads_g264_30
- set val(name), file("${newName}SJ.out.tab")  into g264_31_outputFileTab_g264_18
- set val(name), file("${newName}Log.progress.out")  into g264_31_progressOut_g264_18
- set val(name), file("${newName}Aligned.toTranscriptome.out.bam") optional true  into g264_31_transcriptome_bam_g264_15
- val sense_antisense  into g264_31_sense_antisense_g264_30
+ set val(name), file("${newName}Log.final.out")  into g264_31_outputFileOut00_g264_18
+ set val(name), file("${newName}.flagstat.txt")  into g264_31_outputFileTxt11
+ set val(name), file("${newName}Log.out")  into g264_31_logOut21_g264_18
+ set val(name), file("${newName}.bam")  into g264_31_mapped_reads30_g264_30
+ set val(name), file("${newName}SJ.out.tab")  into g264_31_outputFileTab43_g264_18
+ set val(name), file("${newName}Log.progress.out")  into g264_31_progressOut52_g264_18
+ set val(name), file("${newName}Aligned.toTranscriptome.out.bam") optional true  into g264_31_transcriptome_bam60_g264_15
+ val sense_antisense  into g264_31_sense_antisense71_g264_30
 
 errorStrategy 'retry'
 
@@ -6264,12 +6184,12 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 process STAR_Module_merge_transcriptome_bam {
 
 input:
- set val(oldname), file(bamfiles) from g264_31_transcriptome_bam_g264_15.groupTuple()
+ set val(oldname), file(bamfiles) from g264_31_transcriptome_bam60_g264_15.groupTuple()
 
 output:
- set val(oldname), file("${oldname}.bam")  into g264_15_merged_bams
- set val(oldname), file("*_sorted*bai")  into g264_15_bam_index
- set val(oldname), file("*_sorted*bam")  into g264_15_sorted_bam
+ set val(oldname), file("${oldname}.bam")  into g264_15_merged_bams00
+ set val(oldname), file("*_sorted*bai")  into g264_15_bam_index11
+ set val(oldname), file("*_sorted*bam")  into g264_15_sorted_bam22
 
 errorStrategy 'retry'
 maxRetries 2
@@ -6289,21 +6209,17 @@ fi
 
 process Sequential_Mapping_Module_Sequential_Mapping_Bam_Dedup_count {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.counts.tsv$/) "Sequential_Mapping_Bam_dedup_count/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.counts.tsv$/) "Sequential_Mapping_Bam_dedup_count/$filename"}
 input:
- file bam from g256_46_bam_file_g256_45.collect()
- file index from g256_46_bam_index_g256_45.collect()
- file bowtie_index from g256_43_bowtieIndex_g256_45
- file bowtie2_index from g256_43_bowtie2index_g256_45
- file star_index from g256_43_starIndex_g256_45
- file commondb from g256_43_commondb_g256_45
+ file bam from g256_46_bam_file50_g256_45.collect()
+ file index from g256_46_bam_index61_g256_45.collect()
+ file bowtie_index from g256_43_bowtieIndex12_g256_45
+ file bowtie2_index from g256_43_bowtie2index23_g256_45
+ file star_index from g256_43_starIndex34_g256_45
+ file commondb from g256_43_commondb05_g256_45
 
 output:
- file "*.counts.tsv"  into g256_45_outputFileTSV
+ file "*.counts.tsv"  into g256_45_outputFileTSV00
 
 shell:
 mappingListQuoteSep = mapList.collect{ '"' + it + '"'}.join(",")
@@ -6446,6 +6362,7 @@ sub makeBed {
             $seq.=$line;
         }
     }
+    $name=~s/\\r//g;
     print OUT "$name\\t1\\t".length($seq)."\\t$name\\t0\\t+\\n" if (length($seq)>0); 
     close OUT;
 }
@@ -6456,21 +6373,17 @@ sub makeBed {
 
 process Sequential_Mapping_Module_Sequential_Mapping_Bam_count {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.counts.tsv$/) "Sequential_Mapping_Bam_count/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.counts.tsv$/) "Sequential_Mapping_Bam_count/$filename"}
 input:
- file bam from g256_46_bam_file_g256_44.collect()
- file index from g256_46_bam_index_g256_44.collect()
- file bowtie_index from g256_43_bowtieIndex_g256_44
- file bowtie2_index from g256_43_bowtie2index_g256_44
- file star_index from g256_43_starIndex_g256_44
- file commondb from g256_43_commondb_g256_44
+ file bam from g256_46_bam_file20_g256_44.collect()
+ file index from g256_46_bam_index31_g256_44.collect()
+ file bowtie_index from g256_43_bowtieIndex12_g256_44
+ file bowtie2_index from g256_43_bowtie2index23_g256_44
+ file star_index from g256_43_starIndex34_g256_44
+ file commondb from g256_43_commondb05_g256_44
 
 output:
- file "*.counts.tsv"  into g256_44_outputFileTSV
+ file "*.counts.tsv"  into g256_44_outputFileTSV00
 
 shell:
 mappingListQuoteSep = mapList.collect{ '"' + it + '"'}.join(",")
@@ -6613,6 +6526,7 @@ sub makeBed {
             $seq.=$line;
         }
     }
+    $name=~s/\\r//g;
     print OUT "$name\\t1\\t".length($seq)."\\t$name\\t0\\t+\\n" if (length($seq)>0); 
     close OUT;
 }
@@ -6623,17 +6537,13 @@ sub makeBed {
 
 process Sequential_Mapping_Module_Deduplication_Summary {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /deduplication_summary.tsv$/) "sequential_mapping_summary/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /deduplication_summary.tsv$/) "sequential_mapping_summary/$filename"}
 input:
- file flagstat from g256_46_log_file_g256_30.collect()
- val mate from g_229_mate_g256_30
+ file flagstat from g256_46_log_file70_g256_30.collect()
+ val mate from g_229_mate1_g256_30
 
 output:
- file "deduplication_summary.tsv"  into g256_30_outputFileTSV
+ file "deduplication_summary.tsv"  into g256_30_outputFileTSV00
 
 errorStrategy 'retry'
 maxRetries 2
@@ -6732,13 +6642,13 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 process Sequential_Mapping_Module_Sequential_Mapping_Summary {
 
 input:
- set val(name), file(bowfile) from g256_46_bowfiles_g256_26
- val mate from g_229_mate_g256_26
- val filtersList from g256_46_filter_g256_26
+ set val(name), file(bowfile) from g256_46_bowfiles10_g256_26
+ val mate from g_229_mate1_g256_26
+ val filtersList from g256_46_filter42_g256_26
 
 output:
- file '*.tsv'  into g256_26_outputFileTSV_g256_13
- val "sequential_mapping_sum"  into g256_26_name_g256_13
+ file '*.tsv'  into g256_26_outputFileTSV00_g256_13
+ val "sequential_mapping_sum"  into g256_26_name11_g256_13
 
 errorStrategy 'retry'
 maxRetries 2
@@ -6746,7 +6656,7 @@ maxRetries 2
 shell:
 '''
 #!/usr/bin/env perl
-open(my \$fh, '>', "!{name}.tsv");
+open(my \$fh, '>', '!{name}.tsv');
 print $fh "Sample\\tGroup\\tTotal Reads\\tReads After Sequential Mapping\\tUniquely Mapped\\tMultimapped\\tMapped\\n";
 my @bowArray = split(' ', "!{bowfile}");
 my $group= "\\t";
@@ -6850,11 +6760,11 @@ close($fh);
 process Sequential_Mapping_Module_Merge_TSV_Files {
 
 input:
- file tsv from g256_26_outputFileTSV_g256_13.collect()
- val outputFileName from g256_26_name_g256_13.collect()
+ file tsv from g256_26_outputFileTSV00_g256_13.collect()
+ val outputFileName from g256_26_name11_g256_13.collect()
 
 output:
- file "${name}.tsv"  into g256_13_outputFileTSV_g256_14
+ file "${name}.tsv"  into g256_13_outputFileTSV00_g256_14
 
 errorStrategy 'retry'
 maxRetries 3
@@ -6869,18 +6779,14 @@ awk 'FNR==1 && NR!=1 {  getline; } 1 {print} ' *.tsv > ${name}.tsv
 
 process Sequential_Mapping_Module_Sequential_Mapping_Short_Summary {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /sequential_mapping_short_sum.tsv$/) "sequential_mapping_summary/$filename"
-	else if (filename =~ /sequential_mapping_detailed_sum.tsv$/) "sequential_mapping_summary/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /sequential_mapping_short_sum.tsv$/) "sequential_mapping_summary/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /sequential_mapping_detailed_sum.tsv$/) "sequential_mapping_summary/$filename"}
 input:
- file mainSum from g256_13_outputFileTSV_g256_14
+ file mainSum from g256_13_outputFileTSV00_g256_14
 
 output:
- file "sequential_mapping_short_sum.tsv"  into g256_14_outputFileTSV_g_198
- file "sequential_mapping_detailed_sum.tsv"  into g256_14_outputFile
+ file "sequential_mapping_short_sum.tsv"  into g256_14_outputFileTSV01_g_198
+ file "sequential_mapping_detailed_sum.tsv"  into g256_14_outputFile11
 
 errorStrategy 'retry'
 maxRetries 2
@@ -6971,11 +6877,11 @@ sub printFiles {
 process Adapter_Trimmer_Quality_Module_Quality_Filtering_Summary {
 
 input:
- file logfile from g257_20_log_file_g257_16.collect()
- val mate from g_229_mate_g257_16
+ file logfile from g257_20_log_file10_g257_16.collect()
+ val mate from g_229_mate1_g257_16
 
 output:
- file "quality_filter_summary.tsv"  into g257_16_outputFileTSV_g_198
+ file "quality_filter_summary.tsv"  into g257_16_outputFileTSV07_g_198
 
 shell:
 '''
@@ -7070,11 +6976,11 @@ sub writeFile {
 process Adapter_Trimmer_Quality_Module_Umitools_Summary {
 
 input:
- file logfile from g257_23_log_file_g257_24.collect()
- val mate from g_229_mate_g257_24
+ file logfile from g257_23_log_file10_g257_24.collect()
+ val mate from g_229_mate1_g257_24
 
 output:
- file "umitools_summary.tsv"  into g257_24_outputFileTSV_g_198
+ file "umitools_summary.tsv"  into g257_24_outputFileTSV08_g_198
 
 shell:
 '''
@@ -7163,21 +7069,17 @@ sub writeFile {
 
 process STAR_Module_STAR_Summary {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.(out|tab)$/) "star/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.(out|tab)$/) "star/$filename"}
 input:
- set val(name), file(alignSum) from g264_31_outputFileOut_g264_18.groupTuple()
- set val(name), file(LogOut) from g264_31_logOut_g264_18.groupTuple()
- set val(name), file(progressOut) from g264_31_progressOut_g264_18.groupTuple()
- set val(name), file(TabOut) from g264_31_outputFileTab_g264_18.groupTuple()
+ set val(name), file(alignSum) from g264_31_outputFileOut00_g264_18.groupTuple()
+ set val(name), file(LogOut) from g264_31_logOut21_g264_18.groupTuple()
+ set val(name), file(progressOut) from g264_31_progressOut52_g264_18.groupTuple()
+ set val(name), file(TabOut) from g264_31_outputFileTab43_g264_18.groupTuple()
 
 output:
- file "*.tsv"  into g264_18_outputFile_g264_11
- file "*.{out,tab}"  into g264_18_logOut_g_177
- val "star_alignment_sum"  into g264_18_name_g264_11
+ file "*.tsv"  into g264_18_outputFile00_g264_11
+ file "*.{out,tab}"  into g264_18_logOut12_g_177
+ val "star_alignment_sum"  into g264_18_name21_g264_11
 
 shell:
 '''
@@ -7191,13 +7093,13 @@ use Data::Dumper;
 
 my %tsv;
 my @headers = ();
-my $name = "!{name}";
+my $name = '!{name}';
 
 # merge output files 
-`cat !{alignSum} >${name}_Merged_Log.final.out`;
-`cat !{LogOut} >${name}_Merged_Log.out`;
-`cat !{progressOut} >${name}_Merged_Log.progress.out`;
-`cat !{TabOut} >${name}_Merged_SJ.out.tab`;
+runCommand('cat !{alignSum} >'."${name}_Merged_Log.final.out");
+runCommand('cat !{LogOut} >'."${name}_Merged_Log.out");
+runCommand('cat !{progressOut} >'."${name}_Merged_Log.progress.out");
+runCommand('cat !{TabOut} >'."${name}_Merged_SJ.out.tab");
 
 alteredAligned();
 
@@ -7236,6 +7138,16 @@ sub alteredAligned
 	push(@{$tsv{$name}}, $multimappedSum);
 	push(@{$tsv{$name}}, $alignedSum);
 }
+
+sub runCommand {
+    my ($com) = @_;
+    if ($com eq ""){
+		return "";
+    }
+    my $error = system(@_);
+    if   ($error) { die "Command failed: $error $com\\n"; }
+    else          { print "Command successful: $com\\n"; }
+}
 '''
 
 }
@@ -7244,11 +7156,11 @@ sub alteredAligned
 process STAR_Module_merge_tsv_files_with_same_header {
 
 input:
- file tsv from g264_18_outputFile_g264_11.collect()
- val outputFileName from g264_18_name_g264_11.collect()
+ file tsv from g264_18_outputFile00_g264_11.collect()
+ val outputFileName from g264_18_name21_g264_11.collect()
 
 output:
- file "${name}.tsv"  into g264_11_outputFileTSV_g_198
+ file "${name}.tsv"  into g264_11_outputFileTSV00_g_198
 
 errorStrategy 'retry'
 maxRetries 3
@@ -7260,16 +7172,16 @@ awk 'FNR==1 && NR!=1 {  getline; } 1 {print} ' *.tsv > ${name}.tsv
 """
 }
 
-g264_11_outputFileTSV_g_198= g264_11_outputFileTSV_g_198.ifEmpty([""]) 
-g256_14_outputFileTSV_g_198= g256_14_outputFileTSV_g_198.ifEmpty([""]) 
-g249_10_outputFileTSV_g_198= g249_10_outputFileTSV_g_198.ifEmpty([""]) 
-g250_17_outputFileTSV_g_198= g250_17_outputFileTSV_g_198.ifEmpty([""]) 
-g247_9_outputFileTSV_g_198= g247_9_outputFileTSV_g_198.ifEmpty([""]) 
-g257_11_outputFileTSV_g_198= g257_11_outputFileTSV_g_198.ifEmpty([""]) 
-g257_21_outputFileTSV_g_198= g257_21_outputFileTSV_g_198.ifEmpty([""]) 
-g257_16_outputFileTSV_g_198= g257_16_outputFileTSV_g_198.ifEmpty([""]) 
-g257_24_outputFileTSV_g_198= g257_24_outputFileTSV_g_198.ifEmpty([""]) 
-g248_22_outFileTSV_g_198= g248_22_outFileTSV_g_198.ifEmpty([""]) 
+g264_11_outputFileTSV00_g_198= g264_11_outputFileTSV00_g_198.ifEmpty([""]) 
+g256_14_outputFileTSV01_g_198= g256_14_outputFileTSV01_g_198.ifEmpty([""]) 
+g249_10_outputFileTSV02_g_198= g249_10_outputFileTSV02_g_198.ifEmpty([""]) 
+g250_17_outputFileTSV03_g_198= g250_17_outputFileTSV03_g_198.ifEmpty([""]) 
+g247_9_outputFileTSV04_g_198= g247_9_outputFileTSV04_g_198.ifEmpty([""]) 
+g257_11_outputFileTSV05_g_198= g257_11_outputFileTSV05_g_198.ifEmpty([""]) 
+g257_21_outputFileTSV06_g_198= g257_21_outputFileTSV06_g_198.ifEmpty([""]) 
+g257_16_outputFileTSV07_g_198= g257_16_outputFileTSV07_g_198.ifEmpty([""]) 
+g257_24_outputFileTSV08_g_198= g257_24_outputFileTSV08_g_198.ifEmpty([""]) 
+g248_22_outFileTSV09_g_198= g248_22_outFileTSV09_g_198.ifEmpty([""]) 
 
 //* autofill
 //* platform
@@ -7284,25 +7196,21 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process Overall_Summary {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /overall_summary.tsv$/) "summary/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /overall_summary.tsv$/) "summary/$filename"}
 input:
- file starSum from g264_11_outputFileTSV_g_198
- file sequentialSum from g256_14_outputFileTSV_g_198
- file hisatSum from g249_10_outputFileTSV_g_198
- file rsemSum from g250_17_outputFileTSV_g_198
- file tophatSum from g247_9_outputFileTSV_g_198
- file adapterSum from g257_11_outputFileTSV_g_198
- file trimmerSum from g257_21_outputFileTSV_g_198
- file qualitySum from g257_16_outputFileTSV_g_198
- file umiSum from g257_24_outputFileTSV_g_198
- file kallistoSum from g248_22_outFileTSV_g_198
+ file starSum from g264_11_outputFileTSV00_g_198
+ file sequentialSum from g256_14_outputFileTSV01_g_198
+ file hisatSum from g249_10_outputFileTSV02_g_198
+ file rsemSum from g250_17_outputFileTSV03_g_198
+ file tophatSum from g247_9_outputFileTSV04_g_198
+ file adapterSum from g257_11_outputFileTSV05_g_198
+ file trimmerSum from g257_21_outputFileTSV06_g_198
+ file qualitySum from g257_16_outputFileTSV07_g_198
+ file umiSum from g257_24_outputFileTSV08_g_198
+ file kallistoSum from g248_22_outFileTSV09_g_198
 
 output:
- file "overall_summary.tsv"  into g_198_outputFileTSV
+ file "overall_summary.tsv" optional true  into g_198_outputFileTSV00
 
 shell:
 '''
@@ -7321,11 +7229,14 @@ my $ID_header;
 
 chomp(my $contents = `ls *.tsv`);
 my @rawFiles = split(/[\\n]+/, $contents);
+if (scalar @rawFiles == 0){
+    exit;
+}
 my @files = ();
 # order must be in this order for chipseq pipeline: bowtie->dedup
 # rsem bam pipeline: dedup->rsem, star->dedup
 # riboseq ncRNA_removal->star
-my @order = ("adapter_removal","trimmer","quality","extractUMI","extractValid","sequential_mapping","ncRNA_removal","bowtie","star","hisat2","tophat2", "dedup","rsem","kallisto","esat","count");
+my @order = ("adapter_removal","trimmer","quality","extractUMI","extractValid","tRAX","sequential_mapping","ncRNA_removal","bowtie","star","hisat2","tophat2", "dedup","rsem","kallisto","esat","count");
 for ( my $k = 0 ; $k <= $#order ; $k++ ) {
     for ( my $i = 0 ; $i <= $#rawFiles ; $i++ ) {
         if ( $rawFiles[$i] =~ /$order[$k]/ ) {
@@ -7406,19 +7317,15 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process STAR_Module_Merge_Bam_and_create_sense_antisense {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*_sorted.bam.bai$/) "star/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_sorted.bam.bai$/) "star/$filename"}
 input:
- set val(oldname), file(bamfiles) from g264_31_mapped_reads_g264_30.groupTuple()
- val sense_antisense from g264_31_sense_antisense_g264_30
- val mate from g_229_mate_g264_30
+ set val(oldname), file(bamfiles) from g264_31_mapped_reads30_g264_30.groupTuple()
+ val sense_antisense from g264_31_sense_antisense71_g264_30
+ val mate from g_229_mate2_g264_30
 
 output:
- file "*_sorted.bam.bai"  into g264_30_bam_index
- file "*_sorted.bam"  into g264_30_bamFile_g264_29
+ file "*_sorted.bam.bai"  into g264_30_bam_index00
+ file "*_sorted.bam"  into g264_30_bamFile10_g264_29
 
 errorStrategy 'retry'
 maxRetries 2
@@ -7436,14 +7343,14 @@ fi
 if [ "!{sense_antisense}" == "yes" ]; then
     if [ "!{mate}" == "pair" ]; then
     	echo "INFO: paired end sense antisense separation"
-    	samtools view -f 65 -b !{oldname}_sorted.bam > !{oldname}_forward_sorted.bam
-		samtools view -F 16 -b !{oldname}_forward_sorted.bam > !{oldname}_sense_sorted.bam
-		samtools view -f 16 -b !{oldname}_forward_sorted.bam > !{oldname}_antisense_sorted.bam
-		rm !{oldname}_forward_sorted.bam
+    	samtools view -f 65 -b !{oldname}_sorted.bam > !{oldname}_forward.bam
+		samtools view -F 16 -b !{oldname}_forward.bam > !{oldname}_sense.bam && samtools sort -o !{oldname}_sense_sorted.bam !{oldname}_sense.bam && samtools index !{oldname}_sense_sorted.bam
+		samtools view -f 16 -b !{oldname}_forward.bam > !{oldname}_antisense.bam  && samtools sort -o !{oldname}_antisense_sorted.bam !{oldname}_antisense.bam && samtools index !{oldname}_antisense_sorted.bam
+		rm !{oldname}_forward.bam
 	else
 	    echo "INFO: single end sense antisense separation"
-	    samtools view -F 16 -b !{oldname}.bam >!{oldname}_sense_sorted.bam
-	    samtools view -f 16 -b !{oldname}.bam >!{oldname}_antisense_sorted.bam
+	    samtools view -F 16 -b !{oldname}_sorted.bam >!{oldname}_sense.bam && samtools sort -o !{oldname}_sense_sorted.bam !{oldname}_sense.bam && samtools index !{oldname}_sense_sorted.bam
+	    samtools view -f 16 -b !{oldname}_sorted.bam >!{oldname}_antisense.bam  && samtools sort -o !{oldname}_antisense_sorted.bam !{oldname}_antisense.bam && samtools index !{oldname}_antisense_sorted.bam
 	fi
 fi
 '''
@@ -7452,16 +7359,12 @@ fi
 
 process STAR_Module_file_to_set_conversion_for_bam {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /bam$/) "star/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /bam$/) "star/$filename"}
 input:
- file bam from g264_30_bamFile_g264_29.flatten()
+ file bam from g264_30_bamFile10_g264_29.flatten()
 
 output:
- set val(name),file(bam)  into g264_29_bam_file_g253_121, g264_29_bam_file_g253_131, g264_29_bam_file_g253_133, g264_29_bam_file_g253_134, g264_29_bam_file_g253_142
+ set val(name),file(bam)  into g264_29_bam_file00_g253_121, g264_29_bam_file01_g253_131, g264_29_bam_file00_g253_133, g264_29_bam_file00_g253_134, g264_29_bam_file00_g253_142
 
 script:
 name = bam.baseName
@@ -7489,17 +7392,13 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process BAM_Analysis_Module_STAR_UCSC_BAM2BigWig_converter {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.bw$/) "bigwig_star/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.bw$/) "bigwig_star/$filename"}
 input:
- set val(name), file(bam) from g264_29_bam_file_g253_142
- file genomeSizes from g245_54_genomeSizes_g253_142
+ set val(name), file(bam) from g264_29_bam_file00_g253_142
+ file genomeSizes from g245_54_genomeSizes21_g253_142
 
 output:
- file "*.bw"  into g253_142_outputFileBw
+ file "*.bw"  into g253_142_outputFileBw00
 
 when:
 (params.run_BigWig_Conversion && (params.run_BigWig_Conversion == "yes")) || !params.run_BigWig_Conversion
@@ -7525,17 +7424,13 @@ wigToBigWig -clip -itemsPerSlot=1 ${name}.bg ${genomeSizes} ${name}.bw
 
 process BAM_Analysis_Module_STAR_RSeQC {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /result\/.*.out$/) "rseqc_star/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /result\/.*.out$/) "rseqc_star/$filename"}
 input:
- set val(name), file(bam) from g264_29_bam_file_g253_134
- file bed from g245_54_bed_g253_134
+ set val(name), file(bam) from g264_29_bam_file00_g253_134
+ file bed from g245_54_bed31_g253_134
 
 output:
- file "result/*.out"  into g253_134_outputFileOut_g253_95, g253_134_outputFileOut_g_177
+ file "result/*.out"  into g253_134_outputFileOut00_g253_95, g253_134_outputFileOut08_g_177
 
 when:
 (params.run_RSeQC && (params.run_RSeQC == "yes")) || !params.run_RSeQC
@@ -7560,50 +7455,44 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process MultiQC {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /multiqc_report.html$/) "multiqc/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /multiqc_report.html$/) "multiqc/$filename"}
 input:
- file "tophat/*" from g247_14_summary_g_177.flatten().toList()
- file "rsem/*" from g250_26_rsemOut_g_177.flatten().toList()
- file "star/*" from g264_18_logOut_g_177.flatten().toList()
- file "fastqc/*" from g257_28_FastQCout_g_177.flatten().toList()
- file "sequential_mapping/*" from g256_46_bowfiles_g_177.flatten().toList()
- file "rseqc_tophat/*" from g254_134_outputFileOut_g_177.flatten().toList()
- file "rseqc_rsem/*" from g251_134_outputFileOut_g_177.flatten().toList()
- file "rseqc_star/*" from g253_134_outputFileOut_g_177.flatten().toList()
- file "rseqc_hisat/*" from g252_134_outputFileOut_g_177.flatten().toList()
- file "kallisto/*" from g248_36_outputDir_g_177.flatten().toList()
- file "rseqc_kallisto/*" from g255_134_outputFileOut_g_177.flatten().toList()
- file "after_adapter_removal/*" from g257_29_FastQCout_g_177.flatten().toList()
+ file "tophat/*" from g247_14_summary20_g_177.flatten().toList()
+ file "rsem/*" from g250_26_rsemOut01_g_177.flatten().toList()
+ file "star/*" from g264_18_logOut12_g_177.flatten().toList()
+ file "fastqc/*" from g257_28_FastQCout04_g_177.flatten().toList()
+ file "sequential_mapping/*" from g256_46_bowfiles15_g_177.flatten().toList()
+ file "rseqc_tophat/*" from g254_134_outputFileOut06_g_177.flatten().toList()
+ file "rseqc_rsem/*" from g251_134_outputFileOut07_g_177.flatten().toList()
+ file "rseqc_star/*" from g253_134_outputFileOut08_g_177.flatten().toList()
+ file "rseqc_hisat/*" from g252_134_outputFileOut09_g_177.flatten().toList()
+ file "kallisto/*" from g248_36_outputDir013_g_177.flatten().toList()
+ file "rseqc_kallisto/*" from g255_134_outputFileOut014_g_177.flatten().toList()
+ file "after_adapter_removal/*" from g257_31_FastQCout015_g_177.flatten().toList()
 
 output:
- file "multiqc_report.html" optional true  into g_177_outputHTML
+ file "multiqc_report.html" optional true  into g_177_outputHTML00
 
 errorStrategy 'ignore'
 
 script:
+multiqc_parameters = params.MultiQC.multiqc_parameters
 """
-multiqc -e general_stats -d -dd 2 .
+multiqc ${multiqc_parameters} -e general_stats -d -dd 2 .
 """
+
 }
 
 
 process BAM_Analysis_Module_STAR_RSeQC_Summary {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.tsv$/) "rseqc_summary_star/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.tsv$/) "rseqc_summary_star/$filename"}
 input:
- file rseqcOut from g253_134_outputFileOut_g253_95.collect()
- val mate from g_229_mate_g253_95
+ file rseqcOut from g253_134_outputFileOut00_g253_95.collect()
+ val mate from g_229_mate1_g253_95
 
 output:
- file "*.tsv"  into g253_95_outputFileTSV
+ file "*.tsv"  into g253_95_outputFileTSV00
 
 shell:
 '''
@@ -7716,19 +7605,15 @@ sub getVals{
 
 process BAM_Analysis_Module_STAR_featureCounts {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*$/) "featureCounts_after_STAR/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*$/) "featureCounts_after_STAR/$filename"}
 input:
- set val(name), file(bam) from g264_29_bam_file_g253_133
- val paired from g_229_mate_g253_133
- each run_params from g253_125_run_parameters_g253_133
- file gtf from g245_54_gtfFile_g253_133
+ set val(name), file(bam) from g264_29_bam_file00_g253_133
+ val paired from g_229_mate1_g253_133
+ each run_params from g253_125_run_parameters02_g253_133
+ file gtf from g245_54_gtfFile03_g253_133
 
 output:
- file "*"  into g253_133_outputFileTSV_g253_117
+ file "*"  into g253_133_outputFileTSV00_g253_117
 
 script:
 pairText = ""
@@ -7760,18 +7645,14 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process BAM_Analysis_Module_STAR_summary_featureCounts {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*_featureCounts.tsv$/) "featureCounts_after_STAR_summary/$filename"
-	else if (filename =~ /.*_featureCounts.sum.tsv$/) "featureCounts_after_STAR_details/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_featureCounts.tsv$/) "featureCounts_after_STAR_summary/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_featureCounts.sum.tsv$/) "featureCounts_after_STAR_details/$filename"}
 input:
- file featureCountsOut from g253_133_outputFileTSV_g253_117.collect()
+ file featureCountsOut from g253_133_outputFileTSV00_g253_117.collect()
 
 output:
- file "*_featureCounts.tsv"  into g253_117_outputFile
- file "*_featureCounts.sum.tsv"  into g253_117_outFileTSV
+ file "*_featureCounts.tsv"  into g253_117_outputFile00
+ file "*_featureCounts.sum.tsv"  into g253_117_outFileTSV11
 
 shell:
 '''
@@ -7905,18 +7786,14 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 
 process BAM_Analysis_Module_STAR_IGV_BAM2TDF_converter {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.tdf$/) "igvtools_star/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.tdf$/) "igvtools_star/$filename"}
 input:
- val mate from g_229_mate_g253_131
- set val(name), file(bam) from g264_29_bam_file_g253_131
- file genomeSizes from g245_54_genomeSizes_g253_131
+ val mate from g_229_mate0_g253_131
+ set val(name), file(bam) from g264_29_bam_file01_g253_131
+ file genomeSizes from g245_54_genomeSizes22_g253_131
 
 output:
- file "*.tdf"  into g253_131_outputFileOut
+ file "*.tdf"  into g253_131_outputFileOut00
 
 when:
 (params.run_IGV_TDF_Conversion && (params.run_IGV_TDF_Conversion == "yes")) || !params.run_IGV_TDF_Conversion
@@ -7956,11 +7833,11 @@ if ($HOSTNAME == "ghpcc06.umassrc.org"){
 process BAM_Analysis_Module_STAR_Picard {
 
 input:
- set val(name), file(bam) from g264_29_bam_file_g253_121
+ set val(name), file(bam) from g264_29_bam_file00_g253_121
 
 output:
- file "*_metrics"  into g253_121_outputFileOut_g253_82
- file "results/*.pdf"  into g253_121_outputFilePdf_g253_82
+ file "*_metrics"  into g253_121_outputFileOut00_g253_82
+ file "results/*.pdf"  into g253_121_outputFilePdf12_g253_82
 
 when:
 (params.run_Picard_CollectMultipleMetrics && (params.run_Picard_CollectMultipleMetrics == "yes")) || !params.run_Picard_CollectMultipleMetrics
@@ -7975,20 +7852,16 @@ mkdir results && java -jar ${params.pdfbox_path} PDFMerger *.pdf results/${name}
 
 process BAM_Analysis_Module_STAR_Picard_Summary {
 
-publishDir params.outdir, overwrite: true, mode: 'copy',
-	saveAs: {filename ->
-	if (filename =~ /.*.tsv$/) "picard_summary_star/$filename"
-	else if (filename =~ /results\/.*.pdf$/) "picard_summary_pdf_star/$filename"
-}
-
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.tsv$/) "picard_summary_star/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /results\/.*.pdf$/) "picard_summary_pdf_star/$filename"}
 input:
- file picardOut from g253_121_outputFileOut_g253_82.collect()
- val mate from g_229_mate_g253_82
- file picardPdf from g253_121_outputFilePdf_g253_82.collect()
+ file picardOut from g253_121_outputFileOut00_g253_82.collect()
+ val mate from g_229_mate1_g253_82
+ file picardPdf from g253_121_outputFilePdf12_g253_82.collect()
 
 output:
- file "*.tsv"  into g253_82_outputFileTSV
- file "results/*.pdf"  into g253_82_outputFilePdf
+ file "*.tsv"  into g253_82_outputFileTSV00
+ file "results/*.pdf"  into g253_82_outputFilePdf11
 
 shell:
 '''
@@ -8000,7 +7873,7 @@ use Getopt::Long;
 use Pod::Usage; 
 use Data::Dumper;
 
-system("mkdir results && mv *.pdf results/. ");
+runCommand("mkdir results && mv *.pdf results/. ");
 
 my $indir = $ENV{'PWD'};
 my $outd = $ENV{'PWD'};
@@ -8081,6 +7954,17 @@ sub getMetricVals{
      } 
   }
   
+}
+
+
+sub runCommand {
+	my ($com) = @_;
+	if ($com eq ""){
+		return "";
+    }
+    my $error = system(@_);
+	if   ($error) { die "Command failed: $error $com\\n"; }
+    else          { print "Command successful: $com\\n"; }
 }
 '''
 
