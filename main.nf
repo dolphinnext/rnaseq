@@ -318,7 +318,7 @@ build_STAR_index == true && ((params.run_STAR && (params.run_STAR == "yes")) || 
 script:
 star_build_parameters = params.STAR_Module_Check_Build_STAR_Index.star_build_parameters
 index_dir = ""
-if (params.star_index.indexOf('/') > -1){
+if (params.star_index.indexOf('/') > -1 && params.star_index.indexOf('s3://') < 0){
 	index_dir  = file(params.star_index).getParent()
 }
 newDirName = "STARIndex" 
@@ -401,7 +401,7 @@ output:
  file "${starIndex}" optional true  into g256_47_starIndex33_g256_43
 
 when:
-download_build_sequential_mapping_indexes == true
+download_build_sequential_mapping_indexes == true && params.run_Sequential_Mapping == "yes"
 
 script:
 slashCount = params.commondb_source.count("/")
@@ -424,13 +424,13 @@ starIndex = "STARIndex"
 bowtie_index_dir = ""
 bowtie2_index_dir = ""
 star_index_dir = ""
-if (params.bowtie_index.indexOf('/') > -1){
+if (params.bowtie_index.indexOf('/') > -1 && params.bowtie_index.indexOf('s3://') < 0){
 	bowtie_index_dir  = params.bowtie_index.substring(0, params.bowtie_index.lastIndexOf('/')) 
 }
-if (params.bowtie2_index.indexOf('/') > -1){
+if (params.bowtie2_index.indexOf('/') > -1 && params.bowtie2_index.indexOf('s3://') < 0){
 	bowtie2_index_dir  = params.bowtie2_index.substring(0, params.bowtie2_index.lastIndexOf('/')) 
 }
-if (params.star_index.indexOf('/') > -1){
+if (params.star_index.indexOf('/') > -1 && params.star_index.indexOf('s3://') < 0){
 	star_index_dir  = params.star_index.substring(0, params.star_index.lastIndexOf('/')) 
 }
 
@@ -442,7 +442,7 @@ if [ ! -e "${params.commondb}" ] ; then
 		aws s3 cp --recursive ${params.commondb_source} ${workDir}/${commondbName} && ln -s ${workDir}/${commondbName} ${commondbName}
 	else
 		echo "Downloading commondb with wget"
-		wget -l inf -nc -nH --cut-dirs=$cutDir -R 'index.html*' -r --no-parent --directory-prefix=\$PWD/${commondbName} ${params.commondb_source}
+		wget --no-check-certificate --secure-protocol=TLSv1 -l inf -nc -nH --cut-dirs=$cutDir -R 'index.html*' -r --no-parent --directory-prefix=\$PWD/${commondbName} ${params.commondb_source}
 	fi
 
 else 
@@ -767,7 +767,7 @@ build_Kallisto_index == true && ((params.run_Kallisto && (params.run_Kallisto ==
 
 script:
 index_dir = ""
-if (params.kallisto_index.indexOf('/') > -1){
+if (params.kallisto_index.indexOf('/') > -1 && params.kallisto_index.indexOf('s3://') < 0){
 	index_dir = file(params.kallisto_index).getParent()
 }
 index = "KallistoIndex" 
@@ -858,7 +858,7 @@ hisat2_build_parameters = params.HISAT2_Module_Check_Build_Hisat2_Index.hisat2_b
 basename = genome.baseName
 basenameGTF = gtf.baseName
 index_dir = ""
-if (params.hisat2_index.indexOf('/') > -1){
+if (params.hisat2_index.indexOf('/') > -1 && params.hisat2_index.indexOf('s3://') < 0){
 	index_dir  = file(params.hisat2_index).getParent()
 }
 index = "Hisat2Index" 
@@ -965,19 +965,19 @@ index_dir = ""
 if (RSEM_reference_type == 'bowtie'){
 	indexType = "--bowtie "
 	index = "RSEM_ref_Bowtie" 
-	if (params.rsem_ref_using_bowtie_index.indexOf('/') > -1){
+	if (params.rsem_ref_using_bowtie_index.indexOf('/') > -1 && params.rsem_ref_using_bowtie_index.indexOf('s3://') < 0){
 		index_dir = params.rsem_ref_using_bowtie_index
 	}
 } else if (RSEM_reference_type == 'bowtie2'){
 	indexType = "--bowtie2 "
 	index = "RSEM_ref_Bowtie2" 
-	if (params.rsem_ref_using_bowtie2_index.indexOf('/') > -1){
+	if (params.rsem_ref_using_bowtie2_index.indexOf('/') > -1 && params.rsem_ref_using_bowtie2_index.indexOf('s3://') < 0){
 		index_dir = params.rsem_ref_using_bowtie2_index
 	}
 } else if (RSEM_reference_type == 'star'){
 	indexType = "--star "
 	index = "RSEM_ref_STAR" 
-	if (params.rsem_ref_using_star_index.indexOf('/') > -1){
+	if (params.rsem_ref_using_star_index.indexOf('/') > -1 && params.rsem_ref_using_star_index.indexOf('s3://') < 0){
 		index_dir = params.rsem_ref_using_star_index
 	}
 }
@@ -1034,7 +1034,7 @@ build_Bowtie2_index == true && ((params.run_Tophat && (params.run_Tophat == "yes
 script:
 basename = genome.baseName
 index_dir = ""
-if (params.bowtie2_index.indexOf('/') > -1){
+if (params.bowtie2_index.indexOf('/') > -1 && params.bowtie2_index.indexOf('s3://') < 0){
 	index_dir  = file(params.bowtie2_index).getParent()
 }
 index = "Bowtie2Index" 
